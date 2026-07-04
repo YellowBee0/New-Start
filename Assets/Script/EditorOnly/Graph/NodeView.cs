@@ -1,0 +1,61 @@
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine.UIElements;
+using YBFramework.Bridge;
+
+namespace YBFramework.EditorOnly
+{
+    public sealed class NodeView : Node
+    {
+        public readonly NodeAsset NodeAsset;
+
+        private readonly List<PortView> m_PortViews = new();
+
+        public NodeView(NodeAsset nodeAsset)
+        {
+            NodeAsset = nodeAsset;
+        }
+
+        public PortView GetPortView(ushort portID)
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
+            {
+                if (m_PortViews[i].GetPort().PortID == portID)
+                {
+                    return m_PortViews[i];
+                }
+            }
+            return null;
+        }
+
+        public IEnumerable<PortView> GetPortViews()
+        {
+            return m_PortViews;
+        }
+
+        //TODO:暂时处理
+        public void AddPortView(PortView portView)
+        {
+            m_PortViews.Add(portView);
+        }
+
+        public void RemovePortView(PortView portView)
+        {
+            m_PortViews.Remove(portView);
+        }
+
+        public void ClearPortView()
+        {
+        }
+        //
+
+        public void RefreshPortContainerDisplay()
+        {
+            //TODO:对于输入输出只存在一个动态端口的情况时，初始动态端口没有任何值，但是在编辑完后会存在值，这时就需要显示这个端口
+            inputContainer.style.display = inputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
+            outputContainer.style.display = outputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+    }
+}
+#endif
