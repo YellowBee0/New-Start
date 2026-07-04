@@ -7,7 +7,7 @@ namespace YBFramework.Bridge
     {
         [SerializeReference] private List<BaseNodeData> m_NodeData = new();
 
-        public IEnumerable<BaseNodeData> GetNodeDataEnumerable()
+        public IReadOnlyList<BaseNodeData> GetNodeData()
         {
             return m_NodeData;
         }

@@ -72,7 +72,9 @@ namespace YBFramework.Common
             }
         }
 
-        /// <summary>在追踪的目标受到生命周期的控制之后调用</summary>
+        /// <summary>
+        /// 在追踪的目标受到生命周期的控制之后调用
+        /// </summary>
         /// <param name="trackID">追踪id</param>
         public static void NotifyGetControl(int trackID)
         {
@@ -82,7 +84,9 @@ namespace YBFramework.Common
             }
         }
 
-        /// <summary>在追踪的目标失去生命周期的控制之前调用</summary>
+        /// <summary>
+        /// 在追踪的目标失去生命周期的控制之前调用
+        /// </summary>
         /// <param name="trackID">追踪id</param>
         public static void NotifyLoseControl(int trackID)
         {
@@ -97,7 +101,9 @@ namespace YBFramework.Common
             return s_SourceID++;
         }
 
-        /// <summary>组合两个id，返回一个追踪id，传入的两个id唯一且顺序不能交换</summary>
+        /// <summary>
+        /// 组合两个id，返回一个追踪id，传入的两个id唯一且顺序不能交换
+        /// </summary>
         /// <param name="trackedID">已分配的追踪id</param>
         /// <param name="sourceID">已分配的来源id</param>
         /// <returns>追踪id</returns>
@@ -114,10 +120,14 @@ namespace YBFramework.Common
 
         private sealed class Notify
         {
-            /// <summary>当追踪的目标受到生命周期的控制时触发</summary>
+            /// <summary>
+            /// 当追踪的目标受到生命周期的控制时触发
+            /// </summary>
             public Action OnGetControl;
 
-            /// <summary>当追踪的目标失去生命周期的控制时触发</summary>
+            /// <summary>
+            /// 当追踪的目标失去生命周期的控制时触发
+            /// </summary>
             public Action OnLoseControl;
         }
     }
