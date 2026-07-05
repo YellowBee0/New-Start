@@ -1,46 +1,42 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using YBFramework.Bridge;
 using YBFramework.Common;
 
 namespace YBFramework.Component
 {
-    public sealed class Graph : IComponent
+    //TODO:可添加到对象池管理
+    public sealed class Graph
     {
-        private static readonly int s_SourceID = TrackTargetManager.GenerateSourceID();
+        private readonly List<BaseNode> m_Nodes = new();
 
-        private Entity m_Owner;
-
-        private int m_TrackID;
-
-        public int GetTrackID()
+        public void InitializeFromGraphAsset(GraphAsset graphAsset)
         {
-            return m_TrackID;
+            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodeData();
+            for (int i = 0; i < nodeData.Count; i++)
+            {
+                BaseNode node = nodeData[i].CreateRuntimeInstance();
+                if (node != null)
+                {
+                    m_Nodes.Add(node);
+                }
+            }
+            for (int i = 0; i < m_Nodes.Count; i++)
+            {
+                foreach (BasePort port in (IValueIterator<BasePort>)m_Nodes[i])
+                {
+                    //TODO:端口运行时连接恢复操作
+                }
+            }
         }
 
-        public void InitializeFromData(IComponentData data)
+        //TODO:每个蓝图运行状态由自己决定，而不是GraphManager决定运行（顶多在Entity启用/禁用时控制运行状态），因为buff上跑蓝图有可能会根据buff的生命周期来运行
+        public void Start()
         {
-            throw new NotImplementedException();
         }
 
-        public Entity GetOwner()
+        public void Stop()
         {
-            return m_Owner;
         }
-
-        public void SetOwner(Entity entity)
-        {
-            m_Owner = entity;
-            m_TrackID = TrackTargetManager.CombineTrackID(entity.GetTrackID(), s_SourceID);
-        }
-
-        public void OnAdd()
-        {
-            TrackTargetManager.NotifyGetControl(m_TrackID);
-        }
-
-        public void OnRemove()
-        {
-            TrackTargetManager.NotifyLoseControl(m_TrackID);
-        }
+        //
     }
 }

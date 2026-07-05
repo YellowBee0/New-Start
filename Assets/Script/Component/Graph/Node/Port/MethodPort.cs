@@ -10,6 +10,12 @@ namespace YBFramework.Component
 
         private MethodInfo m_MethodInfo;
 
+        public void InitializeFromData(MethodPortData data)
+        {
+            m_PortID = data.PortID;
+            m_MethodInfo = data.GetMethodInfo();
+        }
+        
         public void SetTarget(object target)
         {
             m_Target = target;
@@ -18,12 +24,6 @@ namespace YBFramework.Component
         public Delegate CreateDelegate(Type delegateType)
         {
             return m_MethodInfo == null ? null : m_MethodInfo.CreateDelegate(delegateType, m_Target);
-        }
-
-        public void InitializeFromData(MethodPortData data)
-        {
-            m_PortID = data.PortID;
-            m_MethodInfo = data.GetMethodInfo();
         }
     }
 }

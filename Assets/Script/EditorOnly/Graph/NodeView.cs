@@ -8,13 +8,13 @@ namespace YBFramework.EditorOnly
 {
     public sealed class NodeView : Node
     {
-        public readonly NodeAsset NodeAsset;
+        public readonly BaseNodeData NodeData;
 
         private readonly List<PortView> m_PortViews = new();
 
-        public NodeView(NodeAsset nodeAsset)
+        public NodeView(BaseNodeData nodeData)
         {
-            NodeAsset = nodeAsset;
+            NodeData = nodeData;
         }
 
         public PortView GetPortView(ushort portID)

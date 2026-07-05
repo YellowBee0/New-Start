@@ -19,7 +19,7 @@ namespace YBFramework.Bridge
 #if UNITY_EDITOR
         [SerializeField] private List<PortConnectionData> m_PortConnectionDataFromOther;
 
-        private BaseNodeData m_BaseNodeData;
+        private BaseNodeData m_NodeData;
 
         protected PortViewArgs m_PortViewArgs;
 
@@ -117,14 +117,14 @@ namespace YBFramework.Bridge
 
         public virtual bool CanConnect(BasePortData other)
         {
-            return GetPortConnectionDataFromSelf(other.m_BaseNodeData.NodeID, other.PortID) == null;
+            return GetPortConnectionDataFromSelf(other.m_NodeData.NodeID, other.PortID) == null;
         }
 
         public virtual void Connect(BasePortData other)
         {
             other.m_PortConnectionDataFromOther.Add(new PortConnectionData
             {
-                NodeID = m_BaseNodeData.NodeID,
+                NodeID = m_NodeData.NodeID,
                 PortID = PortID
             });
         }
@@ -134,7 +134,7 @@ namespace YBFramework.Bridge
             for (int i = 0; i < other.m_PortConnectionDataFromOther.Count; i++)
             {
                 PortConnectionData portConnectionData = other.m_PortConnectionDataFromOther[i];
-                if (portConnectionData.NodeID == m_BaseNodeData.NodeID && portConnectionData.PortID == PortID)
+                if (portConnectionData.NodeID == m_NodeData.NodeID && portConnectionData.PortID == PortID)
                 {
                     other.m_PortConnectionDataFromOther.RemoveAt(i);
                     return;

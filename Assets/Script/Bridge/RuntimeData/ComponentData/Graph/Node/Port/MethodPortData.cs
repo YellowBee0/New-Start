@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using YBFramework.Component;
-using YBFramework.EditorOnly;
 #if UNITY_EDITOR
+using YBFramework.EditorOnly;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 #endif
