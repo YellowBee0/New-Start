@@ -5,7 +5,7 @@ namespace YBFramework.Common
 {
     public static class TrackTargetManager
     {
-        private static readonly Dictionary<int, Notify> s_Trackers = new();
+        private static readonly Dictionary<int, Actions> s_Actions = new();
 
         private static readonly Dictionary<(int, int), int> s_CombinedTrackIDs = new();
 
@@ -17,10 +17,10 @@ namespace YBFramework.Common
         {
             if (onLoseControl != null || onGetControl != null)
             {
-                if (!s_Trackers.TryGetValue(trackID, out Notify notify))
+                if (!s_Actions.TryGetValue(trackID, out Actions notify))
                 {
-                    notify = new Notify();
-                    s_Trackers.Add(trackID, notify);
+                    notify = new Actions();
+                    s_Actions.Add(trackID, notify);
                 }
                 notify.OnGetControl += onGetControl;
                 notify.OnLoseControl += onLoseControl;
@@ -31,34 +31,34 @@ namespace YBFramework.Common
         {
             if (onLoseControl != null || onGetControl != null)
             {
-                if (s_Trackers.TryGetValue(trackID, out Notify notify))
+                if (s_Actions.TryGetValue(trackID, out Actions notify))
                 {
                     notify.OnGetControl -= onGetControl;
                     notify.OnLoseControl -= onLoseControl;
                     if (notify.OnGetControl == null && notify.OnLoseControl == null)
                     {
-                        s_Trackers.Remove(trackID);
+                        s_Actions.Remove(trackID);
                     }
                 }
             }
         }
 
-        public static void UnregisterTracker(int trackID, NotifyClearModel model)
+        public static void UnregisterTracker(int trackID, ActionClearModel model)
         {
-            if (model == NotifyClearModel.ClearAll)
+            if (model == ActionClearModel.ClearAll)
             {
-                s_Trackers.Remove(trackID);
+                s_Actions.Remove(trackID);
             }
-            if (s_Trackers.TryGetValue(trackID, out Notify notify))
+            if (s_Actions.TryGetValue(trackID, out Actions notify))
             {
                 Action otherAction;
                 switch (model)
                 {
-                    case NotifyClearModel.ClearGetControl:
+                    case ActionClearModel.ClearGetControl:
                         notify.OnGetControl = null;
                         otherAction = notify.OnLoseControl;
                         break;
-                    case NotifyClearModel.ClearLoseControl:
+                    case ActionClearModel.ClearLoseControl:
                         notify.OnLoseControl = null;
                         otherAction = notify.OnGetControl;
                         break;
@@ -67,7 +67,7 @@ namespace YBFramework.Common
                 }
                 if (otherAction == null)
                 {
-                    s_Trackers.Remove(trackID);
+                    s_Actions.Remove(trackID);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace YBFramework.Common
         /// <param name="trackID">追踪id</param>
         public static void NotifyGetControl(int trackID)
         {
-            if (s_Trackers.TryGetValue(trackID, out Notify notify))
+            if (s_Actions.TryGetValue(trackID, out Actions notify))
             {
                 notify.OnGetControl?.Invoke();
             }
@@ -90,7 +90,7 @@ namespace YBFramework.Common
         /// <param name="trackID">追踪id</param>
         public static void NotifyLoseControl(int trackID)
         {
-            if (s_Trackers.TryGetValue(trackID, out Notify notify))
+            if (s_Actions.TryGetValue(trackID, out Actions notify))
             {
                 notify.OnLoseControl?.Invoke();
             }
@@ -118,7 +118,7 @@ namespace YBFramework.Common
             return trackID;
         }
 
-        private sealed class Notify
+        private sealed class Actions
         {
             /// <summary>
             /// 当追踪的目标受到生命周期的控制时触发

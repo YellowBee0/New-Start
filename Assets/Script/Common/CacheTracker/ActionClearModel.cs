@@ -1,6 +1,6 @@
 ﻿namespace YBFramework.Common
 {
-    public enum NotifyClearModel
+    public enum ActionClearModel
     {
         ClearGetControl,
 

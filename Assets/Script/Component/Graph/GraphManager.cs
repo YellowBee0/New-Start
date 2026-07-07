@@ -4,7 +4,7 @@ using YBFramework.Common;
 
 namespace YBFramework.Component
 {
-    public sealed class GraphManager : IComponent
+    public sealed class GraphManager : IComponent, IActiveHandler
     {
         private static readonly int s_SourceID = TrackTargetManager.GenerateSourceID();
 
@@ -32,7 +32,7 @@ namespace YBFramework.Component
         {
             m_Graphs.Remove(graph);
         }
-        
+
         public int GetTrackID()
         {
             return m_TrackID;
@@ -47,6 +47,7 @@ namespace YBFramework.Component
         {
             m_Owner = entity;
             m_TrackID = TrackTargetManager.CombineTrackID(entity.GetTrackID(), s_SourceID);
+            EntityManager.RegisterActiveHandler(entity, this);
         }
 
         public void OnAdd()
@@ -57,6 +58,22 @@ namespace YBFramework.Component
         public void OnRemove()
         {
             TrackTargetManager.NotifyLoseControl(m_TrackID);
+        }
+
+        public void OnActivate()
+        {
+            foreach (Graph graph in m_Graphs)
+            {
+                graph.Start();
+            }
+        }
+
+        public void OnDeactivate()
+        {
+            foreach (Graph graph in m_Graphs)
+            {
+                graph.Stop();
+            }
         }
     }
 }
