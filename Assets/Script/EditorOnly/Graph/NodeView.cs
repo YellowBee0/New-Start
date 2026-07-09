@@ -17,7 +17,7 @@ namespace YBFramework.EditorOnly
             NodeData = nodeData;
         }
 
-        public PortView GetPortView(ushort portID)
+        public PortView GetPortView(int portID)
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {

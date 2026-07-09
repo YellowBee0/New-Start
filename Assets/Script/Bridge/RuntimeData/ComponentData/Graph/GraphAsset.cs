@@ -25,7 +25,7 @@ namespace YBFramework.Bridge
 #if UNITY_EDITOR
         [SerializeField] private GraphType m_GraphType;
 
-        public ushort SourceNodeID;
+        public int SourceNodeID;
         
         public GraphType GetGraphType()
         {

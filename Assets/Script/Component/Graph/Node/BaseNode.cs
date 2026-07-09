@@ -4,14 +4,14 @@ namespace YBFramework.Component
 {
     public abstract class BaseNode : IValueIterator<BasePort>
     {
-        private ushort m_NodeID;
+        private int m_NodeID;
 
-        public ushort GetNodeID()
+        public int GetNodeID()
         {
             return m_NodeID;
         }
         
-        public BasePort GetPort(ushort portID)
+        public BasePort GetPort(int portID)
         {
             foreach (BasePort port in (IValueIterator<BasePort>)this)
             {

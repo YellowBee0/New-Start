@@ -13,7 +13,7 @@ namespace YBFramework.Bridge
     [Serializable]
     public abstract class BasePortData : IRuntimeData<BasePort>
     {
-        public ushort PortID;
+        public int PortID;
 
         public abstract BasePort CreateRuntimeInstance();
 #if UNITY_EDITOR
@@ -71,7 +71,7 @@ namespace YBFramework.Bridge
             SetPortViewArgs(name, direction, capacity, color);
         }
 
-        public PortConnectionData GetPortConnectionData(ushort nodeId, ushort portId)
+        public PortConnectionData GetPortConnectionData(int nodeId, int portId)
         {
             PortConnectionData portConnectionData = GetPortConnectionDataFromSelf(nodeId, portId);
             return portConnectionData ?? GetPortConnectionDataFromOther(nodeId, portId);
@@ -82,7 +82,7 @@ namespace YBFramework.Bridge
             return GetPortConnectionDataFromSelfCount() + GetPortConnectionDataFromOtherCount();
         }
 
-        public PortConnectionData GetPortConnectionDataFromOther(ushort nodeId, ushort portId)
+        public PortConnectionData GetPortConnectionDataFromOther(int nodeId, int portId)
         {
             for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
             {
@@ -100,7 +100,7 @@ namespace YBFramework.Bridge
             return m_PortConnectionDataFromOther?.Count ?? 0;
         }
 
-        public abstract PortConnectionData GetPortConnectionDataFromSelf(ushort nodeId, ushort portId);
+        public abstract PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId);
 
         public abstract int GetPortConnectionDataFromSelfCount();
 

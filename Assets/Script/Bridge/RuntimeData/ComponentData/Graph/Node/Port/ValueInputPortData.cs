@@ -18,7 +18,7 @@ namespace YBFramework.Bridge
             return port;
         }
 #if UNITY_EDITOR
-        public override PortConnectionData GetPortConnectionDataFromSelf(ushort nodeId, ushort portId)
+        public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
             //TODO:m_DelegatePortConnectionData始终会存在值，，默认为0，0，需要采用其他的判断方式
             return m_DelegatePortConnectionData;

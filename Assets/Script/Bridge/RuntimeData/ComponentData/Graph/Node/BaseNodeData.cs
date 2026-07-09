@@ -9,7 +9,7 @@ namespace YBFramework.Bridge
     [Serializable]
     public abstract class BaseNodeData : IRuntimeData<BaseNode>
     {
-        public ushort NodeID;
+        public int NodeID;
 
         public abstract BaseNode CreateRuntimeInstance();
 #if UNITY_EDITOR
@@ -17,7 +17,7 @@ namespace YBFramework.Bridge
 
         public string Name;
 
-        public ushort SourcePortID;
+        public int SourcePortID;
 #endif
     }
 }

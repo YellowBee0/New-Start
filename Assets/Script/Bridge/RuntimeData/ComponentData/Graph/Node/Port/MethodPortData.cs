@@ -57,7 +57,7 @@ namespace YBFramework.Bridge
             return false;
         }
 
-        public override PortConnectionData GetPortConnectionDataFromSelf(ushort nodeId, ushort portId)
+        public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
             return null;
         }

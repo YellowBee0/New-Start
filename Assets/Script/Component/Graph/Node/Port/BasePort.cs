@@ -2,9 +2,9 @@
 {
     public abstract class BasePort
     {
-        protected ushort m_PortID;
+        protected int m_PortID;
 
-        public ushort GetPortID()
+        public int GetPortID()
         {
             return m_PortID;
         }

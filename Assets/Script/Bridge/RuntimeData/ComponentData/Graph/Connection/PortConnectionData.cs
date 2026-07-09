@@ -5,8 +5,8 @@ namespace YBFramework.Bridge
     [Serializable]
     public class PortConnectionData
     {
-        public ushort NodeID;
+        public int NodeID;
 
-        public ushort PortID;
+        public int PortID;
     }
 }
