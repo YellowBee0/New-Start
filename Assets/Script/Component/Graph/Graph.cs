@@ -8,6 +8,9 @@ namespace YBFramework.Component
     public sealed class Graph
     {
         private readonly List<BaseNode> m_Nodes = new();
+        
+        //TODO:新增蓝图运行选项应该是一个Flags的枚举。Entity启用/禁用时、其他地方控制（是否需要细分）（比如buff生命周期控制）。
+        // 这个枚举支持动态设置。比如在编辑器中并没有设置运行选项
 
         public void InitializeFromGraphAsset(GraphAsset graphAsset)
         {
