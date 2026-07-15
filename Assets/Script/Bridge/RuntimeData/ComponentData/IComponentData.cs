@@ -1,5 +1,5 @@
 ﻿using System;
-using YBFramework.Component;
+using YBFramework.GameLogic.Component;
 
 namespace YBFramework.Bridge
 {
