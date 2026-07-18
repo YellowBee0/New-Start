@@ -32,14 +32,16 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
-            //TODO:m_DelegatePortConnectionData始终会存在值，，默认为0，0，需要采用其他的判断方式
-            return m_DelegatePortConnectionData;
+            if (m_DelegatePortConnectionData.NodeID == nodeId && m_DelegatePortConnectionData.PortID == portId)
+            {
+                return m_DelegatePortConnectionData;
+            }
+            return null;
         }
 
         public override int GetPortConnectionDataCountFromSelf()
         {
-            //TODO:m_DelegatePortConnectionData始终会存在值，，默认为0，0，需要采用其他的判断方式
-            return m_DelegatePortConnectionData != null ? 1 : 0;
+            return m_DelegatePortConnectionData.NodeID == 0 && m_DelegatePortConnectionData.PortID == 0 ? 0 : 1;
         }
 
         public override BasePortData Clone()

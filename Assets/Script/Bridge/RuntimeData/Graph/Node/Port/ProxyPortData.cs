@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
@@ -45,12 +46,24 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
+        //TODO:设置这个名字
+        private string m_ProxyTargetPortName;
+
         private BasePortData m_ProxyTargetPortData;
 
         //节点初始化的时候调用
         public void SetProxyTargetPortData(BasePortData proxyTargetPortDat)
         {
             m_ProxyTargetPortData = proxyTargetPortDat;
+        }
+
+        public override PortViewArgs GetPortViewArgs()
+        {
+            return m_ProxyTargetPortData.GetPortViewArgs();
+        }
+
+        public override void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
+        {
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
@@ -79,7 +92,9 @@ namespace YBFramework.Bridge.Data
 
         public override VisualElement CreatePortContentView(out PortView portView)
         {
-            return m_ProxyTargetPortData.CreatePortContentView(out portView);
+            VisualElement portContentView = m_ProxyTargetPortData.CreatePortContentView(out portView);
+            portView.portName = m_ProxyTargetPortName;
+            return portContentView;
         }
 #endif
     }

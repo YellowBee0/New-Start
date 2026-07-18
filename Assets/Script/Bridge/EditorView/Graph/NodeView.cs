@@ -21,17 +21,12 @@ namespace YBFramework.Bridge.Editor
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {
-                if (m_PortViews[i].GetPort().PortID == portID)
+                if (m_PortViews[i].Port.PortID == portID)
                 {
                     return m_PortViews[i];
                 }
             }
             return null;
-        }
-
-        public IEnumerable<PortView> GetPortViews()
-        {
-            return m_PortViews;
         }
 
         //TODO:暂时处理
@@ -52,7 +47,7 @@ namespace YBFramework.Bridge.Editor
 
         public void RefreshPortContainerDisplay()
         {
-            //TODO:对于输入输出只存在一个动态端口的情况时，初始动态端口没有任何值，但是在编辑完后会存在值，这时就需要显示这个端口
+            //TODO:对于输入输出只存在一个动态端口的情况时，初始动态端口没有任何值，但是在编辑完后会存在值，这时就需要显示这个端口（代理节点）
             inputContainer.style.display = inputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
             outputContainer.style.display = outputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
         }

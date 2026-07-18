@@ -1,8 +1,8 @@
 ﻿using System;
-using YBFramework.Bridge.Editor;
 using YBFramework.Common;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
+using YBFramework.Bridge.Editor;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -36,7 +36,12 @@ namespace YBFramework.Bridge.Data
 
         protected PortViewArgs m_PortViewArgs;
 
-        public PortViewArgs GetPortViewArgs()
+        public void SetNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData = nodeData;
+        }
+        
+        public virtual PortViewArgs GetPortViewArgs()
         {
             return m_PortViewArgs;
         }
@@ -84,39 +89,6 @@ namespace YBFramework.Bridge.Data
             SetPortViewArgs(name, direction, capacity, color);
         }
 
-        public PortConnectionData GetPortConnectionData(int nodeId, int portId)
-        {
-            PortConnectionData portConnectionData = GetPortConnectionDataFromSelf(nodeId, portId);
-            return portConnectionData ?? GetPortConnectionDataFromOther(nodeId, portId);
-        }
-
-        public int GetPortConnectionDataCount()
-        {
-            return GetPortConnectionDataCountFromSelf() + GetPortConnectionDataFromOtherCount();
-        }
-
-        public PortConnectionData GetPortConnectionDataFromOther(int nodeId, int portId)
-        {
-            for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
-            {
-                PortConnectionData portConnectionData = m_PortConnectionDataFromOther[i];
-                if (portConnectionData.NodeID == nodeId && portConnectionData.PortID == portId)
-                {
-                    return portConnectionData;
-                }
-            }
-            return null;
-        }
-
-        public int GetPortConnectionDataFromOtherCount()
-        {
-            return m_PortConnectionDataFromOther?.Count ?? 0;
-        }
-
-        public abstract PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId);
-
-        public abstract int GetPortConnectionDataCountFromSelf();
-
         public virtual void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
         {
             m_PortViewArgs = new PortViewArgs(name, direction, capacity, color);
@@ -124,13 +96,13 @@ namespace YBFramework.Bridge.Data
 
         public virtual VisualElement CreatePortContentView(out PortView portView)
         {
-            portView = new PortView(this);
+            portView = new PortView(this, m_PortViewArgs.Name, m_PortViewArgs.Direction, m_PortViewArgs.Capacity, m_PortViewArgs.Color);
             return portView;
         }
 
         public virtual bool CanConnect(BasePortData other)
         {
-            return GetPortConnectionDataFromSelf(other.m_NodeData.NodeID, other.PortID) == null;
+            return GetPortConnectionData(other.m_NodeData.NodeID, other.PortID) == null;
         }
 
         public virtual void Connect(BasePortData other)
@@ -154,6 +126,39 @@ namespace YBFramework.Bridge.Data
                 }
             }
         }
+
+        public PortConnectionData GetPortConnectionData(int nodeId, int portId)
+        {
+            PortConnectionData portConnectionData = GetPortConnectionDataFromSelf(nodeId, portId);
+            return portConnectionData ?? GetPortConnectionDataFromOther(nodeId, portId);
+        }
+
+        public PortConnectionData GetPortConnectionDataFromOther(int nodeId, int portId)
+        {
+            for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
+            {
+                PortConnectionData portConnectionData = m_PortConnectionDataFromOther[i];
+                if (portConnectionData.NodeID == nodeId && portConnectionData.PortID == portId)
+                {
+                    return portConnectionData;
+                }
+            }
+            return null;
+        }
+
+        public abstract PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId);
+
+        public int GetPortConnectionDataCount()
+        {
+            return GetPortConnectionDataCountFromSelf() + GetPortConnectionDataFromOtherCount();
+        }
+
+        public int GetPortConnectionDataFromOtherCount()
+        {
+            return m_PortConnectionDataFromOther?.Count ?? 0;
+        }
+
+        public abstract int GetPortConnectionDataCountFromSelf();
 
         public abstract BasePortData Clone();
 #endif
