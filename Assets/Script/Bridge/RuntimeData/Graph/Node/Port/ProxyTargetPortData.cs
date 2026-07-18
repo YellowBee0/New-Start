@@ -14,7 +14,7 @@ namespace YBFramework.Bridge.Data
         public string ProxyName;
 
         [SerializeField] private PortConnectionData m_PortConnectionData;
-        
+
         public override BasePort CreateRuntimeInstance()
         {
             return null;
@@ -50,8 +50,14 @@ namespace YBFramework.Bridge.Data
             {
                 value = ProxyName
             };
+            proxyNameField.RegisterValueChangedCallback(OnProxyNameChange);
             portContentView.Add(proxyNameField);
             return portContentView;
+        }
+
+        private void OnProxyNameChange(ChangeEvent<string> evt)
+        {
+            ProxyName = evt.newValue;
         }
     }
 }
