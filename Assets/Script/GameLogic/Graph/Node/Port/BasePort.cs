@@ -15,7 +15,7 @@ namespace YBFramework.GameLogic.Graph
         {
         }
 
-        public virtual BasePort GetActualPortToConnect()
+        public virtual BasePort GetActualToConnectPort()
         {
             return this;
         }

@@ -11,6 +11,19 @@ namespace YBFramework.Bridge
     {
         [SerializeReference] private List<BaseNodeData> m_NodeData;
 
+        public BaseNodeData GetNodeData(int nodeID)
+        {
+            for (int i = 0; i < m_NodeData.Count; i++)
+            {
+                BaseNodeData nodeData = m_NodeData[i];
+                if (nodeData.NodeID == nodeID)
+                {
+                    return nodeData;
+                }
+            }
+            return null;
+        }
+        
         public IReadOnlyList<BaseNodeData> GetNodeData()
         {
             return m_NodeData;

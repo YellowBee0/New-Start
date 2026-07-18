@@ -12,12 +12,18 @@ using UnityEngine.UIElements;
 namespace YBFramework.Bridge
 {
     [Serializable]
-    public abstract class BasePortData : IRuntimeData<BasePort>, IValueIterator<PortConnectionData>
+    public abstract class BasePortData : IValueIterator<PortConnectionData>
     {
         public int PortID;
 
         public abstract BasePort CreateRuntimeInstance();
 
+        /// <summary>
+        /// 获取端口中所有自身的连接（编辑器中连接的时候主动调用Connect时连接的连线）
+        /// </summary>
+        /// <param name="index">索引</param>
+        /// <param name="current">当前数据</param>
+        /// <returns>是否执行到下一个元素</returns>
         public virtual bool Iterator(int index, out PortConnectionData current)
         {
             current = null;

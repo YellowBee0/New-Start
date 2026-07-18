@@ -16,9 +16,9 @@ namespace YBFramework.GameLogic.Graph
             m_ProxyTargetPort.MergeData(dataToMerge);
         }
 
-        public override BasePort GetActualPortToConnect()
+        public override BasePort GetActualToConnectPort()
         {
-            return m_ProxyTargetPort.GetActualPortToConnect();
+            return m_ProxyTargetPort.GetActualToConnectPort();
         }
 
         public override void ConnectPort(PortConnectionData portConnectionData, BasePort portToConnect)
