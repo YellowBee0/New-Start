@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class ProxyNodeData : BaseNodeData

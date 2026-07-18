@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
-using YBFramework.Bridge;
+using YBFramework.Bridge.Data;
 
-namespace YBFramework.EditorOnly
+namespace YBFramework.Bridge.Editor
 {
     public sealed class NodeView : Node
     {

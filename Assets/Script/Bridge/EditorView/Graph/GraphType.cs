@@ -1,4 +1,4 @@
-namespace YBFramework.EditorOnly
+namespace YBFramework.Bridge.Editor
 {
     public enum GraphType
     {

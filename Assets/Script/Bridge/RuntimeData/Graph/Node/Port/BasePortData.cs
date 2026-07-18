@@ -1,15 +1,15 @@
 ﻿using System;
+using YBFramework.Bridge.Editor;
 using YBFramework.Common;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using YBFramework.EditorOnly;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 #endif
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public abstract class BasePortData : IValueIterator<PortConnectionData>

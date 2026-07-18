@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using YBFramework.EditorOnly;
 #endif
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     public sealed class GraphAsset : ScriptableObject
     {

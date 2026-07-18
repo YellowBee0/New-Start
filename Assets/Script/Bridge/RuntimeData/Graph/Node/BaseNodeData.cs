@@ -5,7 +5,7 @@ using YBFramework.GameLogic.Graph;
 using UnityEngine;
 #endif
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public abstract class BaseNodeData : IValueIterator<BasePortData>

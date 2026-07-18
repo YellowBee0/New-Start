@@ -1,9 +1,9 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using YBFramework.Bridge;
+using YBFramework.Bridge.Data;
 
-namespace YBFramework.EditorOnly
+namespace YBFramework.Bridge.Editor
 {
     public sealed class PortView : Port
     {

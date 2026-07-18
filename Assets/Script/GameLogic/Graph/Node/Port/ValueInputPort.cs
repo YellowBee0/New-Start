@@ -1,5 +1,5 @@
 ﻿using System;
-using YBFramework.Bridge;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.GameLogic.Graph
 {

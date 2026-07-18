@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using YBFramework.Bridge;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.GameLogic.Graph
 {

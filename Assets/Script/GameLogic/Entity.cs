@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using YBFramework.Bridge;
+using YBFramework.Bridge.Data;
 using YBFramework.GameLogic.Component;
 
 namespace YBFramework.GameLogic

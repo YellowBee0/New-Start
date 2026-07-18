@@ -2,12 +2,12 @@
 using System.Reflection;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using YBFramework.EditorOnly;
+using YBFramework.Bridge.Editor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 #endif
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class MethodPortData : BasePortData

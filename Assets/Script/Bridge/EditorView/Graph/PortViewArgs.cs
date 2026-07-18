@@ -2,7 +2,7 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-namespace YBFramework.EditorOnly
+namespace YBFramework.Bridge.Editor
 {
     public readonly struct PortViewArgs
     {

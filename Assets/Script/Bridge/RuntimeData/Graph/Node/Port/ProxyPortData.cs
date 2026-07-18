@@ -1,10 +1,12 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.UIElements;
-using YBFramework.EditorOnly;
 using YBFramework.GameLogic.Graph;
+#if UNITY_EDITOR
+using UnityEngine.UIElements;
+using YBFramework.Bridge.Editor;
+#endif
 
-namespace YBFramework.Bridge
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class ProxyPortData : BasePortData

@@ -1,5 +1,5 @@
 ﻿#if UNITY_EDITOR
-namespace YBFramework.EditorOnly
+namespace YBFramework.Bridge.Editor
 {
     public enum PortViewArgsTemplate
     {
