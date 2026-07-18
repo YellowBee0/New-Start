@@ -2,73 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.Bridge;
-using YBFramework.Common;
 using YBFramework.GameLogic.Component;
 
 namespace YBFramework.GameLogic
 {
     public sealed class Entity : MonoBehaviour
     {
+        //可以池化
+        private sealed class Tracker
+        {
+            public int TrackID;
+
+            public Action OnGetControl;
+
+            public Action OnLoseControl;
+        }
+
         [SerializeReference] private List<IComponentData> m_ComponentData;
 
         private readonly Dictionary<Type, IComponent> m_Components = new();
 
-        private int m_SourceID;
-
-        private int m_TrackID;
+        private readonly List<Tracker> m_Trackers = new();
 
         private bool m_Initialized;
-
-        public int GetTrackID()
-        {
-            return m_TrackID;
-        }
-
-        /// <summary>
-        /// 初始化Entity，并添加到EntityManager管理，创建自定义组件。
-        /// 在Entity Awake的时候必然调用一次，也可以从对象池分配出来时时调用
-        /// </summary>
-        public void Initialize()
-        {
-            if (m_Initialized)
-            {
-                return;
-            }
-            EntityManager.RegisterEntity(this);
-            for (int i = 0; i < m_ComponentData.Count; i++)
-            {
-                IComponentData componentData = m_ComponentData[i];
-                IComponent component = componentData.CreateRuntimeInstance();
-                m_Components.Add(componentData.GetRuntimeInstanceType(), component);
-                component.SetOwner(this);
-            }
-            foreach (KeyValuePair<Type, IComponent> kvp in m_Components)
-            {
-                kvp.Value.OnAdd();
-            }
-            m_Initialized = true;
-        }
-
-        /// <summary>
-        /// 清理添加的组件，并移除EntityManager的管理。
-        /// 在Entity Destroy的时候必然调用一次，也可以在归还对象池时调用
-        /// </summary>
-        public void Dispose()
-        {
-            if (m_Initialized)
-            {
-                foreach (KeyValuePair<Type, IComponent> kvp in m_Components)
-                {
-                    kvp.Value.OnRemove();
-                }
-                m_Components.Clear();
-                TrackTargetManager.NotifyLoseControl(m_TrackID);
-                //这里UnregisterTracker，但是
-                TrackTargetManager.UnregisterTracker(m_TrackID, ActionClearModel.ClearAll);
-                EntityManager.UnregisterEntity(this);
-                m_Initialized = false;
-            }
-        }
 
         public T GetCustomComponent<T>() where T : IComponent
         {
@@ -120,16 +76,116 @@ namespace YBFramework.GameLogic
             }
         }
 
-        private void Awake()
+        public void Track(ITrackable target, Action onGetControl, Action onLoseControl)
         {
-            m_SourceID = TrackTargetManager.GenerateSourceID();
-            m_TrackID = TrackTargetManager.CombineTrackID(EntityManager.SourceID, m_SourceID);
-            Initialize();
+            if (target == null)
+            {
+                return;
+            }
+            int trackID = target.GetTrackID();
+            Tracker tracker = null;
+            for (int i = 0; i < m_Trackers.Count; i++)
+            {
+                Tracker element = m_Trackers[i];
+                if (element.TrackID == trackID)
+                {
+                    tracker = element;
+                    break;
+                }
+            }
+            if (tracker == null)
+            {
+                tracker = new Tracker
+                {
+                    TrackID = trackID
+                };
+                m_Trackers.Add(tracker);
+            }
+            tracker.OnGetControl += onGetControl;
+            tracker.OnLoseControl += onLoseControl;
         }
 
-        private void OnDestroy()
+        public void Untrack(ITrackable target, Action onGetControl, Action onLoseControl)
         {
-            Dispose();
+            if (target == null)
+            {
+                return;
+            }
+            int trackID = target.GetTrackID();
+            for (int i = 0; i < m_Trackers.Count; i++)
+            {
+                Tracker tracker = m_Trackers[i];
+                if (tracker.TrackID == trackID)
+                {
+                    tracker.OnGetControl -= onGetControl;
+                    tracker.OnLoseControl -= onLoseControl;
+                    if (tracker.OnGetControl == null && tracker.OnLoseControl == null)
+                    {
+                        m_Trackers.RemoveAt(i);
+                    }
+                }
+            }
+        }
+
+        public void UntrackAll(ITrackable target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+            int trackID = target.GetTrackID();
+            for (int i = 0; i < m_Trackers.Count; i++)
+            {
+                Tracker tracker = m_Trackers[i];
+                if (tracker.TrackID == trackID)
+                {
+                    m_Trackers.RemoveAt(i);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 初始化Entity，并添加到EntityManager管理，创建自定义组件。
+        /// 在Entity Awake的时候必然调用一次，也可以从对象池分配出来时时调用
+        /// </summary>
+        public void Initialize()
+        {
+            if (m_Initialized)
+            {
+                return;
+            }
+            EntityManager.RegisterEntity(this);
+            for (int i = 0; i < m_ComponentData.Count; i++)
+            {
+                IComponentData componentData = m_ComponentData[i];
+                IComponent component = componentData.CreateRuntimeInstance();
+                m_Components.Add(componentData.GetRuntimeInstanceType(), component);
+                component.SetOwner(this);
+            }
+            foreach (KeyValuePair<Type, IComponent> kvp in m_Components)
+            {
+                kvp.Value.OnAdd();
+            }
+            m_Initialized = true;
+        }
+
+        /// <summary>
+        /// 清理添加的组件，并移除EntityManager的管理。
+        /// 在Entity Destroy的时候必然调用一次，也可以在归还对象池时调用
+        /// </summary>
+        public void Dispose()
+        {
+            if (m_Initialized)
+            {
+                foreach (KeyValuePair<Type, IComponent> kvp in m_Components)
+                {
+                    kvp.Value.OnRemove();
+                }
+                m_Components.Clear();
+                m_Trackers.Clear();
+                EntityManager.UnregisterEntity(this);
+                m_Initialized = false;
+            }
         }
     }
 }

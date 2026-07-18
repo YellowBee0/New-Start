@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using YBFramework.Common;
 using YBFramework.GameLogic.Component;
 
 namespace YBFramework.GameLogic
@@ -13,8 +12,6 @@ namespace YBFramework.GameLogic
         private static readonly Dictionary<Entity, List<IActiveHandler>> s_ManagedActiveHandlers = new();
 
         private static readonly List<List<IUpdateHandler>> s_RunningUpdateHandlers = new();
-
-        public static readonly int SourceID = TrackTargetManager.GenerateSourceID();
 
         public static void RegisterEntity(Entity entity)
         {
