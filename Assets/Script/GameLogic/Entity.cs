@@ -6,6 +6,9 @@ using YBFramework.GameLogic.Component;
 
 namespace YBFramework.GameLogic
 {
+    //TODO:这个Entity可以直接作为一个C#类型，而不是继承MonoBehaviour，那么Entity需要得组件数据应该使用EntityAsset
+    // 保存，Entity就是一个空得GameObject作为Root，如果一个Component需要添加什么MonoBehaviour得脚本需要在
+    // IComponentData中指定预制体是哪一个，然后每次加载这个组件时实例化预制体在预制体上添加这个脚本
     public sealed class Entity : MonoBehaviour
     {
         //可以池化

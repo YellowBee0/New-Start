@@ -1,5 +1,9 @@
+#if UNITY_EDITOR
+using System;
+
 namespace YBFramework.Bridge.Editor
 {
+    [Flags]
     public enum GraphType
     {
         None = 0,
@@ -13,3 +17,4 @@ namespace YBFramework.Bridge.Editor
         Everything = Test1 | Test2 | Test3
     }
 }
+#endif
