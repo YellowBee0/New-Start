@@ -185,7 +185,8 @@ namespace YBFramework.Bridge.Editor
                         return;
                     }
                     graphAsset.Initialize();
-                    m_DrawnGraphViews.Add(graphAssetPath, graphAsset.CreateGraphView());
+                    graphView = graphAsset.CreateGraphView();
+                    m_DrawnGraphViews.Add(graphAssetPath, graphView);
                 }
                 m_MainGraphView?.RemoveFromHierarchy();
                 m_GraphContainer.Add(graphView);

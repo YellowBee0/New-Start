@@ -7,6 +7,7 @@ using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Bridge.Data
 {
+    [CreateAssetMenu(fileName = "New Graph Asset", menuName = "Graph Asset")]
     public sealed class GraphAsset : ScriptableObject
     {
         [SerializeReference] private List<BaseNodeData> m_NodeData;

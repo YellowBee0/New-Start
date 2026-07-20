@@ -49,8 +49,14 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
+        private ObjectField m_ProxyGraphAssetField;
+
         public override void Initialize()
         {
+            if (m_ProxyGraphAsset == null)
+            {
+                return;
+            }
             //确保蓝图中节点全部初始化
             m_ProxyGraphAsset.Initialize();
             //TODO:在这里查找蓝图中ProxyTargetNodeData，获取最新的数据，需要对比数据是否有改变，有改变需要针对改变的对象进行删除或者重新Clone
@@ -76,12 +82,14 @@ namespace YBFramework.Bridge.Data
         public override NodeView CreateNodeView()
         {
             NodeView nodeView = base.CreateNodeView();
-            ObjectField proxyGraphAssetField = new()
+            m_ProxyGraphAssetField = new ObjectField
             {
-                value = m_ProxyGraphAsset
+                allowSceneObjects = false,
+                value = m_ProxyGraphAsset,
+                objectType = typeof(GraphAsset)
             };
-            proxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
-            nodeView.contentContainer.Add(proxyGraphAssetField);
+            m_ProxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
+            nodeView.contentContainer.Add(m_ProxyGraphAssetField);
             return nodeView;
         }
 
@@ -93,16 +101,15 @@ namespace YBFramework.Bridge.Data
                 {
                     //TODO:需要支持Undo
                     m_ProxyGraphAsset = proxyGraphAsset;
+                    return;
                 }
-                else
-                {
-                    Debug.LogError($"This graph type:{m_GraphAsset.GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
-                }
+                Debug.LogError($"This graph type:{m_GraphAsset.GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
             }
             else
             {
                 Debug.LogError($"{evt.newValue} is not type of GraphAsset");
             }
+            m_ProxyGraphAssetField.SetValueWithoutNotify(m_ProxyGraphAsset);
         }
 #endif
     }
