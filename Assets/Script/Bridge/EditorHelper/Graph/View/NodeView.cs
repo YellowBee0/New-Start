@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
@@ -8,20 +9,27 @@ namespace YBFramework.Bridge.Editor
 {
     public sealed class NodeView : Node
     {
-        public readonly BaseNodeData NodeData;
+        public readonly BaseNodeData BindNodeData;
 
         private readonly List<PortView> m_PortViews = new();
 
-        public NodeView(BaseNodeData nodeData)
+        public NodeView(BaseNodeData bindNodeData)
         {
-            NodeData = nodeData;
+            BindNodeData = bindNodeData;
+            title = bindNodeData.Name;
+            SetPosition(new Rect(bindNodeData.Position, Vector2.one));
+        }
+
+        public IReadOnlyList<PortView> GetPortViews()
+        {
+            return m_PortViews;
         }
 
         public PortView GetPortView(int portID)
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {
-                if (m_PortViews[i].Port.PortID == portID)
+                if (m_PortViews[i].BindPortData.PortID == portID)
                 {
                     return m_PortViews[i];
                 }

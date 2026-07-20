@@ -55,9 +55,49 @@ namespace YBFramework.Bridge.Data
             }
             for (int i = 0; i < m_NodeData.Count; i++)
             {
+#if UNITY_EDITOR
+                m_NodeData[i].SetGraphAsset(this);
+#endif
                 m_NodeData[i].Initialize();
             }
             m_IsInitialized = true;
+        }
+
+        /// <summary>
+        /// 编辑器中添加一个节点数据，在蓝图编辑器中添加一个节点数据步骤：
+        /// 1、调用GraphAsset的AddNodeData，持久化数据
+        /// 2、调用NodeData的CreateNodeView，创建节点视图
+        /// 3、调用CustomGraphView的AddNodeView，添加节点视图
+        /// 示例可参考NodeSearchEntry的OnSelectEntry实现
+        /// </summary>
+        /// <param name="nodeData">添加的节点数据</param>
+        public void AddNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData.Add(nodeData);
+        }
+
+        /// <summary>
+        /// 编辑器中移除一个节点数据，在蓝图编辑器中添加一个节点数据步骤：
+        /// 1、调用GraphAsset的RemoveNodeData，移除持久化的数据
+        /// 2、调用CustomGraphView的RemoveNodeView，移除节点视图
+        /// 示例可参考CustomGraphView的OnGraphViewChanged实现
+        /// 但是示例里在移除一个节点时会连着节点的连线一起移除（不止视图还有持久化数据，所以这里就不需要找这个节点连接的数据然后在移除），所以这并不是完整流程
+        /// </summary>
+        /// <param name="nodeData">移除的节点数据</param>
+        public void RemoveNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData.Remove(nodeData);
+        }
+
+        public CustomGraphView CreateGraphView()
+        {
+            CustomGraphView graphView = new(this, NodeSearchEntry.GetSearchEntry(m_GraphType));
+            for (int i = 0; i < m_NodeData.Count; i++)
+            {
+                NodeView nodeView = m_NodeData[i].CreateNodeView();
+                graphView.AddNodeView(nodeView);
+            }
+            return graphView;
         }
 
         private void OnDisable()

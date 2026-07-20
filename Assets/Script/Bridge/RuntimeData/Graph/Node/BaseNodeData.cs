@@ -37,12 +37,22 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
-        public Vector2 Position;
-
+        protected GraphAsset m_GraphAsset;
+        
         public string Name;
+
+        public Vector2 Position;
 
         public int SourcePortID;
 
+        public void SetGraphAsset(GraphAsset graphAsset)
+        {
+            m_GraphAsset = graphAsset;
+        }
+
+        /// <summary>
+        /// 初始化节点数据，初始化的数据不会持久化。该函数总是在创建节点视图或者使用节点API之前调用
+        /// </summary>
         public virtual void Initialize()
         {
             foreach (BasePortData portData in (IValueIterator<BasePortData>)this)

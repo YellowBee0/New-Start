@@ -5,13 +5,15 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
+using YBFramework.Common;
 
 namespace YBFramework.Bridge.Editor
 {
     public sealed class NodeSearchEntry : ScriptableObject, ISearchWindowProvider
     {
-#region Node search tree initialize
+        #region Node search tree initialize
         private sealed class NodeMenuBranch : NodeMenuOption
         {
             private readonly List<NodeMenuOption> m_Options = new();
@@ -82,7 +84,7 @@ namespace YBFramework.Bridge.Editor
             }
         }
 
-        public NodeSearchEntry GetSearchEntry(GraphType graphType)
+        public static NodeSearchEntry GetSearchEntry(GraphType graphType)
         {
             if (!s_NodeSearchEntries.TryGetValue(graphType, out NodeSearchEntry nodeSearchEntry))
             {
@@ -193,7 +195,7 @@ namespace YBFramework.Bridge.Editor
             }
             return hasAddToResult;
         }
-#endregion
+        #endregion
 
         private List<SearchTreeEntry> m_SearchTreeEntries;
 
@@ -205,8 +207,46 @@ namespace YBFramework.Bridge.Editor
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
             CustomGraphView mainGraphView = GraphWindow.GetInstance().GetMainGraphView();
-            mainGraphView?.CreateNodeView(GetSelectNodeMetaData(SearchTreeEntry.name));
-            return true;
+            if (mainGraphView != null)
+            {
+                (Type nodeType, IEnumerable<NodeCreateLimitAttribute> createLimits) nodeMetaData = GetSelectNodeMetaData(SearchTreeEntry.name);
+                if (nodeMetaData.nodeType != null)
+                {
+                    foreach (NodeCreateLimitAttribute nodeCreateLimitAttribute in nodeMetaData.createLimits)
+                    {
+                        if (!nodeCreateLimitAttribute.CanCreate(mainGraphView.BindGraphAsset, nodeMetaData.nodeType))
+                        {
+                            return false;
+                        }
+                    }
+                    //TODO:需要支持Undo
+                    if (Activator.CreateInstance(nodeMetaData.nodeType) is BaseNodeData nodeData)
+                    {
+                        VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
+                        Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
+                        //创建节点时初始话节点名和位置
+                        nodeData.Name = SearchTreeEntry.name;
+                        nodeData.Position = mainGraphView.contentViewContainer.WorldToLocal(worldPos);
+                        //使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
+                        //存在持久化数据
+                        nodeData.NodeID = ++mainGraphView.BindGraphAsset.SourceNodeID;
+                        //端口同理
+                        //存在持久化数据
+                        foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
+                        {
+                            portData.PortID = ++nodeData.SourcePortID;
+                        }
+                        //调用初始化
+                        nodeData.Initialize();
+                        //添加数据
+                        //存在持久化数据
+                        mainGraphView.BindGraphAsset.AddNodeData(nodeData);
+                        mainGraphView.AddNodeView(nodeData.CreateNodeView());
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

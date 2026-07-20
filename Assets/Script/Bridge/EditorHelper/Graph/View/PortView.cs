@@ -18,8 +18,8 @@ namespace YBFramework.Bridge.Editor
             {
                 PortView inputPortView = (PortView)edge.input;
                 PortView outputPortView = (PortView)edge.output;
-                bool isInputCanConnectOutput = inputPortView.Port.CanConnect(outputPortView.Port);
-                bool isOutputCanConnectInput = outputPortView.Port.CanConnect(inputPortView.Port);
+                bool isInputCanConnectOutput = inputPortView.BindPortData.CanConnect(outputPortView.BindPortData);
+                bool isOutputCanConnectInput = outputPortView.BindPortData.CanConnect(inputPortView.BindPortData);
                 if (isInputCanConnectOutput ^ isOutputCanConnectInput)
                 {
                     if (isInputCanConnectOutput)
@@ -51,35 +51,61 @@ namespace YBFramework.Bridge.Editor
                 graphView.AddElement(edge);
                 inputPortView.Connect(edge);
                 outputPortView.Connect(edge);
-                //判断是否为单连接，单连接需要断开连线在连接
             }
         }
 
-        public readonly BasePortData Port;
+        public readonly BasePortData BindPortData;
 
-        public readonly Action OnConnect;
-        
-        public readonly Action OnDisconnect;
+        private Action m_OnConnect;
 
-        public PortView(BasePortData port, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
+        private Action m_OnDisconnect;
+
+        public PortView(BasePortData bindPortData, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
         {
-            Port = port;
+            BindPortData = bindPortData;
             portName = name;
             portColor = color;
             m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());
         }
 
+        public void RegisterOnConnectCallback(Action onConnect)
+        {
+            if (onConnect != null)
+            {
+                m_OnConnect += onConnect;
+            }
+        }
+
+        public void RegisterOnDisconnectCallback(Action onDisconnect)
+        {
+            if (onDisconnect != null)
+            {
+                m_OnDisconnect += onDisconnect;
+            }
+        }
+        
+        public void UnregisterOnConnectCallback(Action onConnect)
+        {
+            m_OnConnect -= onConnect;
+        }
+
+        public void UnregisterOnDisconnectCallback(Action onDisconnect)
+        {
+            m_OnDisconnect -= onDisconnect;
+        }
+        
         public override void Connect(Edge edge)
         {
             base.Connect(edge);
-            OnConnect?.Invoke();
-            //TODO:判断谁是当前对象谁是连接对象，在判断是谁连接谁
+            m_OnConnect?.Invoke();
+            //TODO:判断谁是当前对象谁是连接对象，在判断是谁连接谁。在这里添加连线数据
         }
 
         public override void Disconnect(Edge edge)
         {
             base.Disconnect(edge);
-            OnDisconnect?.Invoke();
+            m_OnDisconnect?.Invoke();
+            //TODO:在这移除连线数据
         }
     }
 }

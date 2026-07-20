@@ -11,21 +11,9 @@ namespace YBFramework.GameLogic
     // IComponentData中指定预制体是哪一个，然后每次加载这个组件时实例化预制体在预制体上添加这个脚本
     public sealed class Entity : MonoBehaviour
     {
-        //可以池化
-        private sealed class Tracker
-        {
-            public int TrackID;
-
-            public Action OnGetControl;
-
-            public Action OnLoseControl;
-        }
-
         [SerializeReference] private List<IComponentData> m_ComponentData;
 
         private readonly Dictionary<Type, IComponent> m_Components = new();
-
-        private readonly List<Tracker> m_Trackers = new();
 
         private bool m_Initialized;
 
@@ -79,74 +67,6 @@ namespace YBFramework.GameLogic
             }
         }
 
-        public void Track(ITrackable target, Action onGetControl, Action onLoseControl)
-        {
-            if (target == null)
-            {
-                return;
-            }
-            int trackID = target.GetTrackID();
-            Tracker tracker = null;
-            for (int i = 0; i < m_Trackers.Count; i++)
-            {
-                Tracker element = m_Trackers[i];
-                if (element.TrackID == trackID)
-                {
-                    tracker = element;
-                    break;
-                }
-            }
-            if (tracker == null)
-            {
-                tracker = new Tracker
-                {
-                    TrackID = trackID
-                };
-                m_Trackers.Add(tracker);
-            }
-            tracker.OnGetControl += onGetControl;
-            tracker.OnLoseControl += onLoseControl;
-        }
-
-        public void Untrack(ITrackable target, Action onGetControl, Action onLoseControl)
-        {
-            if (target == null)
-            {
-                return;
-            }
-            int trackID = target.GetTrackID();
-            for (int i = 0; i < m_Trackers.Count; i++)
-            {
-                Tracker tracker = m_Trackers[i];
-                if (tracker.TrackID == trackID)
-                {
-                    tracker.OnGetControl -= onGetControl;
-                    tracker.OnLoseControl -= onLoseControl;
-                    if (tracker.OnGetControl == null && tracker.OnLoseControl == null)
-                    {
-                        m_Trackers.RemoveAt(i);
-                    }
-                }
-            }
-        }
-
-        public void UntrackAll(ITrackable target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-            int trackID = target.GetTrackID();
-            for (int i = 0; i < m_Trackers.Count; i++)
-            {
-                Tracker tracker = m_Trackers[i];
-                if (tracker.TrackID == trackID)
-                {
-                    m_Trackers.RemoveAt(i);
-                }
-            }
-        }
-        
         /// <summary>
         /// 初始化Entity，并添加到EntityManager管理，创建自定义组件。
         /// 在Entity Awake的时候必然调用一次，也可以从对象池分配出来时时调用
@@ -185,7 +105,6 @@ namespace YBFramework.GameLogic
                     kvp.Value.OnRemove();
                 }
                 m_Components.Clear();
-                m_Trackers.Clear();
                 EntityManager.UnregisterEntity(this);
                 m_Initialized = false;
             }
