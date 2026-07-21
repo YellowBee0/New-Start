@@ -3,18 +3,30 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.UIElements;
+using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
+#if UNITY_EDITOR
+    [NodeMenu("代理端口集合", GraphType.Everything)]
+    [NodeExistCountLimit(2)]
+#endif
     public sealed class ProxyTargetNodeData : BaseNodeData
     {
         [SerializeField] private List<ProxyTargetPortData> m_ProxyTargetPortData;
 
+        [FormerlySerializedAs("m_IsProxyInput")] [SerializeField]
+        public bool IsProxyInput;
+
+        private Toggle m_IsProxyInputToggle;
+
         public override BaseNode CreateRuntimeInstance()
         {
-            return null;
+            throw new Exception("Proxy target node can not create runtime node");
         }
 
         public override bool Iterator(int index, out BasePortData current)

@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using UnityEngine.UIElements;
-using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
 namespace YBFramework.Bridge.Data
@@ -41,23 +39,6 @@ namespace YBFramework.Bridge.Data
         public override BasePortData Clone()
         {
             throw new Exception("this port can not clone for proxy port");
-        }
-
-        public override VisualElement CreatePortContentView(out PortView portView)
-        {
-            VisualElement portContentView = base.CreatePortContentView(out portView);
-            TextField proxyNameField = new()
-            {
-                value = ProxyName
-            };
-            proxyNameField.RegisterValueChangedCallback(OnProxyNameChange);
-            portContentView.Add(proxyNameField);
-            return portContentView;
-        }
-
-        private void OnProxyNameChange(ChangeEvent<string> evt)
-        {
-            ProxyName = evt.newValue;
         }
     }
 }

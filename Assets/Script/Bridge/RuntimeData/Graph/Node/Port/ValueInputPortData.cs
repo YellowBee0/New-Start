@@ -1,7 +1,9 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace YBFramework.Bridge.Data
 {

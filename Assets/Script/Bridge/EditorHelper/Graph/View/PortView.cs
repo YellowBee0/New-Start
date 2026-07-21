@@ -2,6 +2,7 @@
 using System;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
 namespace YBFramework.Bridge.Editor
@@ -24,33 +25,57 @@ namespace YBFramework.Bridge.Editor
                 {
                     if (isInputCanConnectOutput)
                     {
-                        Debug.LogError("Both port can connect other,we can not know witch one to connect");
+                        Debug.LogError("This can not know witch one to connect because of both port can connect to other port");
                     }
                     return;
                 }
+                Edge singleConnectionToRemove = null;
                 if (inputPortView.capacity == Capacity.Single)
                 {
-                    foreach (Edge connection in edge.input.connections)
+                    foreach (Edge connection in inputPortView.connections)
                     {
                         if (connection != edge)
                         {
-                            inputPortView.Disconnect(connection);
+                            singleConnectionToRemove = connection;
+
+                            break;
                         }
                     }
                 }
                 if (outputPortView.capacity == Capacity.Single)
                 {
-                    foreach (Edge connection in edge.output.connections)
+                    foreach (Edge connection in outputPortView.connections)
                     {
                         if (connection != edge)
                         {
-                            outputPortView.Disconnect(connection);
+                            singleConnectionToRemove = connection;
+                            break;
                         }
                     }
                 }
-                graphView.AddElement(edge);
+                if (singleConnectionToRemove != null)
+                {
+                    PortView toRemoveInputPortView = (PortView)singleConnectionToRemove.input;
+                    PortView toRemoveOutputPortView = (PortView)singleConnectionToRemove.output;
+                    //区分不了这条连线是输入端口发起的连接还是输出端口发起的连接，所以直接调用两个的Disconnect
+                    toRemoveInputPortView.BindPortData.Disconnect(toRemoveOutputPortView.BindPortData);
+                    toRemoveOutputPortView.BindPortData.Disconnect(toRemoveInputPortView.BindPortData);
+                    //视图上是必须两个端口都调用Disconnect
+                    toRemoveInputPortView.Disconnect(singleConnectionToRemove);
+                    toRemoveOutputPortView.Disconnect(singleConnectionToRemove);
+                    graphView.RemoveElement(singleConnectionToRemove);
+                }
+                if (isInputCanConnectOutput)
+                {
+                    inputPortView.BindPortData.Connect(outputPortView.BindPortData);
+                }
+                else
+                {
+                    outputPortView.BindPortData.Connect(inputPortView.BindPortData);
+                }
                 inputPortView.Connect(edge);
                 outputPortView.Connect(edge);
+                graphView.AddElement(edge);
             }
         }
 
@@ -66,6 +91,7 @@ namespace YBFramework.Bridge.Editor
             portName = name;
             portColor = color;
             m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());
+            this.AddManipulator(m_EdgeConnector);
         }
 
         public void RegisterOnConnectCallback(Action onConnect)
@@ -83,7 +109,7 @@ namespace YBFramework.Bridge.Editor
                 m_OnDisconnect += onDisconnect;
             }
         }
-        
+
         public void UnregisterOnConnectCallback(Action onConnect)
         {
             m_OnConnect -= onConnect;
@@ -93,19 +119,27 @@ namespace YBFramework.Bridge.Editor
         {
             m_OnDisconnect -= onDisconnect;
         }
-        
+
+        /// <summary>
+        /// PortView视图上连接连线，如果数据也得修改，需要一起调用BindPortData的Connect函数
+        /// </summary>
+        /// <param name="edge">连线</param>
         public override void Connect(Edge edge)
         {
             base.Connect(edge);
             m_OnConnect?.Invoke();
-            //TODO:判断谁是当前对象谁是连接对象，在判断是谁连接谁。在这里添加连线数据
+            //不在这里持久化连线数据的原因：通过已经存在的连线数据恢复连线时也是调用这个函数，如果持久化数据会导致重复连接
         }
 
+        /// <summary>
+        /// PortView视图上断开连线，如果数据也得修改，需要一起调用BindPortData的Disconnect函数
+        /// </summary>
+        /// <param name="edge">连线</param>
         public override void Disconnect(Edge edge)
         {
             base.Disconnect(edge);
             m_OnDisconnect?.Invoke();
-            //TODO:在这移除连线数据
+            //不在这里持久化连线数据的原因：为了对齐连接函数
         }
     }
 }

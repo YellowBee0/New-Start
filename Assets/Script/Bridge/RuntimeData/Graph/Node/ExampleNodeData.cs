@@ -1,11 +1,16 @@
 ﻿using System;
 using UnityEngine;
-using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
+#if UNITY_EDITOR
+using YBFramework.Bridge.Editor;
+#endif
 
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
+#if UNITY_EDITOR
+    [NodeMenu("示例", GraphType.Everything)]
+#endif
     public sealed class ExampleNodeData : BaseNodeData
     {
         [SerializeField] private ValueInputPortData<string> m_StringInputTest;

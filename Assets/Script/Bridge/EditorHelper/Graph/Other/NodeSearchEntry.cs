@@ -236,11 +236,11 @@ namespace YBFramework.Bridge.Editor
                         {
                             portData.PortID = ++nodeData.SourcePortID;
                         }
-                        //调用初始化
-                        nodeData.Initialize();
                         //添加数据
                         //存在持久化数据
                         mainGraphView.BindGraphAsset.AddNodeData(nodeData);
+                        //调用初始化
+                        nodeData.Initialize();
                         mainGraphView.AddNodeView(nodeData.CreateNodeView());
                         return true;
                     }

@@ -6,7 +6,6 @@ using YBFramework.Bridge.Editor;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
 #endif
 
 namespace YBFramework.Bridge.Data
@@ -15,6 +14,8 @@ namespace YBFramework.Bridge.Data
     public abstract class BasePortData : IValueIterator<PortConnectionData>
     {
         public int PortID;
+
+        public bool IsUsed;
 
         public abstract BasePort CreateRuntimeInstance();
 
@@ -40,7 +41,7 @@ namespace YBFramework.Bridge.Data
         {
             m_NodeData = nodeData;
         }
-        
+
         public virtual PortViewArgs GetPortViewArgs()
         {
             return m_PortViewArgs;
@@ -94,12 +95,6 @@ namespace YBFramework.Bridge.Data
             m_PortViewArgs = new PortViewArgs(name, direction, capacity, color);
         }
 
-        public virtual VisualElement CreatePortContentView(out PortView portView)
-        {
-            portView = new PortView(this, m_PortViewArgs.Name, m_PortViewArgs.Direction, m_PortViewArgs.Capacity, m_PortViewArgs.Color);
-            return portView;
-        }
-
         public virtual bool CanConnect(BasePortData other)
         {
             return GetPortConnectionData(other.m_NodeData.NodeID, other.PortID) == null;
@@ -107,6 +102,7 @@ namespace YBFramework.Bridge.Data
 
         public virtual void Connect(BasePortData other)
         {
+            other.IsUsed = true;
             other.m_PortConnectionDataFromOther.Add(new PortConnectionData
             {
                 NodeID = m_NodeData.NodeID,
@@ -122,6 +118,10 @@ namespace YBFramework.Bridge.Data
                 if (portConnectionData.NodeID == m_NodeData.NodeID && portConnectionData.PortID == PortID)
                 {
                     other.m_PortConnectionDataFromOther.RemoveAt(i);
+                    if (other.GetPortConnectionDataCount() == 0)
+                    {
+                        other.IsUsed = false;
+                    }
                     return;
                 }
             }
@@ -161,6 +161,15 @@ namespace YBFramework.Bridge.Data
         public abstract int GetPortConnectionDataCountFromSelf();
 
         public abstract BasePortData Clone();
+
+        /// <summary>
+        /// 用于代理端口从真实的端口获取不可序列化的数据，比如绘制参数PortViewArgs，MethodPortData的MethodInfo
+        /// </summary>
+        /// <param name="dataToMerge">代理目标</param>
+        public virtual void MergeData(BasePortData dataToMerge)
+        {
+            m_PortViewArgs = dataToMerge.m_PortViewArgs;
+        }
 #endif
     }
 }

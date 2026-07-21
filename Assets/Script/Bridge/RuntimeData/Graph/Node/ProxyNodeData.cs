@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using Object = UnityEngine.Object;
-using UnityEditor.UIElements;
-using UnityEngine.UIElements;
 using YBFramework.Bridge.Editor;
 #endif
 
@@ -13,22 +10,22 @@ namespace YBFramework.Bridge.Data
 {
     [Serializable]
 #if UNITY_EDITOR
-    [NodeMenu("代理节点", GraphType.Everything)]
+    [NodeMenu("蓝图代理", GraphType.Everything)]
 #endif
     public sealed class ProxyNodeData : BaseNodeData
     {
-        [SerializeField] private List<ProxyPortData> m_ProxyPortData;
+        [SerializeField] public List<ProxyPortData> ProxyPortData;
 
-        [SerializeField] private GraphAsset m_ProxyGraphAsset;
+        [SerializeField] public GraphAsset ProxyGraphAsset;
 
         public GraphAsset GetGraphAsset()
         {
-            return m_ProxyGraphAsset;
+            return ProxyGraphAsset;
         }
 
         public IReadOnlyList<ProxyPortData> GetProxyPortData()
         {
-            return m_ProxyPortData;
+            return ProxyPortData;
         }
 
         public override BaseNode CreateRuntimeInstance()
@@ -40,25 +37,32 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (m_ProxyPortData != null && index < m_ProxyPortData.Count)
+            if (ProxyPortData != null && index < ProxyPortData.Count)
             {
-                current = m_ProxyPortData[index];
+                current = ProxyPortData[index];
                 return true;
             }
             current = null;
             return false;
         }
 #if UNITY_EDITOR
-        private ObjectField m_ProxyGraphAssetField;
-
         public override void Initialize()
         {
-            if (m_ProxyGraphAsset == null)
+            if (ProxyGraphAsset == null)
             {
                 return;
             }
             //确保蓝图中节点全部初始化
-            m_ProxyGraphAsset.Initialize();
+            ProxyGraphAsset.Initialize();
+
+            IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodeData();
+            for (int i = 0; i < nodeData.Count; i++)
+            {
+                if (nodeData[i] is ProxyTargetNodeData proxyTargetNodeData)
+                {
+                }
+            }
+
             //TODO:在这里查找蓝图中ProxyTargetNodeData，获取最新的数据，需要对比数据是否有改变，有改变需要针对改变的对象进行删除或者重新Clone
             /*foreach (ProxyPortData proxyPortData in m_ProxyPortData)
             {
@@ -77,39 +81,6 @@ namespace YBFramework.Bridge.Data
                 }
                 proxyPortData.SetProxyTargetPortData(portData);
             }*/
-        }
-
-        public override NodeView CreateNodeView()
-        {
-            NodeView nodeView = base.CreateNodeView();
-            m_ProxyGraphAssetField = new ObjectField
-            {
-                allowSceneObjects = false,
-                value = m_ProxyGraphAsset,
-                objectType = typeof(GraphAsset)
-            };
-            m_ProxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
-            nodeView.contentContainer.Add(m_ProxyGraphAssetField);
-            return nodeView;
-        }
-
-        private void OnProxyGraphAssetChanged(ChangeEvent<Object> evt)
-        {
-            if (evt.newValue is GraphAsset proxyGraphAsset)
-            {
-                if ((m_GraphAsset.GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
-                {
-                    //TODO:需要支持Undo
-                    m_ProxyGraphAsset = proxyGraphAsset;
-                    return;
-                }
-                Debug.LogError($"This graph type:{m_GraphAsset.GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
-            }
-            else
-            {
-                Debug.LogError($"{evt.newValue} is not type of GraphAsset");
-            }
-            m_ProxyGraphAssetField.SetValueWithoutNotify(m_ProxyGraphAsset);
         }
 #endif
     }

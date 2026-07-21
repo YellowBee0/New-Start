@@ -47,8 +47,13 @@ namespace YBFramework.Bridge.Editor
                     }
                     else if (changeValue.elementsToRemove[i] is Edge edge)
                     {
+                        PortView inputPortView = (PortView)edge.input;
+                        PortView outputPortView = (PortView)edge.output;
+                        inputPortView.BindPortData.Disconnect(outputPortView.BindPortData);
+                        outputPortView.BindPortData.Disconnect(inputPortView.BindPortData);
+                        edge.input.Disconnect(edge);
                         edge.output.Disconnect(edge);
-                        edge.output.Disconnect(edge);
+                        Remove(edge);
                     }
                 }
             }

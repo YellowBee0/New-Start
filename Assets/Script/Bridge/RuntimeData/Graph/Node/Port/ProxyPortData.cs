@@ -1,9 +1,8 @@
 ﻿using System;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using UnityEngine.UIElements;
+using UnityEditor.Experimental.GraphView;
 using YBFramework.Bridge.Editor;
 #endif
 
@@ -12,7 +11,7 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class ProxyPortData : BasePortData
     {
-        [SerializeReference] private BasePortData m_ProxyPortData;
+        [SerializeReference] public BasePortData m_ProxyPortData;
 
         [SerializeField] private PortConnectionData m_ProxyTargetPortAddress;
 
@@ -46,24 +45,22 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        //TODO:设置这个名字
-        private string m_ProxyTargetPortName;
-
-        private BasePortData m_ProxyTargetPortData;
-
         //节点初始化的时候调用
-        public void SetProxyTargetPortData(BasePortData proxyTargetPortDat)
+        public void SetProxyTargetPortData(BasePortData proxyTargetPortDat, string name)
         {
-            m_ProxyTargetPortData = proxyTargetPortDat;
+            m_ProxyPortData.MergeData(proxyTargetPortDat);
+            //m_ProxyPortData.SetPortViewArgs(name); 设置端口名
         }
 
         public override PortViewArgs GetPortViewArgs()
         {
-            return m_ProxyTargetPortData.GetPortViewArgs();
+            return m_ProxyPortData.GetPortViewArgs();
         }
 
+        //TODO:
         public override void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
         {
+            Debug.LogWarning("It is useless to set proxy port's port view ");
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
@@ -88,13 +85,6 @@ namespace YBFramework.Bridge.Data
                 }
             };
             return proxyPortData;
-        }
-
-        public override VisualElement CreatePortContentView(out PortView portView)
-        {
-            VisualElement portContentView = m_ProxyTargetPortData.CreatePortContentView(out portView);
-            portView.portName = m_ProxyTargetPortName;
-            return portContentView;
         }
 #endif
     }

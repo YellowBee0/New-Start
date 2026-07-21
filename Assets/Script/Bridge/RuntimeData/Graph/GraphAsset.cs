@@ -2,6 +2,7 @@
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
+using UnityEditor;
 using YBFramework.Bridge.Editor;
 #endif
 
@@ -37,11 +38,27 @@ namespace YBFramework.Bridge.Data
             return graph;
         }
 #if UNITY_EDITOR
+        private SerializedObject m_SerializedObject;
+
+        private SerializedProperty m_NodeDataListProperty;
+
         [SerializeField] private GraphType m_GraphType;
+
+        private bool m_IsInitialized;
 
         public int SourceNodeID;
 
-        private bool m_IsInitialized;
+        public SerializedProperty GetSerializedProperty(BaseNodeData nodeData, string fieldPath)
+        {
+            for (int i = 0; i < m_NodeData.Count; i++)
+            {
+                if (m_NodeData[i] == nodeData)
+                {
+                    return m_NodeDataListProperty.FindPropertyRelative($"data[{i}].fieldPath");
+                }
+            }
+            return null;
+        }
 
         public GraphType GetGraphType()
         {
@@ -57,7 +74,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < m_NodeData.Count; i++)
             {
 #if UNITY_EDITOR
-                m_NodeData[i].SetGraphAsset(this);
+                m_NodeData[i].GraphAsset = this;
 #endif
                 m_NodeData[i].Initialize();
             }
@@ -75,6 +92,7 @@ namespace YBFramework.Bridge.Data
         public void AddNodeData(BaseNodeData nodeData)
         {
             m_NodeData.Add(nodeData);
+            nodeData.GraphAsset = this;
         }
 
         /// <summary>
@@ -92,6 +110,8 @@ namespace YBFramework.Bridge.Data
 
         public CustomGraphView CreateGraphView()
         {
+            m_SerializedObject = new SerializedObject(this);
+            m_NodeDataListProperty = m_SerializedObject.FindProperty("m_NodeData");
             CustomGraphView graphView = new(this, NodeSearchEntry.GetSearchEntry(m_GraphType));
             for (int i = 0; i < m_NodeData.Count; i++)
             {

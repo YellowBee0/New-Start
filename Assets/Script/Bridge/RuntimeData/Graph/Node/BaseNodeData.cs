@@ -1,11 +1,8 @@
 ﻿using System;
-using UnityEditor.Experimental.GraphView;
 using YBFramework.Common;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using UnityEngine;
-using UnityEngine.UIElements;
-using YBFramework.Bridge.Editor;
 #endif
 
 namespace YBFramework.Bridge.Data
@@ -37,18 +34,13 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
-        protected GraphAsset m_GraphAsset;
-        
+        [NonSerialized] public GraphAsset GraphAsset;
+
         public string Name;
 
         public Vector2 Position;
 
         public int SourcePortID;
-
-        public void SetGraphAsset(GraphAsset graphAsset)
-        {
-            m_GraphAsset = graphAsset;
-        }
 
         /// <summary>
         /// 初始化节点数据，初始化的数据不会持久化。该函数总是在创建节点视图或者使用节点API之前调用
@@ -59,27 +51,6 @@ namespace YBFramework.Bridge.Data
             {
                 portData.SetNodeData(this);
             }
-        }
-
-        public virtual NodeView CreateNodeView()
-        {
-            NodeView nodeView = new(this);
-            foreach (BasePortData portData in (IValueIterator<BasePortData>)this)
-            {
-                VisualElement visualElement = portData.CreatePortContentView(out PortView portView);
-                PortViewArgs portViewArgs = portData.GetPortViewArgs();
-                if (portViewArgs.Direction == Direction.Input)
-                {
-                    nodeView.inputContainer.Add(visualElement);
-                }
-                else
-                {
-                    nodeView.outputContainer.Add(visualElement);
-                }
-                nodeView.Add(portView);
-            }
-            nodeView.RefreshPortContainerDisplay();
-            return nodeView;
         }
 #endif
     }

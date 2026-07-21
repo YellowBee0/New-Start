@@ -31,14 +31,17 @@ namespace YBFramework.GameLogic.Graph
                 //轮询节点中参与连线的端口数据
                 foreach (BasePortData portData in (IValueIterator<BasePortData>)data)
                 {
-                    //两次查找
-                    BasePort fromPort = fromNode.GetPort(portData.PortID);
-                    //通过端口数据连接运行时
-                    foreach (PortConnectionData portConnectionData in (IValueIterator<PortConnectionData>)portData)
+                    if (portData.IsUsed)
                     {
-                        //三、四次查找
-                        BasePort toPort = GetNode(portConnectionData.NodeID).GetPort(portConnectionData.PortID);
-                        fromPort.ConnectPort(portConnectionData, toPort.GetActualToConnectPort());
+                        //两次查找
+                        BasePort fromPort = fromNode.GetPort(portData.PortID);
+                        //通过端口数据连接运行时
+                        foreach (PortConnectionData portConnectionData in (IValueIterator<PortConnectionData>)portData)
+                        {
+                            //三、四次查找
+                            BasePort toPort = GetNode(portConnectionData.NodeID).GetPort(portConnectionData.PortID);
+                            fromPort.ConnectPort(portConnectionData, toPort.GetActualToConnectPort());
+                        }
                     }
                 }
             }
