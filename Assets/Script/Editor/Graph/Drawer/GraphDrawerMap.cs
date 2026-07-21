@@ -22,6 +22,7 @@ namespace YBFramework.Editor
             if (m_GraphDrawers.Count > 0)
             {
                 Debug.Log("Graph drawer map has initialized");
+                return;
             }
             TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<GraphDrawerAttribute>();
             for (int i = 0; i < types.Count; i++)
