@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
@@ -12,7 +11,7 @@ namespace YBFramework.Editor
     {
         public virtual NodeView CreateNodeView(BaseNodeData nodeData, SerializedProperty serializedProperty)
         {
-            NodeView nodeView = new(nodeData);
+            NodeView nodeView = new(nodeData, this);
             //不使用原本的SerializedProperty进行轮询的原因：SerializedProperty轮询后不能回到起始位置，只能在最后一个SerializedProperty位置，这会导致用不到根SerializedProperty
             SerializedProperty serializedPropertyCopy = serializedProperty.Copy();
             while (serializedPropertyCopy.NextVisible(false))
@@ -21,20 +20,21 @@ namespace YBFramework.Editor
                 if (serializedPropertyCopy.boxedValue is BasePortData portData)
                 {
                     BasePortData actualPortData = nodeData.GetPortData(portData.PortID);
-                    //TODO:获取端口绘制器
-                    Type drawerType = GraphDrawerMap.GetInstance().GetDrawerType(actualPortData.GetType());
-                    BasePortDrawer portDrawer = Activator.CreateInstance(drawerType) as BasePortDrawer;
-                    VisualElement visualElement = portDrawer!.CreatePortContentView(actualPortData, serializedPropertyCopy, out PortView portView);
-                    PortViewArgs portViewArgs = portData.GetPortViewArgs();
-                    if (portViewArgs.Direction == Direction.Input)
+                    BasePortDrawer portDrawer = GraphDrawerMap.GetInstance().GetPortDrawer(actualPortData.GetType());
+                    if (portDrawer != null)
                     {
-                        nodeView.inputContainer.Add(visualElement);
+                        VisualElement visualElement = portDrawer.CreatePortContentView(actualPortData, serializedPropertyCopy, out PortView portView);
+                        PortViewArgs portViewArgs = portData.GetPortViewArgs();
+                        if (portViewArgs.Direction == Direction.Input)
+                        {
+                            nodeView.inputContainer.Add(visualElement);
+                        }
+                        else
+                        {
+                            nodeView.outputContainer.Add(visualElement);
+                        }
+                        nodeView.Add(portView);
                     }
-                    else
-                    {
-                        nodeView.outputContainer.Add(visualElement);
-                    }
-                    nodeView.Add(portView);
                 }
             }
             nodeView.RefreshPortContainerDisplay();

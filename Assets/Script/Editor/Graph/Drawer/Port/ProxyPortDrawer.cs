@@ -1,8 +1,6 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Editor
 {
@@ -13,9 +11,13 @@ namespace YBFramework.Editor
         {
             ProxyPortData proxyPortData = (ProxyPortData)portData;
             //TODO:获取端口绘制器
-            Type drawerType = GraphDrawerMap.GetInstance().GetDrawerType(proxyPortData.m_ProxyPortData.GetType());
-            BasePortDrawer portDrawer = Activator.CreateInstance(drawerType) as BasePortDrawer;
-            return portDrawer!.CreatePortContentView(proxyPortData.m_ProxyPortData, serializedProperty.FindPropertyRelative("m_ProxyPortData"), out portView);
+            BasePortDrawer portDrawer = GraphDrawerMap.GetInstance().GetPortDrawer(proxyPortData.m_ProxyPortData.GetType());
+            if (portDrawer != null)
+            {
+                return portDrawer!.CreatePortContentView(proxyPortData.m_ProxyPortData, serializedProperty.FindPropertyRelative("m_ProxyPortData"), out portView);
+            }
+            portView = null;
+            return null;
         }
     }
 }

@@ -1,19 +1,20 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Bridge.Editor
+namespace YBFramework.Editor
 {
     public sealed class NodeView : Node
     {
         public readonly BaseNodeData BindNodeData;
 
         private readonly List<PortView> m_PortViews = new();
+        
+        private readonly BaseNodeDrawer m_NodeDrawer;
 
-        public NodeView(BaseNodeData bindNodeData)
+        public NodeView(BaseNodeData bindNodeData,BaseNodeDrawer nodeDrawer)
         {
             BindNodeData = bindNodeData;
             title = bindNodeData.Name;
@@ -61,4 +62,3 @@ namespace YBFramework.Bridge.Editor
         }
     }
 }
-#endif

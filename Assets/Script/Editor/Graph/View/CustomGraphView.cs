@@ -1,10 +1,9 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Bridge.Editor
+namespace YBFramework.Editor
 {
     public sealed class CustomGraphView : GraphView
     {
@@ -16,10 +15,13 @@ namespace YBFramework.Bridge.Editor
 
         private readonly List<Port> m_CompatiblePorts = new();
 
-        public CustomGraphView(GraphAsset bindGraphAsset, NodeSearchEntry nodeSearchEntry)
+        private readonly GraphDrawer m_GraphDrawer;
+
+        public CustomGraphView(GraphAsset bindGraphAsset, NodeSearchEntry nodeSearchEntry, GraphDrawer graphDrawer)
         {
             BindGraphAsset = bindGraphAsset;
             m_NodeSearchEntry = nodeSearchEntry;
+            m_GraphDrawer = graphDrawer;
             nodeCreationRequest = ShowNodeSearchView;
             graphViewChanged += OnGraphViewChanged;
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
@@ -119,6 +121,9 @@ namespace YBFramework.Bridge.Editor
             }
             return m_CompatiblePorts;
         }
+
+        public void OnDispose()
+        {
+        }
     }
 }
-#endif

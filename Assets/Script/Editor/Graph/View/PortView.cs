@@ -1,11 +1,10 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Bridge.Editor
+namespace YBFramework.Editor
 {
     public sealed class PortView : Port
     {
@@ -81,13 +80,17 @@ namespace YBFramework.Bridge.Editor
 
         public readonly BasePortData BindPortData;
 
+        private readonly BasePortDrawer m_PortDrawer;
+
         private Action m_OnConnect;
 
         private Action m_OnDisconnect;
 
-        public PortView(BasePortData bindPortData, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
+        public PortView(BasePortData bindPortData, string name, Direction direction, Capacity capacity, Color color, BasePortDrawer portDrawer) : base(Orientation.Horizontal, direction, capacity,
+            null)
         {
             BindPortData = bindPortData;
+            m_PortDrawer = portDrawer;
             portName = name;
             portColor = color;
             m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());
@@ -143,4 +146,3 @@ namespace YBFramework.Bridge.Editor
         }
     }
 }
-#endif

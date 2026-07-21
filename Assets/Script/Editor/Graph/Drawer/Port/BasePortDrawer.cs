@@ -11,7 +11,7 @@ namespace YBFramework.Editor
         public virtual VisualElement CreatePortContentView(BasePortData portData, SerializedProperty serializedProperty, out PortView portView)
         {
             PortViewArgs portViewArgs = portData.GetPortViewArgs();
-            portView = new PortView(portData, portViewArgs.Name, portViewArgs.Direction, portViewArgs.Capacity, portViewArgs.Color);
+            portView = new PortView(portData, portViewArgs.Name, portViewArgs.Direction, portViewArgs.Capacity, portViewArgs.Color, this);
             return portView;
         }
     }

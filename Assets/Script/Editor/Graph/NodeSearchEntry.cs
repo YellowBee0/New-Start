@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,9 +6,10 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
+using YBFramework.Bridge.Editor;
 using YBFramework.Common;
 
-namespace YBFramework.Bridge.Editor
+namespace YBFramework.Editor
 {
     public sealed class NodeSearchEntry : ScriptableObject, ISearchWindowProvider
     {
@@ -250,4 +250,3 @@ namespace YBFramework.Bridge.Editor
         }
     }
 }
-#endif
