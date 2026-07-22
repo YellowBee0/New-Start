@@ -1,29 +1,20 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
-using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor
 {
     public sealed class CustomGraphView : GraphView
     {
-        public readonly GraphAsset BindGraphAsset;
-
-        private readonly NodeSearchEntry m_NodeSearchEntry;
+        public readonly GraphDrawer BindGraphDrawer;
 
         private readonly List<NodeView> m_NodeViews = new();
 
         private readonly List<Port> m_CompatiblePorts = new();
 
-        private readonly GraphDrawer m_GraphDrawer;
-
-        public CustomGraphView(GraphAsset bindGraphAsset, NodeSearchEntry nodeSearchEntry, GraphDrawer graphDrawer)
+        public CustomGraphView(GraphDrawer bindGraphDrawer)
         {
-            BindGraphAsset = bindGraphAsset;
-            m_NodeSearchEntry = nodeSearchEntry;
-            m_GraphDrawer = graphDrawer;
-            nodeCreationRequest = ShowNodeSearchView;
-            graphViewChanged += OnGraphViewChanged;
+            BindGraphDrawer = bindGraphDrawer;
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
@@ -33,48 +24,6 @@ namespace YBFramework.Editor
             grid.StretchToParentSize();
             Insert(0, grid);
             this.StretchToParentSize();
-        }
-
-        private GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
-        {
-            //TODO:需要支持Undo
-            if (changeValue.elementsToRemove != null)
-            {
-                for (int i = 0; i < changeValue.elementsToRemove.Count; i++)
-                {
-                    if (changeValue.elementsToRemove[i] is NodeView nodeView)
-                    {
-                        BindGraphAsset.RemoveNodeData(nodeView.BindNodeData);
-                        RemoveNodeView(nodeView);
-                    }
-                    else if (changeValue.elementsToRemove[i] is Edge edge)
-                    {
-                        PortView inputPortView = (PortView)edge.input;
-                        PortView outputPortView = (PortView)edge.output;
-                        inputPortView.BindPortData.Disconnect(outputPortView.BindPortData);
-                        outputPortView.BindPortData.Disconnect(inputPortView.BindPortData);
-                        edge.input.Disconnect(edge);
-                        edge.output.Disconnect(edge);
-                        Remove(edge);
-                    }
-                }
-            }
-            if (changeValue.movedElements != null)
-            {
-                for (int i = 0; i < changeValue.movedElements.Count; i++)
-                {
-                    if (changeValue.movedElements[i] is NodeView nodeView)
-                    {
-                        nodeView.BindNodeData.Position += changeValue.moveDelta;
-                    }
-                }
-            }
-            return changeValue;
-        }
-
-        private void ShowNodeSearchView(NodeCreationContext context)
-        {
-            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_NodeSearchEntry);
         }
 
         public void AddNodeView(NodeView nodeView)
@@ -95,7 +44,7 @@ namespace YBFramework.Editor
         {
             for (int i = 0; i < m_NodeViews.Count; i++)
             {
-                if (m_NodeViews[i].BindNodeData.NodeID == nodeID)
+                if (m_NodeViews[i].BindNodeDrawer.GetBindNodeData().NodeID == nodeID)
                 {
                     return m_NodeViews[i];
                 }
@@ -122,8 +71,13 @@ namespace YBFramework.Editor
             return m_CompatiblePorts;
         }
 
-        public void OnDispose()
+        public void OnRelease()
         {
+            GraphWindow.GetInstance().ReleaseGraphDrawer(BindGraphDrawer);
+            for (int i = 0; i < m_NodeViews.Count; i++)
+            {
+                m_NodeViews[i].OnRelease();
+            }
         }
     }
 }

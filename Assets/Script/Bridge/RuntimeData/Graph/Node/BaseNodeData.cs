@@ -43,7 +43,9 @@ namespace YBFramework.Bridge.Data
         public int SourcePortID;
 
         /// <summary>
-        /// 初始化节点数据，初始化的数据不会持久化。该函数总是在创建节点视图或者使用节点API之前调用
+        /// 初始化节点数据，初始化的数据不会持久化。
+        /// 重写Initialize必须在第一行写base.Initialize，这段会设置每个端口的所有节点
+        /// 该函数总是在创建节点视图或者使用节点API之前调用
         /// </summary>
         public virtual void Initialize()
         {

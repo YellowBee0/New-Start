@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
@@ -17,12 +15,9 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ProxyTargetNodeData : BaseNodeData
     {
-        [SerializeField] private List<ProxyTargetPortData> m_ProxyTargetPortData;
+        [SerializeField] private List<ProxyTargetPortData> ProxyTargetPortData;
 
-        [FormerlySerializedAs("m_IsProxyInput")] [SerializeField]
-        public bool IsProxyInput;
-
-        private Toggle m_IsProxyInputToggle;
+        [SerializeField] public bool IsProxyInput;
 
         public override BaseNode CreateRuntimeInstance()
         {
@@ -31,9 +26,9 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (m_ProxyTargetPortData != null && index < m_ProxyTargetPortData.Count)
+            if (ProxyTargetPortData != null && index < ProxyTargetPortData.Count)
             {
-                current = m_ProxyTargetPortData[index];
+                current = ProxyTargetPortData[index];
                 return true;
             }
             current = null;
@@ -43,10 +38,13 @@ namespace YBFramework.Bridge.Data
         public override void Initialize()
         {
             base.Initialize();
-            for (int i = 0; i < m_ProxyTargetPortData.Count; i++)
+            for (int i = 0; i < ProxyTargetPortData.Count; i++)
             {
-                ProxyTargetPortData proxyTargetPortData = m_ProxyTargetPortData[i];
-                proxyTargetPortData.SetPortViewArgs(proxyTargetPortData.ProxyName, Direction.Input, Port.Capacity.Multi, Color.green);
+                ProxyTargetPortData proxyTargetPortData = ProxyTargetPortData[i];
+                proxyTargetPortData.SetPortName(proxyTargetPortData.ProxyName);
+                proxyTargetPortData.SetDirection(IsProxyInput ? Direction.Input : Direction.Output);
+                proxyTargetPortData.SetCapacity(Port.Capacity.Single);
+                proxyTargetPortData.SetPortColor(Color.green);
             }
         }
     }

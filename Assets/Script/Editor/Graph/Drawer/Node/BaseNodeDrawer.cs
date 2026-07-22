@@ -1,17 +1,57 @@
-﻿using UnityEditor;
+﻿using System;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Editor
 {
     [GraphDrawer(typeof(BaseNodeData))]
     public class BaseNodeDrawer
     {
+        private static readonly Dictionary<Type, Stack<BaseNodeDrawer>> s_NodeDrawers = new();
+
+        public static BaseNodeDrawer AllocateNodeDrawer(Type drawTargetType)
+        {
+            Type nodeDrawerType = GraphDrawerMap.GetInstance().GetDrawerType(drawTargetType);
+            if (nodeDrawerType == null)
+            {
+                return null;
+            }
+            if (!s_NodeDrawers.TryGetValue(nodeDrawerType, out Stack<BaseNodeDrawer> nodeDrawers))
+            {
+                nodeDrawers = new Stack<BaseNodeDrawer>();
+                s_NodeDrawers.Add(nodeDrawerType, nodeDrawers);
+            }
+            return nodeDrawers.Count > 0 ? nodeDrawers.Pop() : Activator.CreateInstance(nodeDrawerType) as BaseNodeDrawer;
+        }
+
+        public static void ReleaseNodeDrawer(BaseNodeDrawer nodeDrawer)
+        {
+            Type nodeDrawerType = nodeDrawer.GetType();
+            if (s_NodeDrawers.TryGetValue(nodeDrawerType, out Stack<BaseNodeDrawer> nodeDrawers))
+            {
+                nodeDrawers.Push(nodeDrawer);
+            }
+        }
+
+        protected BaseNodeData m_BindNodeData;
+
+        public BaseNodeData GetBindNodeData()
+        {
+            return m_BindNodeData;
+        }
+
         public virtual NodeView CreateNodeView(BaseNodeData nodeData, SerializedProperty serializedProperty)
         {
-            NodeView nodeView = new(nodeData, this);
+            m_BindNodeData = nodeData;
+            NodeView nodeView = new(this)
+            {
+                title = nodeData.Name
+            };
+            nodeView.SetPosition(new Rect(nodeData.Position, Vector2.one));
             //不使用原本的SerializedProperty进行轮询的原因：SerializedProperty轮询后不能回到起始位置，只能在最后一个SerializedProperty位置，这会导致用不到根SerializedProperty
             SerializedProperty serializedPropertyCopy = serializedProperty.Copy();
             while (serializedPropertyCopy.NextVisible(false))
@@ -20,18 +60,17 @@ namespace YBFramework.Editor
                 if (serializedPropertyCopy.boxedValue is BasePortData portData)
                 {
                     BasePortData actualPortData = nodeData.GetPortData(portData.PortID);
-                    BasePortDrawer portDrawer = GraphDrawerMap.GetInstance().GetPortDrawer(actualPortData.GetType());
+                    BasePortDrawer portDrawer = BasePortDrawer.AllocatePortDrawer(actualPortData.GetType());
                     if (portDrawer != null)
                     {
-                        VisualElement visualElement = portDrawer.CreatePortContentView(actualPortData, serializedPropertyCopy, out PortView portView);
-                        PortViewArgs portViewArgs = portData.GetPortViewArgs();
-                        if (portViewArgs.Direction == Direction.Input)
+                        VisualElement portContentView = portDrawer.CreatePortContentView(actualPortData, serializedPropertyCopy, out PortView portView);
+                        if (portView.direction == Direction.Input)
                         {
-                            nodeView.inputContainer.Add(visualElement);
+                            nodeView.inputContainer.Add(portContentView);
                         }
                         else
                         {
-                            nodeView.outputContainer.Add(visualElement);
+                            nodeView.outputContainer.Add(portContentView);
                         }
                         nodeView.Add(portView);
                     }

@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
 namespace YBFramework.Bridge.Data
@@ -11,7 +10,8 @@ namespace YBFramework.Bridge.Data
         //TODO:这个被创建出来时直接使用代理目标端口的name
         public string ProxyName;
 
-        [SerializeField] private PortConnectionData m_PortConnectionData;
+        //TODO:把Data里所有序列化的数据设置为public
+        public PortConnectionData PortConnectionData;
 
         public override BasePort CreateRuntimeInstance()
         {
@@ -20,16 +20,16 @@ namespace YBFramework.Bridge.Data
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
-            if (m_PortConnectionData.NodeID == nodeId && m_PortConnectionData.PortID == portId)
+            if (PortConnectionData.NodeID == nodeId && PortConnectionData.PortID == portId)
             {
-                return m_PortConnectionData;
+                return PortConnectionData;
             }
             return null;
         }
 
         public override int GetPortConnectionDataCountFromSelf()
         {
-            if (m_PortConnectionData.NodeID != 0 && m_PortConnectionData.PortID != 0)
+            if (PortConnectionData.NodeID != 0 && PortConnectionData.PortID != 0)
             {
                 return 1;
             }

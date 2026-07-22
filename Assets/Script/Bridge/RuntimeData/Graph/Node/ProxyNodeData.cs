@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using YBFramework.Bridge.Editor;
@@ -14,14 +13,9 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ProxyNodeData : BaseNodeData
     {
-        [SerializeField] public List<ProxyPortData> ProxyPortData;
+        public List<ProxyPortData> ProxyPortData;
 
-        [SerializeField] public GraphAsset ProxyGraphAsset;
-
-        public GraphAsset GetGraphAsset()
-        {
-            return ProxyGraphAsset;
-        }
+        public GraphAsset ProxyGraphAsset;
 
         public IReadOnlyList<ProxyPortData> GetProxyPortData()
         {

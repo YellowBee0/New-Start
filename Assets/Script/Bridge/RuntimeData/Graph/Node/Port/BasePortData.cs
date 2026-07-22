@@ -35,64 +35,92 @@ namespace YBFramework.Bridge.Data
 
         protected BaseNodeData m_NodeData;
 
-        protected PortViewArgs m_PortViewArgs;
+        protected string m_PortName;
+
+        protected Direction m_Direction;
+
+        protected Port.Capacity m_Capacity;
+
+        protected Color m_PortColor;
 
         public void SetNodeData(BaseNodeData nodeData)
         {
             m_NodeData = nodeData;
         }
 
-        public virtual PortViewArgs GetPortViewArgs()
+        public string GetPortName()
         {
-            return m_PortViewArgs;
+            return m_PortName;
         }
 
-        public void SetPortViewArgs(PortViewArgs args)
+        public virtual void SetPortName(string portName)
         {
-            SetPortViewArgs(args.Name, args.Direction, args.Capacity, args.Color);
+            m_PortName = portName;
         }
 
-        public void SetPortViewArgs(string name, PortViewArgsTemplate argsTemplate)
+        public Direction GetDirection()
         {
-            Direction direction;
-            Port.Capacity capacity;
-            Color color;
+            return m_Direction;
+        }
+
+        public virtual void SetDirection(Direction direction)
+        {
+            m_Direction = direction;
+        }
+
+        public Port.Capacity GetCapacity()
+        {
+            return m_Capacity;
+        }
+
+        public virtual void SetCapacity(Port.Capacity capacity)
+        {
+            m_Capacity = capacity;
+        }
+
+        public Color GetPortColor()
+        {
+            return m_PortColor;
+        }
+
+        public virtual void SetPortColor(Color portColor)
+        {
+            m_PortColor = portColor;
+        }
+
+        public void SetPortViewArgs(string portName, PortViewArgsTemplate argsTemplate)
+        {
+            SetPortName(portName);
             switch (argsTemplate)
             {
-                case PortViewArgsTemplate.None:
-                    direction = default;
-                    capacity = default;
-                    color = default;
-                    break;
+                case PortViewArgsTemplate.Default:
+                    SetDirection(default);
+                    SetCapacity(default);
+                    SetPortColor(default);
+                    return;
                 case PortViewArgsTemplate.LogicInput:
-                    direction = Direction.Input;
-                    capacity = Port.Capacity.Multi;
-                    color = Color.red;
-                    break;
+                    SetDirection(Direction.Input);
+                    SetCapacity(Port.Capacity.Multi);
+                    SetPortColor(Color.red);
+                    return;
                 case PortViewArgsTemplate.LogicOutput:
-                    direction = Direction.Output;
-                    capacity = Port.Capacity.Multi;
-                    color = Color.red;
-                    break;
+                    SetDirection(Direction.Output);
+                    SetCapacity(Port.Capacity.Multi);
+                    SetPortColor(Color.red);
+                    return;
                 case PortViewArgsTemplate.ValueInput:
-                    direction = Direction.Input;
-                    capacity = Port.Capacity.Single;
-                    color = Color.blue;
-                    break;
+                    SetDirection(Direction.Input);
+                    SetCapacity(Port.Capacity.Single);
+                    SetPortColor(Color.blue);
+                    return;
                 case PortViewArgsTemplate.ValueOutput:
-                    direction = Direction.Output;
-                    capacity = Port.Capacity.Multi;
-                    color = Color.blue;
-                    break;
+                    SetDirection(Direction.Output);
+                    SetCapacity(Port.Capacity.Multi);
+                    SetPortColor(Color.blue);
+                    return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(argsTemplate), argsTemplate, null);
             }
-            SetPortViewArgs(name, direction, capacity, color);
-        }
-
-        public virtual void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
-        {
-            m_PortViewArgs = new PortViewArgs(name, direction, capacity, color);
         }
 
         public virtual bool CanConnect(BasePortData other)
@@ -168,7 +196,10 @@ namespace YBFramework.Bridge.Data
         /// <param name="dataToMerge">代理目标</param>
         public virtual void MergeData(BasePortData dataToMerge)
         {
-            m_PortViewArgs = dataToMerge.m_PortViewArgs;
+            m_PortName = dataToMerge.m_PortName;
+            m_Direction = dataToMerge.m_Direction;
+            m_Capacity = dataToMerge.m_Capacity;
+            m_PortColor = dataToMerge.m_PortColor;
         }
 #endif
     }

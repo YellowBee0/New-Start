@@ -3,11 +3,14 @@ using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using UnityEditor.Experimental.GraphView;
-using YBFramework.Bridge.Editor;
 #endif
 
 namespace YBFramework.Bridge.Data
 {
+    /// <summary>
+    /// 这个端口用于代理其他端口
+    /// 这个端口的所有Get获取的数据都是自身数据而不是代理端口的数据，比如GetPortName、GetDirection等。需要注意区分
+    /// </summary>
     [Serializable]
     public sealed class ProxyPortData : BasePortData
     {
@@ -49,18 +52,28 @@ namespace YBFramework.Bridge.Data
         public void SetProxyTargetPortData(BasePortData proxyTargetPortDat, string name)
         {
             m_ProxyPortData.MergeData(proxyTargetPortDat);
-            //m_ProxyPortData.SetPortViewArgs(name); 设置端口名
+            m_ProxyPortData.SetPortName(name);
+            m_ProxyPortData.SetNodeData(m_NodeData);
         }
 
-        public override PortViewArgs GetPortViewArgs()
+        public override void SetPortName(string portName)
         {
-            return m_ProxyPortData.GetPortViewArgs();
+            m_ProxyPortData.SetPortName(portName);
         }
 
-        //TODO:
-        public override void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
+        public override void SetDirection(Direction direction)
         {
-            Debug.LogWarning("It is useless to set proxy port's port view ");
+            m_ProxyPortData.SetDirection(direction);
+        }
+
+        public override void SetCapacity(Port.Capacity capacity)
+        {
+            m_ProxyPortData.SetCapacity(capacity);
+        }
+
+        public override void SetPortColor(Color portColor)
+        {
+            m_ProxyPortData.SetPortColor(portColor);
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)

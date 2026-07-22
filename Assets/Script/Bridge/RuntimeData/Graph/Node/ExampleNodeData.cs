@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using YBFramework.Bridge.Editor;
@@ -13,7 +12,7 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ExampleNodeData : BaseNodeData
     {
-        [SerializeField] private ValueInputPortData<string> m_StringInputTest;
+        public ValueInputPortData<string> m_StringInputTest;
 
         public override BaseNode CreateRuntimeInstance()
         {

@@ -30,6 +30,8 @@ namespace YBFramework.Editor
             return s_Instance;
         }
         #endregion
+        private readonly Stack<GraphDrawer> m_GraphDrawerPool = new();
+
         private readonly Dictionary<string, CustomGraphView> m_DrawnGraphViews = new();
 
         private readonly List<string> m_FilteredGraphAssetNames = new();
@@ -53,6 +55,16 @@ namespace YBFramework.Editor
             return m_MainGraphView;
         }
 
+        public GraphDrawer AllocateGraphDrawer()
+        {
+            return m_GraphDrawerPool.Count > 0 ? m_GraphDrawerPool.Pop() : new GraphDrawer();
+        }
+
+        public void ReleaseGraphDrawer(GraphDrawer graphDrawer)
+        {
+            m_GraphDrawerPool.Push(graphDrawer);
+        }
+
         private void CreateGUI()
         {
             if (s_Instance != this)
@@ -63,6 +75,7 @@ namespace YBFramework.Editor
                 }
                 s_Instance = this;
             }
+            GraphDrawerMap.GetInstance().Initialize();
             //1、初始化节点筛选窗口
             NodeSearchEntry.InitializeNodeSearchTree();
 
@@ -184,7 +197,7 @@ namespace YBFramework.Editor
                         return;
                     }
                     graphAsset.Initialize();
-                    graphView = graphAsset.CreateGraphView();
+                    graphView = AllocateGraphDrawer().CreateGraphView(graphAsset);
                     m_DrawnGraphViews.Add(graphAssetPath, graphView);
                 }
                 m_MainGraphView?.RemoveFromHierarchy();
@@ -193,5 +206,7 @@ namespace YBFramework.Editor
                 m_MainGraphView = graphView;
             }
         }
+
+        //TODO:销毁GraphView视图。需要销毁的内容：GraphView
     }
 }

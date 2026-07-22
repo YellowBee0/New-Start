@@ -3,7 +3,7 @@ namespace YBFramework.Bridge.Editor
 {
     public enum PortViewArgsTemplate
     {
-        None,
+        Default,
 
         LogicInput,
 

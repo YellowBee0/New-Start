@@ -2,6 +2,7 @@
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
+using UnityEditor.Experimental.GraphView;
 using UnityEditor;
 #endif
 
@@ -12,7 +13,7 @@ namespace YBFramework.Bridge.Data
     {
         public TValue Value;
 
-        [SerializeField] private DelegatePortConnectionData m_DelegatePortConnectionData;
+        public DelegatePortConnectionData DelegatePortConnectionData;
 
         public override BasePort CreateRuntimeInstance()
         {
@@ -25,25 +26,43 @@ namespace YBFramework.Bridge.Data
         {
             if (index == 0)
             {
-                current = m_DelegatePortConnectionData;
+                current = DelegatePortConnectionData;
                 return true;
             }
             current = null;
             return false;
         }
 #if UNITY_EDITOR
+        public override void SetDirection(Direction direction)
+        {
+            if (direction == Direction.Output)
+            {
+                Debug.LogWarning("Value input port can only set input direction");
+            }
+            m_Direction = Direction.Input;
+        }
+
+        public override void SetCapacity(Port.Capacity capacity)
+        {
+            if (capacity == Port.Capacity.Multi)
+            {
+                Debug.LogWarning("Value input port can only set single capacity");
+            }
+            m_Capacity = Port.Capacity.Single;
+        }
+
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
-            if (m_DelegatePortConnectionData.NodeID == nodeId && m_DelegatePortConnectionData.PortID == portId)
+            if (DelegatePortConnectionData.NodeID == nodeId && DelegatePortConnectionData.PortID == portId)
             {
-                return m_DelegatePortConnectionData;
+                return DelegatePortConnectionData;
             }
             return null;
         }
 
         public override int GetPortConnectionDataCountFromSelf()
         {
-            return m_DelegatePortConnectionData.NodeID == 0 && m_DelegatePortConnectionData.PortID == 0 ? 0 : 1;
+            return DelegatePortConnectionData.NodeID == 0 && DelegatePortConnectionData.PortID == 0 ? 0 : 1;
         }
 
         public override BasePortData Clone()
@@ -51,7 +70,8 @@ namespace YBFramework.Bridge.Data
             ValueInputPortData<TValue> portData = new();
             string json = EditorJsonUtility.ToJson(this);
             EditorJsonUtility.FromJsonOverwrite(json, portData);
-            portData.m_DelegatePortConnectionData = null;
+            portData.DelegatePortConnectionData.NodeID = 0;
+            portData.DelegatePortConnectionData.PortID = 0;
             return portData;
         }
 #endif

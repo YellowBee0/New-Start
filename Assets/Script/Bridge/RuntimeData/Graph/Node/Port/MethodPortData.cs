@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using YBFramework.GameLogic.Graph;
-#if UNITY_EDITOR
-using YBFramework.Bridge.Editor;
-using UnityEditor.Experimental.GraphView;
-using UnityEngine;
-#endif
 
 namespace YBFramework.Bridge.Data
 {
@@ -73,11 +68,6 @@ namespace YBFramework.Bridge.Data
         public override int GetPortConnectionDataCountFromSelf()
         {
             return 0;
-        }
-
-        public override void SetPortViewArgs(string name, Direction direction, Port.Capacity capacity, Color color)
-        {
-            m_PortViewArgs = new PortViewArgs(name, direction, Port.Capacity.Multi, color);
         }
 #endif
     }
