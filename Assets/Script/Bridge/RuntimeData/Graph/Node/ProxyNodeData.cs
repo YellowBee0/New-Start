@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using YBFramework.Bridge.Editor;
@@ -13,13 +14,13 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ProxyNodeData : BaseNodeData
     {
-        public List<ProxyPortData> ProxyPortData;
+        [SerializeField] private List<ProxyPortData> m_ProxyPortData;
 
         public GraphAsset ProxyGraphAsset;
 
         public IReadOnlyList<ProxyPortData> GetProxyPortData()
         {
-            return ProxyPortData;
+            return m_ProxyPortData;
         }
 
         public override BaseNode CreateRuntimeInstance()
@@ -31,15 +32,20 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (ProxyPortData != null && index < ProxyPortData.Count)
+            if (m_ProxyPortData != null && index < m_ProxyPortData.Count)
             {
-                current = ProxyPortData[index];
+                current = m_ProxyPortData[index];
                 return true;
             }
             current = null;
             return false;
         }
 #if UNITY_EDITOR
+        public override void CreateData()
+        {
+            m_ProxyPortData = new List<ProxyPortData>();
+        }
+
         public override void Initialize()
         {
             if (ProxyGraphAsset == null)

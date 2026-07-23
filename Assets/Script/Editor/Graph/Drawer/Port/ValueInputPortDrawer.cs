@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
@@ -12,12 +13,31 @@ namespace YBFramework.Editor
 
         public override VisualElement CreatePortContentView(BasePortData portData, SerializedProperty serializedProperty, out PortView portView)
         {
-            VisualElement portContentView = new();
-            portContentView.Add(base.CreatePortContentView(portData, serializedProperty, out portView));
-            //TODO:需要支持Undo，这里本身就能Undo但是不和我自己的Undo系统同步
-            m_ValueField = new PropertyField(serializedProperty.FindPropertyRelative("Value"));
-            portContentView.Add(m_ValueField);
+            VisualElement portContentView = base.CreatePortContentView(portData, serializedProperty, out portView);
+            SerializedProperty valueProperty = serializedProperty.FindPropertyRelative("Value");
+            if (valueProperty != null)
+            {
+                VisualElement container = new();
+                portView.RegisterOnConnectCallback(OnConnectOther);
+                portView.RegisterOnDisconnectCallback(OnDisconnectOther);
+                m_ValueField = new PropertyField();
+                m_ValueField.styleSheets.Add(StyleSheetManager.LoadStylesheet("PropertyLabel"));
+                m_ValueField.BindProperty(valueProperty);
+                container.Add(portContentView);
+                container.Add(m_ValueField);
+                return container;
+            }
             return portContentView;
+        }
+
+        private void OnConnectOther(Port other)
+        {
+            m_ValueField.enabledSelf = false;
+        }
+
+        private void OnDisconnectOther(Port other)
+        {
+            m_ValueField.enabledSelf = true;
         }
     }
 }

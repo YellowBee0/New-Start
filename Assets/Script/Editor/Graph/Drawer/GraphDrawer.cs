@@ -26,6 +26,7 @@ namespace YBFramework.Editor
             m_GraphView = new CustomGraphView(this);
             m_BindNodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
             m_SerializedObject = new SerializedObject(graphAsset);
+            m_SerializedObject.Update();
             m_NodeDataListProperty = m_SerializedObject.FindProperty("m_NodeData");
 
             m_GraphView.nodeCreationRequest = ShowNodeSearchView;
@@ -47,6 +48,11 @@ namespace YBFramework.Editor
         public GraphAsset GetBindGraphAsset()
         {
             return m_BindGraphAsset;
+        }
+
+        public void UpdateSO()
+        {
+            m_SerializedObject.Update();
         }
         
         public SerializedProperty GetNodeSerializedProperty(BaseNodeData nodeData)

@@ -33,6 +33,8 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         [SerializeField] private List<PortConnectionData> m_PortConnectionDataFromOther;
 
+        private string m_FiledName;
+
         protected BaseNodeData m_NodeData;
 
         protected string m_PortName;
@@ -42,6 +44,16 @@ namespace YBFramework.Bridge.Data
         protected Port.Capacity m_Capacity;
 
         protected Color m_PortColor;
+
+        public void SetFiledName(string filedName)
+        {
+            m_FiledName = filedName;
+        }
+
+        public string GetFiledName()
+        {
+            return m_FiledName;
+        }
 
         public void SetNodeData(BaseNodeData nodeData)
         {

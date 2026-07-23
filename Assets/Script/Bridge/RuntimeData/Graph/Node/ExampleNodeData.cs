@@ -12,7 +12,7 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ExampleNodeData : BaseNodeData
     {
-        public ValueInputPortData<string> m_StringInputTest;
+        public ValueInputPortData<string> StringInputTest;
 
         public override BaseNode CreateRuntimeInstance()
         {
@@ -23,16 +23,22 @@ namespace YBFramework.Bridge.Data
         {
             if (index == 0)
             {
-                current = m_StringInputTest;
+                current = StringInputTest;
                 return true;
             }
             current = null;
             return false;
         }
 #if UNITY_EDITOR
+        public override void CreateData()
+        {
+            StringInputTest = new ValueInputPortData<string>();
+        }
+
         public override void Initialize()
         {
-            m_StringInputTest.SetPortViewArgs("string输入测试", PortViewArgsTemplate.ValueInput);
+            StringInputTest.SetFiledName(nameof(StringInputTest));
+            StringInputTest.SetPortViewArgs("string输入测试", PortViewArgsTemplate.ValueInput);
         }
 #endif
     }

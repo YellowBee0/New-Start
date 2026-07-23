@@ -79,9 +79,9 @@ namespace YBFramework.Editor
 
         public readonly BasePortDrawer BindPortDrawer;
 
-        private Action m_OnConnect;
+        private Action<Port> m_OnConnect;
 
-        private Action m_OnDisconnect;
+        private Action<Port> m_OnDisconnect;
 
         public PortView(string name, Direction direction, Capacity capacity, Color color, BasePortDrawer bindPortDrawer) : base(Orientation.Horizontal, direction, capacity, null)
         {
@@ -92,7 +92,7 @@ namespace YBFramework.Editor
             this.AddManipulator(m_EdgeConnector);
         }
 
-        public void RegisterOnConnectCallback(Action onConnect)
+        public void RegisterOnConnectCallback(Action<Port> onConnect)
         {
             if (onConnect != null)
             {
@@ -100,7 +100,7 @@ namespace YBFramework.Editor
             }
         }
 
-        public void RegisterOnDisconnectCallback(Action onDisconnect)
+        public void RegisterOnDisconnectCallback(Action<Port> onDisconnect)
         {
             if (onDisconnect != null)
             {
@@ -108,12 +108,12 @@ namespace YBFramework.Editor
             }
         }
 
-        public void UnregisterOnConnectCallback(Action onConnect)
+        public void UnregisterOnConnectCallback(Action<Port> onConnect)
         {
             m_OnConnect -= onConnect;
         }
 
-        public void UnregisterOnDisconnectCallback(Action onDisconnect)
+        public void UnregisterOnDisconnectCallback(Action<Port> onDisconnect)
         {
             m_OnDisconnect -= onDisconnect;
         }
@@ -121,6 +121,8 @@ namespace YBFramework.Editor
         public void OnRelease()
         {
             BasePortDrawer.ReleasePortDrawer(BindPortDrawer);
+            m_OnConnect = null;
+            m_OnDisconnect = null;
         }
 
         /// <summary>
@@ -130,7 +132,7 @@ namespace YBFramework.Editor
         public override void Connect(Edge edge)
         {
             base.Connect(edge);
-            m_OnConnect?.Invoke();
+            m_OnConnect?.Invoke(direction == Direction.Input ? edge.output : edge.input);
             //不在这里持久化连线数据的原因：通过已经存在的连线数据恢复连线时也是调用这个函数，如果持久化数据会导致重复连接
         }
 
@@ -141,7 +143,7 @@ namespace YBFramework.Editor
         public override void Disconnect(Edge edge)
         {
             base.Disconnect(edge);
-            m_OnDisconnect?.Invoke();
+            m_OnDisconnect?.Invoke(direction == Direction.Input ? edge.output : edge.input);
             //不在这里持久化连线数据的原因：为了对齐连接函数
         }
     }

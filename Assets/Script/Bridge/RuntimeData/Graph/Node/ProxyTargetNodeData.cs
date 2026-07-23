@@ -15,9 +15,9 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ProxyTargetNodeData : BaseNodeData
     {
-        [SerializeField] private List<ProxyTargetPortData> ProxyTargetPortData;
+        [SerializeField] private List<ProxyTargetPortData> m_ProxyTargetPortData;
 
-        [SerializeField] public bool IsProxyInput;
+        public bool IsProxyInput;
 
         public override BaseNode CreateRuntimeInstance()
         {
@@ -26,21 +26,27 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (ProxyTargetPortData != null && index < ProxyTargetPortData.Count)
+            if (m_ProxyTargetPortData != null && index < m_ProxyTargetPortData.Count)
             {
-                current = ProxyTargetPortData[index];
+                current = m_ProxyTargetPortData[index];
                 return true;
             }
             current = null;
             return false;
         }
 
+        public override void CreateData()
+        {
+            m_ProxyTargetPortData = new List<ProxyTargetPortData>();
+        }
+
         public override void Initialize()
         {
             base.Initialize();
-            for (int i = 0; i < ProxyTargetPortData.Count; i++)
+            for (int i = 0; i < m_ProxyTargetPortData.Count; i++)
             {
-                ProxyTargetPortData proxyTargetPortData = ProxyTargetPortData[i];
+                ProxyTargetPortData proxyTargetPortData = m_ProxyTargetPortData[i];
+                proxyTargetPortData.SetFiledName($"{nameof(proxyTargetPortData)}.data[{i}]");
                 proxyTargetPortData.SetPortName(proxyTargetPortData.ProxyName);
                 proxyTargetPortData.SetDirection(IsProxyInput ? Direction.Input : Direction.Output);
                 proxyTargetPortData.SetCapacity(Port.Capacity.Single);

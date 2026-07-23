@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
   m_NodeData:
   - rid: 8830513696823836719
+  - rid: 8830513758409326643
   m_GraphType: 1
-  SourceNodeID: 3
+  SourceNodeID: 9
   references:
     version: 2
     RefIds:
@@ -27,4 +28,20 @@ MonoBehaviour:
         Position: {x: 303.3962, y: 190.18866}
         SourcePortID: 0
         m_ProxyPortData: []
-        m_ProxyGraphAsset: {fileID: 0}
+        ProxyGraphAsset: {fileID: 0}
+    - rid: 8830513758409326643
+      type: {class: ExampleNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        NodeID: 9
+        Name: "\u793A\u4F8B(Everything)"
+        Position: {x: 554.26416, y: 239.09433}
+        SourcePortID: 1
+        StringInputTest:
+          PortID: 1
+          IsUsed: 0
+          m_PortConnectionDataFromOther: []
+          Value: 1234
+          DelegatePortConnectionData:
+            NodeID: 0
+            PortID: 0
+            IsExplicitCast: 0

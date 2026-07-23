@@ -5,6 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
+using YBFramework.Common;
 
 namespace YBFramework.Editor
 {
@@ -52,28 +53,23 @@ namespace YBFramework.Editor
                 title = nodeData.Name
             };
             nodeView.SetPosition(new Rect(nodeData.Position, Vector2.one));
-            //不使用原本的SerializedProperty进行轮询的原因：SerializedProperty轮询后不能回到起始位置，只能在最后一个SerializedProperty位置，这会导致用不到根SerializedProperty
-            SerializedProperty serializedPropertyCopy = serializedProperty.Copy();
-            while (serializedPropertyCopy.NextVisible(false))
+            foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
             {
-                //为什么强转后还要再去nodeData中找一次portData？因为boxedValue是另外一个实例，里面只有可以序列化的数据，其他数据都变成了默认值，所以必须回去找到真实的对象才能保证绘制
-                if (serializedPropertyCopy.boxedValue is BasePortData portData)
+                BasePortDrawer portDrawer = BasePortDrawer.AllocatePortDrawer(portData.GetType());
+                if (portDrawer != null)
                 {
-                    BasePortData actualPortData = nodeData.GetPortData(portData.PortID);
-                    BasePortDrawer portDrawer = BasePortDrawer.AllocatePortDrawer(actualPortData.GetType());
-                    if (portDrawer != null)
+                    VisualElement portContentView = portDrawer.CreatePortContentView(portData, serializedProperty.FindPropertyRelative(portData.GetFiledName()), out PortView portView);
+                    portContentView.style.borderBottomColor = Color.black;
+                    portContentView.style.borderBottomWidth = .2f;
+                    if (portView.direction == Direction.Input)
                     {
-                        VisualElement portContentView = portDrawer.CreatePortContentView(actualPortData, serializedPropertyCopy, out PortView portView);
-                        if (portView.direction == Direction.Input)
-                        {
-                            nodeView.inputContainer.Add(portContentView);
-                        }
-                        else
-                        {
-                            nodeView.outputContainer.Add(portContentView);
-                        }
-                        nodeView.Add(portView);
+                        nodeView.inputContainer.Add(portContentView);
                     }
+                    else
+                    {
+                        nodeView.outputContainer.Add(portContentView);
+                    }
+                    nodeView.AddPortView(portView);
                 }
             }
             nodeView.RefreshPortContainerDisplay();

@@ -46,9 +46,9 @@ namespace YBFramework.Editor
 
         private CustomGraphView m_MainGraphView;
 
-        private string m_FilterGraphAssetNameStr;
+        [NonSerialized] private string m_FilterGraphAssetNameStr;
 
-        private string m_MainGraphAssetPath;
+        [NonSerialized] private string m_MainGraphAssetPath;
 
         public CustomGraphView GetMainGraphView()
         {
@@ -89,8 +89,6 @@ namespace YBFramework.Editor
                 m_GraphAssetNames.Add(graphAssetName);
                 m_FilteredGraphAssetNames.Add(graphAssetName);
             }
-            m_FilterGraphAssetNameStr = null;
-            m_MainGraphAssetPath = null;
 
             //3、创建边栏搜索框和蓝图主视图容器
             VisualElement graphAssetView = new()

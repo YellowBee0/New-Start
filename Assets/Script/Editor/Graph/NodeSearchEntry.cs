@@ -225,6 +225,8 @@ namespace YBFramework.Editor
                         BaseNodeDrawer nodeDrawer = BaseNodeDrawer.AllocateNodeDrawer(nodeMetaData.nodeType);
                         if (nodeDrawer != null)
                         {
+                            //创建NodeData内部持久化数据
+                            nodeData.CreateData();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
                             //创建节点时初始话节点名和位置
@@ -241,10 +243,11 @@ namespace YBFramework.Editor
                             }
                             //添加数据
                             //存在持久化数据
-                            //TODO:更新SO
                             mainGraphView.BindGraphDrawer.GetBindGraphAsset().AddNodeData(nodeData);
-                            //调用初始化
+                            //初始化运行时数据，非持久化
                             nodeData.Initialize();
+                            //TODO:SO更新是在这里还是在AddNodeData函数中？
+                            mainGraphView.BindGraphDrawer.UpdateSO();
                             mainGraphView.AddNodeView(nodeDrawer.CreateNodeView(nodeData, mainGraphView.BindGraphDrawer.GetNodeSerializedProperty(nodeData)));
                             return true;
                         }

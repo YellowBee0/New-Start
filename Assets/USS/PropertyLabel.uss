@@ -1,0 +1,3 @@
+.node-property-field .unity-base-field__label {
+    min-width: 40px;
+}
