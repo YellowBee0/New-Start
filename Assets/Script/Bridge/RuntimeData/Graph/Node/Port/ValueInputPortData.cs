@@ -55,7 +55,7 @@ namespace YBFramework.Bridge.Data
         {
             if (DelegatePortConnectionData.NodeID == nodeId && DelegatePortConnectionData.PortID == portId)
             {
-                return DelegatePortConnectionData;
+                return DelegatePortConnectionData; 
             }
             return null;
         }
@@ -63,6 +63,11 @@ namespace YBFramework.Bridge.Data
         public override int GetPortConnectionDataCountFromSelf()
         {
             return DelegatePortConnectionData.NodeID == 0 && DelegatePortConnectionData.PortID == 0 ? 0 : 1;
+        }
+
+        public override bool CanConnect(BasePortData other)
+        {
+            return base.CanConnect(other) && other is MethodPortData;
         }
 
         public override BasePortData Clone()

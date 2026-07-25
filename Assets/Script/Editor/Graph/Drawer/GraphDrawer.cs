@@ -10,23 +10,22 @@ namespace YBFramework.Editor
         private GraphAsset m_BindGraphAsset;
 
         private NodeSearchEntry m_BindNodeSearchEntry;
-        
+
         /// <summary>
         /// 该字段仅用于缓存CustomGraphView给graphViewChanged这个事件使用（为了避免闭包）。后续感觉可以直接使用GraphWindow的MainGraphView
         /// </summary>
         private CustomGraphView m_GraphView;
-        
+
         private SerializedObject m_SerializedObject;
 
         private SerializedProperty m_NodeDataListProperty;
 
-        public CustomGraphView CreateGraphView(GraphAsset graphAsset)
+        public CustomGraphView CreateGraphView(GraphAsset graphAsset, SerializedObject serializedObject)
         {
             m_BindGraphAsset = graphAsset;
             m_GraphView = new CustomGraphView(this);
             m_BindNodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
-            m_SerializedObject = new SerializedObject(graphAsset);
-            m_SerializedObject.Update();
+            m_SerializedObject = serializedObject;
             m_NodeDataListProperty = m_SerializedObject.FindProperty("m_NodeData");
 
             m_GraphView.nodeCreationRequest = ShowNodeSearchView;
@@ -39,7 +38,7 @@ namespace YBFramework.Editor
                 BaseNodeDrawer nodeDrawer = BaseNodeDrawer.AllocateNodeDrawer(baseNodeData.GetType());
                 if (nodeDrawer != null)
                 {
-                    m_GraphView.AddNodeView(nodeDrawer.CreateNodeView(baseNodeData,m_NodeDataListProperty.GetArrayElementAtIndex(i)));
+                    m_GraphView.AddNodeView(nodeDrawer.CreateNodeView(baseNodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i)));
                 }
             }
             return m_GraphView;
@@ -54,7 +53,7 @@ namespace YBFramework.Editor
         {
             m_SerializedObject.Update();
         }
-        
+
         public SerializedProperty GetNodeSerializedProperty(BaseNodeData nodeData)
         {
             IReadOnlyList<BaseNodeData> existNodeData = m_BindGraphAsset.GetNodeData();
@@ -88,7 +87,7 @@ namespace YBFramework.Editor
                         outputPortView.BindPortDrawer.GetBindPortData().Disconnect(inputPortView.BindPortDrawer.GetBindPortData());
                         edge.input.Disconnect(edge);
                         edge.output.Disconnect(edge);
-                        m_GraphView.Remove(edge);
+                        m_GraphView.RemoveElement(edge);
                     }
                 }
             }
@@ -104,7 +103,7 @@ namespace YBFramework.Editor
             }
             return changeValue;
         }
-        
+
         private void ShowNodeSearchView(NodeCreationContext context)
         {
             SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_BindNodeSearchEntry);

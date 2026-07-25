@@ -34,7 +34,7 @@ namespace YBFramework.Editor
                 if ((proxyNodeData.GraphAsset.GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
                 {
                     //TODO:需要支持Undo
-                    proxyNodeData.ProxyGraphAsset = proxyGraphAsset;
+                    proxyNodeData.ProxyGraphAsset = proxyGraphAsset; 
                     return;
                 }
                 Debug.LogError($"This graph type:{proxyNodeData.GraphAsset.GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");

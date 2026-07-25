@@ -33,10 +33,12 @@ namespace YBFramework.Bridge.Data
         public override void CreateData()
         {
             StringInputTest = new ValueInputPortData<string>();
+            StringInputTest.CreateData();
         }
 
         public override void Initialize()
         {
+            base.Initialize();
             StringInputTest.SetFiledName(nameof(StringInputTest));
             StringInputTest.SetPortViewArgs("string输入测试", PortViewArgsTemplate.ValueInput);
         }

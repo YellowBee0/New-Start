@@ -62,7 +62,7 @@ namespace YBFramework.Editor
                 for (int i = 0; i < portViews.Count; i++)
                 {
                     PortView portView = portViews[i];
-                    if (portView.direction == direction)
+                    if (portView.direction != direction)
                     {
                         m_CompatiblePorts.Add(portView);
                     }

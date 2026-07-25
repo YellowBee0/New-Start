@@ -10,10 +10,10 @@ namespace YBFramework.Editor
         public override VisualElement CreatePortContentView(BasePortData portData, SerializedProperty serializedProperty, out PortView portView)
         {
             ProxyPortData proxyPortData = (ProxyPortData)portData;
-            BasePortDrawer portDrawer = AllocatePortDrawer(proxyPortData.m_ProxyPortData.GetType());
+            BasePortDrawer portDrawer = AllocatePortDrawer(proxyPortData.ProxyTargetClonedPortData.GetType());
             if (portDrawer != null)
             {
-                return portDrawer.CreatePortContentView(proxyPortData.m_ProxyPortData, serializedProperty.FindPropertyRelative("m_ProxyPortData"), out portView);
+                return portDrawer.CreatePortContentView(proxyPortData.ProxyTargetClonedPortData, serializedProperty.FindPropertyRelative("ProxyTargetClonedPortData"), out portView);
             }
             portView = null;
             return null;

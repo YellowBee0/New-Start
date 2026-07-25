@@ -19,7 +19,7 @@ namespace YBFramework.Editor
                 PortView outputPortView = (PortView)edge.output;
                 bool isInputCanConnectOutput = inputPortView.BindPortDrawer.GetBindPortData().CanConnect(outputPortView.BindPortDrawer.GetBindPortData());
                 bool isOutputCanConnectInput = outputPortView.BindPortDrawer.GetBindPortData().CanConnect(inputPortView.BindPortDrawer.GetBindPortData());
-                if (isInputCanConnectOutput ^ isOutputCanConnectInput)
+                if (!(isInputCanConnectOutput ^ isOutputCanConnectInput))
                 {
                     if (isInputCanConnectOutput)
                     {

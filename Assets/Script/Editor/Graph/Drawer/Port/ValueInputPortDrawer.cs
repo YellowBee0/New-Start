@@ -21,7 +21,7 @@ namespace YBFramework.Editor
                 portView.RegisterOnConnectCallback(OnConnectOther);
                 portView.RegisterOnDisconnectCallback(OnDisconnectOther);
                 m_ValueField = new PropertyField();
-                m_ValueField.styleSheets.Add(StyleSheetManager.LoadStylesheet("PropertyLabel"));
+                m_ValueField.styleSheets.Add(StyleSheetManager.LoadStylesheet("GraphViewLabel"));
                 m_ValueField.BindProperty(valueProperty);
                 container.Add(portContentView);
                 container.Add(m_ValueField);

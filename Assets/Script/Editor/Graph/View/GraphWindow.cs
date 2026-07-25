@@ -9,7 +9,7 @@ namespace YBFramework.Editor
 {
     public sealed class GraphWindow : EditorWindow
     {
-        #region single instance
+#region single instance
         private static GraphWindow s_Instance;
 
         [MenuItem("Window/Graph")]
@@ -29,7 +29,8 @@ namespace YBFramework.Editor
         {
             return s_Instance;
         }
-        #endregion
+#endregion
+
         private readonly Stack<GraphDrawer> m_GraphDrawerPool = new();
 
         private readonly Dictionary<string, CustomGraphView> m_DrawnGraphViews = new();
@@ -194,8 +195,10 @@ namespace YBFramework.Editor
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
+                    SerializedObject serializedObject = new SerializedObject(graphAsset);
+                    serializedObject.Update();
                     graphAsset.Initialize();
-                    graphView = AllocateGraphDrawer().CreateGraphView(graphAsset);
+                    graphView = AllocateGraphDrawer().CreateGraphView(graphAsset, serializedObject);
                     m_DrawnGraphViews.Add(graphAssetPath, graphView);
                 }
                 m_MainGraphView?.RemoveFromHierarchy();

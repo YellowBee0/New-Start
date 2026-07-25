@@ -36,6 +36,27 @@ namespace YBFramework.Bridge.Data
             return 0;
         }
 
+        public override void Connect(BasePortData other)
+        {
+            base.Connect(other);
+            PortConnectionData.NodeID = other.NodeData.NodeID;
+            PortConnectionData.PortID = other.PortID;
+        }
+
+        public override void Disconnect(BasePortData other)
+        {
+            base.Disconnect(other);
+            if (PortConnectionData.NodeID == other.NodeData.NodeID && PortConnectionData.PortID == other.PortID)
+            {
+                PortConnectionData.NodeID = 0;
+                PortConnectionData.PortID = 0;
+            }
+            if (GetPortConnectionDataCount() == 0)
+            {
+                IsUsed = false;
+            }
+        }
+
         public override BasePortData Clone()
         {
             throw new Exception("this port can not clone for proxy port");

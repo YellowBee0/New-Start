@@ -43,7 +43,7 @@ namespace YBFramework.Bridge.Data
         public int SourcePortID;
 
         public abstract void CreateData();
-        
+
         /// <summary>
         /// 初始化节点数据，初始化的数据不会持久化。
         /// 重写Initialize必须在第一行写base.Initialize，这段会设置每个端口的所有节点
@@ -53,7 +53,7 @@ namespace YBFramework.Bridge.Data
         {
             foreach (BasePortData portData in (IValueIterator<BasePortData>)this)
             {
-                portData.SetNodeData(this);
+                portData.NodeData = this;
             }
         }
 #endif

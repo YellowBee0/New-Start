@@ -12,9 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca43f8a5a0346a18c0f33a8e8572dd2, type: 3}
   m_Name: New Graph Asset 1
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
-  m_NodeData: []
-  m_GraphType: 6
-  SourceNodeID: 0
+  m_NodeData:
+  - rid: 1417213883838890042
+  m_GraphType: -1
+  SourceNodeID: 1
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 1417213883838890042
+      type: {class: ProxyNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        NodeID: 1
+        Name: "\u84DD\u56FE\u4EE3\u7406(Everything)"
+        Position: {x: 225.59999, y: 83.999985}
+        SourcePortID: 0
+        m_ProxyPortsData:
+        - PortID: 0
+          IsUsed: 0
+          m_PortConnectionDataFromOther: []
+          ProxyTargetClonedPortData:
+            rid: 1417213883838890043
+          ProxyTargetPortAddress:
+            NodeID: 2
+            PortID: 1
+        ProxyGraphAsset: {fileID: 11400000, guid: 4078af8700d1ba3419a48ee9e4d8763b, type: 2}
+    - rid: 1417213883838890043
+      type: {class: 'ValueInputPortData`1[[System.String, mscorlib]]', ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        PortID: 1
+        IsUsed: 1
+        m_PortConnectionDataFromOther:
+        - NodeID: 1
+          PortID: 1
+        Value: 123
+        DelegatePortConnectionData:
+          NodeID: 0
+          PortID: 0
+          IsExplicitCast: 0

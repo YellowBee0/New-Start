@@ -9,13 +9,19 @@ using YBFramework.GameLogic.Graph;
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
-#if UNITY_EDITOR
     [NodeMenu("代理端口集合", GraphType.Everything)]
     [NodeExistCountLimit(2)]
-#endif
     public sealed class ProxyTargetNodeData : BaseNodeData
     {
-        [SerializeField] private List<ProxyTargetPortData> m_ProxyTargetPortData;
+        public const string DEFAULT_FILED_NAME = nameof(ProxyTargetPortsData) + ".Array.data[{0}]";
+
+        public const string DEFAULT_PORT_NAME = "代理目标端口{0}";
+
+        public const Port.Capacity DEFAULT_PORT_CAPACITY = Port.Capacity.Single;
+
+        public static readonly Color DefaultColor = Color.green;
+
+        public List<ProxyTargetPortData> ProxyTargetPortsData;
 
         public bool IsProxyInput;
 
@@ -26,9 +32,9 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (m_ProxyTargetPortData != null && index < m_ProxyTargetPortData.Count)
+            if (ProxyTargetPortsData != null && index < ProxyTargetPortsData.Count)
             {
-                current = m_ProxyTargetPortData[index];
+                current = ProxyTargetPortsData[index];
                 return true;
             }
             current = null;
@@ -37,20 +43,21 @@ namespace YBFramework.Bridge.Data
 
         public override void CreateData()
         {
-            m_ProxyTargetPortData = new List<ProxyTargetPortData>();
+            ProxyTargetPortsData = new List<ProxyTargetPortData>();
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            for (int i = 0; i < m_ProxyTargetPortData.Count; i++)
+            Direction direction = IsProxyInput ? Direction.Input : Direction.Output;
+            for (int i = 0; i < ProxyTargetPortsData.Count; i++)
             {
-                ProxyTargetPortData proxyTargetPortData = m_ProxyTargetPortData[i];
-                proxyTargetPortData.SetFiledName($"{nameof(proxyTargetPortData)}.data[{i}]");
-                proxyTargetPortData.SetPortName(proxyTargetPortData.ProxyName);
-                proxyTargetPortData.SetDirection(IsProxyInput ? Direction.Input : Direction.Output);
-                proxyTargetPortData.SetCapacity(Port.Capacity.Single);
-                proxyTargetPortData.SetPortColor(Color.green);
+                ProxyTargetPortData proxyTargetPortData = ProxyTargetPortsData[i];
+                proxyTargetPortData.SetFiledName(string.Format(DEFAULT_FILED_NAME, i));
+                proxyTargetPortData.SetPortName(string.Format(DEFAULT_PORT_NAME, i));
+                proxyTargetPortData.SetDirection(direction);
+                proxyTargetPortData.SetPortColor(DefaultColor);
+                proxyTargetPortData.SetCapacity(DEFAULT_PORT_CAPACITY);
             }
         }
     }

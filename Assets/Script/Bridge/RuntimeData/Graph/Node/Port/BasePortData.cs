@@ -33,9 +33,9 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         [SerializeField] private List<PortConnectionData> m_PortConnectionDataFromOther;
 
-        private string m_FiledName;
+        [NonSerialized] public BaseNodeData NodeData;
 
-        protected BaseNodeData m_NodeData;
+        private string m_FiledName;
 
         protected string m_PortName;
 
@@ -53,11 +53,6 @@ namespace YBFramework.Bridge.Data
         public string GetFiledName()
         {
             return m_FiledName;
-        }
-
-        public void SetNodeData(BaseNodeData nodeData)
-        {
-            m_NodeData = nodeData;
         }
 
         public string GetPortName()
@@ -137,15 +132,16 @@ namespace YBFramework.Bridge.Data
 
         public virtual bool CanConnect(BasePortData other)
         {
-            return GetPortConnectionData(other.m_NodeData.NodeID, other.PortID) == null;
+            return GetPortConnectionData(other.NodeData.NodeID, other.PortID) == null;
         }
 
         public virtual void Connect(BasePortData other)
         {
+            IsUsed = true;
             other.IsUsed = true;
             other.m_PortConnectionDataFromOther.Add(new PortConnectionData
             {
-                NodeID = m_NodeData.NodeID,
+                NodeID = NodeData.NodeID,
                 PortID = PortID
             });
         }
@@ -155,7 +151,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < other.m_PortConnectionDataFromOther.Count; i++)
             {
                 PortConnectionData portConnectionData = other.m_PortConnectionDataFromOther[i];
-                if (portConnectionData.NodeID == m_NodeData.NodeID && portConnectionData.PortID == PortID)
+                if (portConnectionData.NodeID == NodeData.NodeID && portConnectionData.PortID == PortID)
                 {
                     other.m_PortConnectionDataFromOther.RemoveAt(i);
                     if (other.GetPortConnectionDataCount() == 0)
@@ -202,6 +198,11 @@ namespace YBFramework.Bridge.Data
 
         public abstract BasePortData Clone();
 
+        public virtual void CreateData()
+        {
+            m_PortConnectionDataFromOther = new List<PortConnectionData>();
+        }
+        
         /// <summary>
         /// 用于代理端口从真实的端口获取不可序列化的数据，比如绘制参数PortViewArgs，MethodPortData的MethodInfo
         /// </summary>

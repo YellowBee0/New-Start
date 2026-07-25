@@ -38,6 +38,26 @@ namespace YBFramework.Editor
             }
         }
 
+        protected static void CreatePortView(NodeView nodeView, SerializedProperty nodeSerializedProperty, BasePortData portData)
+        {
+            BasePortDrawer portDrawer = BasePortDrawer.AllocatePortDrawer(portData.GetType());
+            if (portDrawer != null)
+            {
+                VisualElement portContentView = portDrawer.CreatePortContentView(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFiledName()), out PortView portView);
+                portContentView.style.borderBottomColor = Color.black;
+                portContentView.style.borderBottomWidth = .2f;
+                if (portView.direction == Direction.Input)
+                {
+                    nodeView.inputContainer.Add(portContentView);
+                }
+                else
+                {
+                    nodeView.outputContainer.Add(portContentView);
+                }
+                nodeView.AddPortView(portView);
+            }
+        }
+
         protected BaseNodeData m_BindNodeData;
 
         public BaseNodeData GetBindNodeData()
@@ -55,22 +75,7 @@ namespace YBFramework.Editor
             nodeView.SetPosition(new Rect(nodeData.Position, Vector2.one));
             foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
             {
-                BasePortDrawer portDrawer = BasePortDrawer.AllocatePortDrawer(portData.GetType());
-                if (portDrawer != null)
-                {
-                    VisualElement portContentView = portDrawer.CreatePortContentView(portData, serializedProperty.FindPropertyRelative(portData.GetFiledName()), out PortView portView);
-                    portContentView.style.borderBottomColor = Color.black;
-                    portContentView.style.borderBottomWidth = .2f;
-                    if (portView.direction == Direction.Input)
-                    {
-                        nodeView.inputContainer.Add(portContentView);
-                    }
-                    else
-                    {
-                        nodeView.outputContainer.Add(portContentView);
-                    }
-                    nodeView.AddPortView(portView);
-                }
+                CreatePortView(nodeView, serializedProperty, portData);
             }
             nodeView.RefreshPortContainerDisplay();
             return nodeView;
