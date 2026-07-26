@@ -6,6 +6,11 @@ namespace YBFramework.Editor
 {
     public sealed class CustomGraphView : GraphView
     {
+        //TODO:View里不在存放Drawer数据，Drawer改名为Presenter，Presenter控制Data和View。
+        // 只能在Presenter中改变数据，View中不允许改变数据。
+        // View中想要获取数据只能通过View提供一个接口，可能是委托，然后让Presenter注册，Presenter查找内部的View是否相等
+        // 相等就把数据用于View的操作
+        // 连线时在EdgeConnectListener里调用CustomGraphView的连线委托
         public readonly GraphDrawer BindGraphDrawer;
 
         private readonly List<NodeView> m_NodeViews = new();
