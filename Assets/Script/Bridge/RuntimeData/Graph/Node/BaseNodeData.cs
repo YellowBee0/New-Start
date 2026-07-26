@@ -34,13 +34,23 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
-        [NonSerialized] public GraphAsset GraphAsset;
+        protected GraphAsset m_GraphAsset;
 
         public string Name;
 
         public Vector2 Position;
 
         public int SourcePortID;
+
+        public GraphAsset GetGraphAsset()
+        {
+            return m_GraphAsset;
+        }
+
+        public void SetGraphAsset(GraphAsset graphAsset)
+        {
+            m_GraphAsset = graphAsset;
+        }
 
         public abstract void CreateData();
 
@@ -53,7 +63,7 @@ namespace YBFramework.Bridge.Data
         {
             foreach (BasePortData portData in (IValueIterator<BasePortData>)this)
             {
-                portData.NodeData = this;
+                portData.SetNodeData(this);
             }
         }
 #endif

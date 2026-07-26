@@ -7,7 +7,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor
 {
-    [GraphDrawer(typeof(ProxyTargetNodeData))]
+    [GraphDrawer(typeof(ProxyHelperNodeData))]
     public sealed class ProxyTargetNodeDrawer : BaseNodeDrawer
     {
         private Toggle m_IsProxyInputToggle;
@@ -37,10 +37,10 @@ namespace YBFramework.Editor
             };
             buttonContainer.Add(addButton);
             buttonContainer.Add(removeButton);
-            ProxyTargetNodeData proxyTargetNodeData = (ProxyTargetNodeData)nodeData;
-            m_IsProxyInputToggle = new Toggle("是否为输入端口集合")
+            ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)nodeData;
+            m_IsProxyInputToggle = new Toggle("是否为输入端口代理辅助")
             {
-                value = proxyTargetNodeData.IsProxyInput
+                value = proxyHelperNodeData.IsInputPortsProxyHelper
             };
             m_IsProxyInputToggle.RegisterValueChangedCallback(OnIsProxyInputChanged);
             m_NodeView.contentContainer.Add(m_IsProxyInputToggle);
@@ -50,23 +50,23 @@ namespace YBFramework.Editor
 
         private void OnAddClicked()
         {
-            ProxyTargetNodeData proxyTargetNodeData = (ProxyTargetNodeData)m_BindNodeData;
-            ProxyTargetPortData proxyTargetPortData = new ProxyTargetPortData
+            ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_BindNodeData;
+            ProxyHelperPortData proxyHelperPortData = new ProxyHelperPortData
             {
-                NodeData = proxyTargetNodeData,
-                PortID = ++proxyTargetNodeData.SourcePortID
+                PortID = ++proxyHelperNodeData.SourcePortID
             };
-            proxyTargetPortData.CreateData();
-            proxyTargetPortData.SetFiledName(string.Format(ProxyTargetNodeData.DEFAULT_FILED_NAME, proxyTargetNodeData.ProxyTargetPortsData.Count));
-            proxyTargetPortData.SetPortName(string.Format(ProxyTargetNodeData.DEFAULT_PORT_NAME, proxyTargetNodeData.ProxyTargetPortsData.Count));
-            Direction direction = proxyTargetNodeData.IsProxyInput ? Direction.Input : Direction.Output;
-            proxyTargetPortData.SetDirection(direction);
-            proxyTargetPortData.SetCapacity(ProxyTargetNodeData.DEFAULT_PORT_CAPACITY);
-            proxyTargetPortData.SetPortColor(ProxyTargetNodeData.DefaultColor);
-            proxyTargetPortData.SetCapacity(proxyTargetPortData.GetCapacity());
-            proxyTargetNodeData.ProxyTargetPortsData.Add(proxyTargetPortData);
+            proxyHelperPortData.SetNodeData(proxyHelperNodeData);
+            proxyHelperPortData.CreateData();
+            proxyHelperPortData.SetFiledName(string.Format(ProxyHelperNodeData.PORT_HELPER_DATA_PATH, proxyHelperNodeData.ProxyHelperPortsData.Count));
+            proxyHelperPortData.SetPortName(string.Format(ProxyHelperNodeData.PORT_HELPER_NAME, proxyHelperNodeData.ProxyHelperPortsData.Count));
+            Direction direction = proxyHelperNodeData.IsInputPortsProxyHelper ? Direction.Input : Direction.Output;
+            proxyHelperPortData.SetDirection(direction);
+            proxyHelperPortData.SetCapacity(ProxyHelperNodeData.DEFAULT_PORT_CAPACITY);
+            proxyHelperPortData.SetPortColor(ProxyHelperNodeData.DefaultColor);
+            proxyHelperPortData.SetCapacity(proxyHelperPortData.GetCapacity());
+            proxyHelperNodeData.ProxyHelperPortsData.Add(proxyHelperPortData);
             m_NodeSerializedProperty.serializedObject.Update();
-            CreatePortView(m_NodeView, m_NodeSerializedProperty, proxyTargetPortData);
+            CreatePortView(m_NodeView, m_NodeSerializedProperty, proxyHelperPortData);
             m_NodeView.RefreshPortContainerDisplay();
         }
 
@@ -77,21 +77,21 @@ namespace YBFramework.Editor
 
         private void OnIsProxyInputChanged(ChangeEvent<bool> evt)
         {
-            ProxyTargetNodeData bindNodeData = (ProxyTargetNodeData)m_BindNodeData;
-            IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GraphAsset.GetNodeData();
+            ProxyHelperNodeData bindNodeData = (ProxyHelperNodeData)m_BindNodeData;
+            IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GetGraphAsset().GetNodeData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 BaseNodeData baseNodeData = nodeData[i];
-                if (baseNodeData != bindNodeData && baseNodeData is ProxyTargetNodeData proxyTargetNodeData)
+                if (baseNodeData != bindNodeData && baseNodeData is ProxyHelperNodeData proxyTargetNodeData)
                 {
-                    if (proxyTargetNodeData.IsProxyInput == evt.newValue)
+                    if (proxyTargetNodeData.IsInputPortsProxyHelper == evt.newValue)
                     {
-                        m_IsProxyInputToggle.SetValueWithoutNotify(bindNodeData.IsProxyInput);
+                        m_IsProxyInputToggle.SetValueWithoutNotify(bindNodeData.IsInputPortsProxyHelper);
                         return;
                     }
                 }
             }
-            bindNodeData.IsProxyInput = evt.newValue;
+            bindNodeData.IsInputPortsProxyHelper = evt.newValue;
             //TODO:移除所有端口，包括视图上的端口，连线；数据上的连线数据
         }
     }

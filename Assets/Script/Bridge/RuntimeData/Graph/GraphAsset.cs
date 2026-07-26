@@ -57,7 +57,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < m_NodeData.Count; i++)
             {
                 BaseNodeData nodeData = m_NodeData[i];
-                nodeData.GraphAsset = this;
+                nodeData.SetGraphAsset(this);
                 nodeData.Initialize();
             }
             m_IsInitialized = true;
@@ -74,7 +74,6 @@ namespace YBFramework.Bridge.Data
         public void AddNodeData(BaseNodeData nodeData)
         {
             m_NodeData.Add(nodeData);
-            nodeData.GraphAsset = this;
         }
 
         /// <summary>

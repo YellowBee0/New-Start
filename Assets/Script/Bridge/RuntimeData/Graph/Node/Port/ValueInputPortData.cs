@@ -55,7 +55,7 @@ namespace YBFramework.Bridge.Data
         {
             if (DelegatePortConnectionData.NodeID == nodeId && DelegatePortConnectionData.PortID == portId)
             {
-                return DelegatePortConnectionData; 
+                return DelegatePortConnectionData;
             }
             return null;
         }
@@ -75,6 +75,8 @@ namespace YBFramework.Bridge.Data
             ValueInputPortData<TValue> portData = new();
             string json = EditorJsonUtility.ToJson(this);
             EditorJsonUtility.FromJsonOverwrite(json, portData);
+            portData.IsUsed = false;
+            portData.m_PortConnectionDataFromOther.Clear();
             portData.DelegatePortConnectionData.NodeID = 0;
             portData.DelegatePortConnectionData.PortID = 0;
             return portData;

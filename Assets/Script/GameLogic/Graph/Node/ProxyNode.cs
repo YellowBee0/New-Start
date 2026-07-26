@@ -44,12 +44,11 @@ namespace YBFramework.GameLogic.Graph
             {
                 ProxyPortData proxyPortData = proxyPortsData[i];
                 ProxyPort proxyPort = (ProxyPort)proxyPortData.CreateRuntimeInstance();
-                PortConnectionData address = proxyPortData.GetProxyTargetPortAddress();
-                BaseNode node = m_Graph.GetNode(address.NodeID);
                 //node需要判空，但一般不为null，这个校验需要在编辑器中完成
-                BasePort proxyTargetPort = node.GetPort(address.PortID);
+                BaseNode node = m_Graph.GetNode(proxyPortData.TargetNodeID);
                 //port需要判空，但一般不为null，这个校验需要在编辑器中完成
-                proxyTargetPort.MergeData(proxyPortData.GetProxyPortData());
+                BasePort proxyTargetPort = node.GetPort(proxyPortData.ClonedTargetPortData.PortID);
+                proxyTargetPort.MergeData(proxyPortData.GetRecursionClonedTargetPortData());
                 proxyPort.SetProxyTargetPort(proxyTargetPort);
                 m_ProxyPorts.Add(proxyPort);
             }

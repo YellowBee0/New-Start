@@ -69,6 +69,12 @@ namespace YBFramework.Bridge.Data
         {
             return 0;
         }
+
+        public override void MergeData(BasePortData dataToMerge)
+        {
+            base.MergeData(dataToMerge);
+            SetMethodInfo(((MethodPortData)dataToMerge).m_MethodInfo);
+        }
 #endif
     }
 }

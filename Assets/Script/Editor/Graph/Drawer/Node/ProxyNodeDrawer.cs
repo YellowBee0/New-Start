@@ -31,13 +31,13 @@ namespace YBFramework.Editor
             ProxyNodeData proxyNodeData = (ProxyNodeData)m_BindNodeData;
             if (evt.newValue is GraphAsset proxyGraphAsset)
             {
-                if ((proxyNodeData.GraphAsset.GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
+                if ((proxyNodeData.GetGraphAsset().GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
                 {
                     //TODO:需要支持Undo
                     proxyNodeData.ProxyGraphAsset = proxyGraphAsset; 
                     return;
                 }
-                Debug.LogError($"This graph type:{proxyNodeData.GraphAsset.GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
+                Debug.LogError($"This graph type:{proxyNodeData.GetGraphAsset().GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
             }
             else
             {

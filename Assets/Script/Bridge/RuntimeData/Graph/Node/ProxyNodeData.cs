@@ -32,7 +32,7 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (m_ProxyPortsData != null && index < m_ProxyPortsData.Count)
+            if (index < m_ProxyPortsData.Count)
             {
                 current = m_ProxyPortsData[index];
                 return true;
@@ -41,37 +41,36 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
+        private const string LIST_DATA_PATH = nameof(m_ProxyPortsData) + ".Array.data[{0}]";
+
         public void MergeProxyTargetNodeData()
         {
             IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodeData();
             for (int i = 0; i < nodeData.Count; i++)
             {
-                if (nodeData[i] is ProxyTargetNodeData proxyTargetNodeData)
+                if (nodeData[i] is ProxyHelperNodeData proxyTargetNodeData)
                 {
-                    for (int j = 0; j < proxyTargetNodeData.ProxyTargetPortsData.Count; j++)
+                    for (int j = 0; j < proxyTargetNodeData.ProxyHelperPortsData.Count; j++)
                     {
-                        ProxyTargetPortData proxyTargetPortData = proxyTargetNodeData.ProxyTargetPortsData[j];
-                        PortConnectionData insideProxyTargetPortAddress = proxyTargetPortData.PortConnectionData;
+                        ProxyHelperPortData proxyHelperPortData = proxyTargetNodeData.ProxyHelperPortsData[j];
                         //insideNodeData和insidePortData一般都不为null，只有在数据非法修改后才可能为null，所以这里就不做判断
-                        BaseNodeData insideNodeData = ProxyGraphAsset.GetNodeData(insideProxyTargetPortAddress.NodeID);
-                        BasePortData insideProxyTargetPortData = insideNodeData.GetPortData(insideProxyTargetPortAddress.PortID);
-                        ProxyPortData proxyPortData = GetProxyPortData(insideProxyTargetPortAddress.NodeID, insideProxyTargetPortData.PortID);
+                        ProxyPortData proxyPortData = GetProxyPortData(proxyHelperPortData.TargetPortConnectionData.NodeID, proxyHelperPortData.TargetPortConnectionData.PortID);
                         //TODO:这里只做了少了会添加，但是多了不会删除。需要取两个集合的交集
                         if (proxyPortData == null)
                         {
-                            Debug.Log($"Proxy node didn't save proxy port data for port address:{insideProxyTargetPortAddress.NodeID}{insideProxyTargetPortData.PortID},this will create a new one");
+                            Debug.Log("Proxy node didn't save proxy port data for port address:" +
+                                      $"node id:{proxyHelperPortData.TargetPortConnectionData.NodeID} port id:{proxyHelperPortData.TargetPortConnectionData.PortID},this will create a new one");
                             proxyPortData = new ProxyPortData
                             {
-                                ProxyTargetClonedPortData = insideProxyTargetPortData.Clone(),
-                                ProxyTargetPortAddress = new PortConnectionData
-                                {
-                                    NodeID = insideProxyTargetPortAddress.NodeID,
-                                    PortID = insideProxyTargetPortAddress.PortID
-                                }
+                                ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone(),
+                                TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID
                             };
+                            //TODO:这里创建端口并添加到集合并不会更新数据到SO，导致获取不到序列化对象。但是这里也获取不到SO。
+                            // 目前想的解决办法是不直接更新数据，而是显示有问题的数据，比如哪一个被移除，哪一个是新增。
+                            // 让用户能够知道改变，然后只给出一个更新按钮
                             m_ProxyPortsData.Add(proxyPortData);
                         }
-                        proxyPortData.SetProxyTargetPortData(insideProxyTargetPortData, proxyTargetPortData.ProxyName);
+                        proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
                     }
                 }
             }
@@ -93,7 +92,7 @@ namespace YBFramework.Bridge.Data
             MergeProxyTargetNodeData();
             for (int i = 0; i < m_ProxyPortsData.Count; i++)
             {
-                m_ProxyPortsData[i].SetFiledName($"{nameof(m_ProxyPortsData)}.Array.data[{i}]");
+                m_ProxyPortsData[i].SetFiledName(string.Format(LIST_DATA_PATH, i));
             }
             //TODO:在这里查找蓝图中ProxyTargetNodeData，获取最新的数据，需要对比数据是否有改变，有改变需要针对改变的对象进行删除或者重新Clone
         }
@@ -103,8 +102,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < m_ProxyPortsData.Count; i++)
             {
                 ProxyPortData proxyPortData = m_ProxyPortsData[i];
-                PortConnectionData outsideProxyTargetPortAddress = proxyPortData.GetProxyTargetPortAddress();
-                if (outsideProxyTargetPortAddress.NodeID == nodeID && outsideProxyTargetPortAddress.PortID == portID)
+                if (proxyPortData.TargetNodeID == nodeID && proxyPortData.ClonedTargetPortData.PortID == portID)
                 {
                     return proxyPortData;
                 }

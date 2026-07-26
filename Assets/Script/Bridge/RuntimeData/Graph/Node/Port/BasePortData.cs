@@ -15,6 +15,15 @@ namespace YBFramework.Bridge.Data
     {
         public int PortID;
 
+        /// <summary>
+        /// 端口是否存在连接。
+        /// 在运行是通过这个字段判断这个是否需要创建这个端口数据的运行实例。
+        /// true需要创建，false反之。
+        /// 如果要判断一个节点是否有用，不能通过判断节点下所有端口是否存在IsUsed为true的判断为被引用。
+        /// 因为IsUsed对只输入端口一般都是为true的，就算没连接其他端口，自身节点都有可能直接使用值；
+        /// 还有可能两个或者多个节点的端口之间是循环引用关系，这些节点都是没用的。
+        /// 如果要判断的话还是得找到每个节点连接端口，并保存节点id到集合中，然后去重遍历集合查看是否每个节点都在集合里。
+        /// </summary>
         public bool IsUsed;
 
         public abstract BasePort CreateRuntimeInstance();
@@ -31,11 +40,11 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        [SerializeField] private List<PortConnectionData> m_PortConnectionDataFromOther;
-
-        [NonSerialized] public BaseNodeData NodeData;
+        [SerializeField] protected List<PortConnectionData> m_PortConnectionDataFromOther;
 
         private string m_FiledName;
+
+        protected BaseNodeData m_NodeData;
 
         protected string m_PortName;
 
@@ -45,6 +54,16 @@ namespace YBFramework.Bridge.Data
 
         protected Color m_PortColor;
 
+        public BaseNodeData GetNodeData()
+        {
+            return m_NodeData;
+        }
+
+        public void SetNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData = nodeData;
+        }
+        
         public void SetFiledName(string filedName)
         {
             m_FiledName = filedName;
@@ -132,7 +151,7 @@ namespace YBFramework.Bridge.Data
 
         public virtual bool CanConnect(BasePortData other)
         {
-            return GetPortConnectionData(other.NodeData.NodeID, other.PortID) == null;
+            return GetPortConnectionData(other.m_NodeData.NodeID, other.PortID) == null;
         }
 
         public virtual void Connect(BasePortData other)
@@ -141,7 +160,7 @@ namespace YBFramework.Bridge.Data
             other.IsUsed = true;
             other.m_PortConnectionDataFromOther.Add(new PortConnectionData
             {
-                NodeID = NodeData.NodeID,
+                NodeID = m_NodeData.NodeID,
                 PortID = PortID
             });
         }
@@ -151,7 +170,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < other.m_PortConnectionDataFromOther.Count; i++)
             {
                 PortConnectionData portConnectionData = other.m_PortConnectionDataFromOther[i];
-                if (portConnectionData.NodeID == NodeData.NodeID && portConnectionData.PortID == PortID)
+                if (portConnectionData.NodeID == m_NodeData.NodeID && portConnectionData.PortID == PortID)
                 {
                     other.m_PortConnectionDataFromOther.RemoveAt(i);
                     if (other.GetPortConnectionDataCount() == 0)
@@ -202,13 +221,14 @@ namespace YBFramework.Bridge.Data
         {
             m_PortConnectionDataFromOther = new List<PortConnectionData>();
         }
-        
+
         /// <summary>
         /// 用于代理端口从真实的端口获取不可序列化的数据，比如绘制参数PortViewArgs，MethodPortData的MethodInfo
         /// </summary>
         /// <param name="dataToMerge">代理目标</param>
         public virtual void MergeData(BasePortData dataToMerge)
         {
+            //TODO:这里proxyPortData如果Clone了一个proxyPortData，那么获取到的这些数据可能全部为默认值
             m_PortName = dataToMerge.m_PortName;
             m_Direction = dataToMerge.m_Direction;
             m_Capacity = dataToMerge.m_Capacity;

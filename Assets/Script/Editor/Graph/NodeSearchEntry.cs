@@ -244,6 +244,7 @@ namespace YBFramework.Editor
                             //添加数据
                             //存在持久化数据
                             mainGraphView.BindGraphDrawer.GetBindGraphAsset().AddNodeData(nodeData);
+                            nodeData.SetGraphAsset(mainGraphView.BindGraphDrawer.GetBindGraphAsset());
                             //初始化运行时数据，非持久化
                             nodeData.Initialize();
                             //TODO:SO更新是在这里还是在AddNodeData函数中？
