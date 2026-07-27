@@ -10,13 +10,13 @@ namespace YBFramework.Bridge.Data
     [CreateAssetMenu(fileName = "New Graph Asset", menuName = "Graph Asset")]
     public sealed class GraphAsset : ScriptableObject
     {
-        [SerializeReference] private List<BaseNodeData> m_NodeData;
+        [SerializeReference] private List<BaseNodeData> m_NodesData;
 
         public BaseNodeData GetNodeData(int nodeID)
         {
-            for (int i = 0; i < m_NodeData.Count; i++)
+            for (int i = 0; i < m_NodesData.Count; i++)
             {
-                BaseNodeData nodeData = m_NodeData[i];
+                BaseNodeData nodeData = m_NodesData[i];
                 if (nodeData.NodeID == nodeID)
                 {
                     return nodeData;
@@ -25,9 +25,9 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 
-        public IReadOnlyList<BaseNodeData> GetNodeData()
+        public IReadOnlyList<BaseNodeData> GetNodesData()
         {
-            return m_NodeData;
+            return m_NodesData;
         }
 
         public Graph CreateGraph()
@@ -54,9 +54,9 @@ namespace YBFramework.Bridge.Data
             {
                 return;
             }
-            for (int i = 0; i < m_NodeData.Count; i++)
+            for (int i = 0; i < m_NodesData.Count; i++)
             {
-                BaseNodeData nodeData = m_NodeData[i];
+                BaseNodeData nodeData = m_NodesData[i];
                 nodeData.SetGraphAsset(this);
                 nodeData.Initialize();
             }
@@ -73,7 +73,7 @@ namespace YBFramework.Bridge.Data
         /// <param name="nodeData">添加的节点数据</param>
         public void AddNodeData(BaseNodeData nodeData)
         {
-            m_NodeData.Add(nodeData);
+            m_NodesData.Add(nodeData);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace YBFramework.Bridge.Data
         /// <param name="nodeData">移除的节点数据</param>
         public void RemoveNodeData(BaseNodeData nodeData)
         {
-            m_NodeData.Remove(nodeData);
+            m_NodesData.Remove(nodeData);
         }
 
         private void OnDisable()

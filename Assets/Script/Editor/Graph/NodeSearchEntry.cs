@@ -9,7 +9,7 @@ using YBFramework.Bridge.Data;
 using YBFramework.Bridge.Editor;
 using YBFramework.Common;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     public sealed class NodeSearchEntry : ScriptableObject, ISearchWindowProvider
     {
@@ -214,7 +214,7 @@ namespace YBFramework.Editor
                 {
                     foreach (NodeCreateLimitAttribute nodeCreateLimitAttribute in nodeMetaData.createLimits)
                     {
-                        if (!nodeCreateLimitAttribute.CanCreate(mainGraphView.BindGraphDrawer.GetBindGraphAsset(), nodeMetaData.nodeType))
+                        if (!nodeCreateLimitAttribute.CanCreate(mainGraphView.BindGraphAsset, nodeMetaData.nodeType))
                         {
                             return false;
                         }
@@ -234,7 +234,7 @@ namespace YBFramework.Editor
                             nodeData.Position = mainGraphView.contentViewContainer.WorldToLocal(worldPos);
                             //使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
                             //存在持久化数据
-                            nodeData.NodeID = ++mainGraphView.BindGraphDrawer.GetBindGraphAsset().SourceNodeID;
+                            nodeData.NodeID = ++mainGraphView.BindGraphAsset.SourceNodeID;
                             //端口同理
                             //存在持久化数据
                             foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
@@ -243,13 +243,13 @@ namespace YBFramework.Editor
                             }
                             //添加数据
                             //存在持久化数据
-                            mainGraphView.BindGraphDrawer.GetBindGraphAsset().AddNodeData(nodeData);
-                            nodeData.SetGraphAsset(mainGraphView.BindGraphDrawer.GetBindGraphAsset());
+                            mainGraphView.BindGraphAsset.AddNodeData(nodeData);
+                            nodeData.SetGraphAsset(mainGraphView.BindGraphAsset);
                             //初始化运行时数据，非持久化
                             nodeData.Initialize();
                             //TODO:SO更新是在这里还是在AddNodeData函数中？
-                            mainGraphView.BindGraphDrawer.UpdateSO();
-                            mainGraphView.AddNodeView(nodeDrawer.CreateNodeView(nodeData, mainGraphView.BindGraphDrawer.GetNodeSerializedProperty(nodeData)));
+                            /*mainGraphView.BindGraphDrawer.UpdateSO();
+                            mainGraphView.AddNodeView(nodeDrawer.CreateNodeView(nodeData, mainGraphView.BindGraphDrawer.GetNodeSerializedProperty(nodeData)));*/
                             return true;
                         }
                     }

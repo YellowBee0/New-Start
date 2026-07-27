@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     [GraphDrawer(typeof(BasePortData))]
     public class BasePortDrawer
@@ -44,9 +44,11 @@ namespace YBFramework.Editor
 
         public virtual VisualElement CreatePortContentView(BasePortData portData, SerializedProperty serializedProperty, out PortView portView)
         {
-            m_BindPortData = portData;
+            /*m_BindPortData = portData;
             portView = new PortView(portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor(), this);
-            return portView;
+            return portView;*/
+            portView = null;
+            return null;
         }
     }
 }

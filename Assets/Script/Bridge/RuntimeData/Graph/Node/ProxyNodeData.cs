@@ -45,7 +45,7 @@ namespace YBFramework.Bridge.Data
 
         public void MergeProxyTargetNodeData()
         {
-            IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodeData();
+            IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 if (nodeData[i] is ProxyHelperNodeData proxyTargetNodeData)

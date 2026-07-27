@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 using YBFramework.Common;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     [GraphDrawer(typeof(BaseNodeData))]
     public class BaseNodeDrawer
@@ -67,7 +67,7 @@ namespace YBFramework.Editor
 
         public virtual NodeView CreateNodeView(BaseNodeData nodeData, SerializedProperty serializedProperty)
         {
-            m_BindNodeData = nodeData;
+            /*m_BindNodeData = nodeData;
             NodeView nodeView = new(this)
             {
                 title = nodeData.Name
@@ -78,7 +78,8 @@ namespace YBFramework.Editor
                 CreatePortView(nodeView, serializedProperty, portData);
             }
             nodeView.RefreshPortContainerDisplay();
-            return nodeView;
+            return nodeView;*/
+            return null;
         }
     }
 }

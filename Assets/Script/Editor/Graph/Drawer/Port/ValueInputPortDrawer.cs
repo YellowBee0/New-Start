@@ -4,7 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     [GraphDrawer(typeof(ValueInputPortData<>))]
     public sealed class ValueInputPortDrawer : BasePortDrawer

@@ -1,25 +1,28 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
+using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     public sealed class CustomGraphView : GraphView
     {
-        //TODO:View里不在存放Drawer数据，Drawer改名为Presenter，Presenter控制Data和View。
-        // 只能在Presenter中改变数据，View中不允许改变数据。
-        // View中想要获取数据只能通过View提供一个接口，可能是委托，然后让Presenter注册，Presenter查找内部的View是否相等
-        // 相等就把数据用于View的操作
-        // 连线时在EdgeConnectListener里调用CustomGraphView的连线委托
-        public readonly GraphDrawer BindGraphDrawer;
+        /// <summary>
+        /// CustomGraphView视图绑定的GraphAsset Data。
+        /// 正常MVP架构是不允许数据Data和视图View之间有联系，但是为了用户操作视图时，能够快捷的获取到数据才这么做，不然只有去Presenter中一级一级查找非常耗时。
+        /// </summary>
+        public readonly GraphAsset BindGraphAsset;
 
         private readonly List<NodeView> m_NodeViews = new();
 
         private readonly List<Port> m_CompatiblePorts = new();
 
-        public CustomGraphView(GraphDrawer bindGraphDrawer)
+        public Action<Edge> OnEdgeConnect;
+
+        public CustomGraphView(GraphAsset graphAsset)
         {
-            BindGraphDrawer = bindGraphDrawer;
+            BindGraphAsset = graphAsset;
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
@@ -49,7 +52,7 @@ namespace YBFramework.Editor
         {
             for (int i = 0; i < m_NodeViews.Count; i++)
             {
-                if (m_NodeViews[i].BindNodeDrawer.GetBindNodeData().NodeID == nodeID)
+                if (m_NodeViews[i].BindNodeData.NodeID == nodeID)
                 {
                     return m_NodeViews[i];
                 }
@@ -74,15 +77,6 @@ namespace YBFramework.Editor
                 }
             }
             return m_CompatiblePorts;
-        }
-
-        public void OnRelease()
-        {
-            GraphWindow.GetInstance().ReleaseGraphDrawer(BindGraphDrawer);
-            for (int i = 0; i < m_NodeViews.Count; i++)
-            {
-                m_NodeViews[i].OnRelease();
-            }
         }
     }
 }

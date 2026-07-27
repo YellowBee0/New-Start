@@ -18,7 +18,7 @@ namespace YBFramework.Bridge.Editor
         public override bool CanCreate(GraphAsset graphAsset, Type nodeType)
         {
             int existCount = 0;
-            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodeData();
+            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 if (nodeData[i].GetType().IsAssignableFrom(nodeType))

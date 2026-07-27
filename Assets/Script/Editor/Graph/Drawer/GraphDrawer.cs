@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     public sealed class GraphDrawer
     {
@@ -23,7 +23,7 @@ namespace YBFramework.Editor
         public CustomGraphView CreateGraphView(GraphAsset graphAsset, SerializedObject serializedObject)
         {
             m_BindGraphAsset = graphAsset;
-            m_GraphView = new CustomGraphView(this);
+            //m_GraphView = new CustomGraphView(this);
             m_BindNodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
             m_SerializedObject = serializedObject;
             m_NodeDataListProperty = m_SerializedObject.FindProperty("m_NodeData");
@@ -31,7 +31,7 @@ namespace YBFramework.Editor
             m_GraphView.nodeCreationRequest = ShowNodeSearchView;
             m_GraphView.graphViewChanged += OnGraphViewChanged;
 
-            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodeData();
+            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 BaseNodeData baseNodeData = nodeData[i];
@@ -56,7 +56,7 @@ namespace YBFramework.Editor
 
         public SerializedProperty GetNodeSerializedProperty(BaseNodeData nodeData)
         {
-            IReadOnlyList<BaseNodeData> existNodeData = m_BindGraphAsset.GetNodeData();
+            IReadOnlyList<BaseNodeData> existNodeData = m_BindGraphAsset.GetNodesData();
             for (int i = 0; i < existNodeData.Count; i++)
             {
                 if (existNodeData[i] == nodeData)
@@ -70,7 +70,7 @@ namespace YBFramework.Editor
         private GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
         {
             //TODO:需要支持Undo
-            if (changeValue.elementsToRemove != null)
+            /*if (changeValue.elementsToRemove != null)
             {
                 for (int i = 0; i < changeValue.elementsToRemove.Count; i++)
                 {
@@ -100,7 +100,7 @@ namespace YBFramework.Editor
                         nodeView.BindNodeDrawer.GetBindNodeData().Position += changeValue.moveDelta;
                     }
                 }
-            }
+            }*/
             return changeValue;
         }
 

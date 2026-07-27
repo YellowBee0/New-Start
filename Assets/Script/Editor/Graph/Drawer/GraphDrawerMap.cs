@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     public sealed class GraphDrawerMap
     {

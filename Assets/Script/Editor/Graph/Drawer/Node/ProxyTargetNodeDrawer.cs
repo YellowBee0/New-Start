@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     [GraphDrawer(typeof(ProxyHelperNodeData))]
     public sealed class ProxyTargetNodeDrawer : BaseNodeDrawer
@@ -78,7 +78,7 @@ namespace YBFramework.Editor
         private void OnIsProxyInputChanged(ChangeEvent<bool> evt)
         {
             ProxyHelperNodeData bindNodeData = (ProxyHelperNodeData)m_BindNodeData;
-            IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GetGraphAsset().GetNodeData();
+            IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GetGraphAsset().GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 BaseNodeData baseNodeData = nodeData[i];

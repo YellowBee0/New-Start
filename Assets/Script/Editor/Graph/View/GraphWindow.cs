@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     public sealed class GraphWindow : EditorWindow
     {

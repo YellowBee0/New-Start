@@ -1,0 +1,70 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine.UIElements;
+using YBFramework.Bridge.Data;
+
+namespace YBFramework.Editor.Graph
+{
+    public class BasePortPresenter
+    {
+        private static readonly Dictionary<Type, Stack<BasePortPresenter>> s_PortPresenters = new();
+
+        public static BasePortPresenter AllocatePortPresenter(Type portDataType)
+        {
+            Type portPresenterType = GraphDrawerMap.GetInstance().GetDrawerType(portDataType);
+            if (portPresenterType == null)
+            {
+                return null;
+            }
+            if (!s_PortPresenters.TryGetValue(portPresenterType, out Stack<BasePortPresenter> portPresenters))
+            {
+                portPresenters = new Stack<BasePortPresenter>();
+                s_PortPresenters.Add(portPresenterType, portPresenters);
+            }
+            return portPresenters.Count > 0 ? portPresenters.Pop() : Activator.CreateInstance(portPresenterType) as BasePortPresenter;
+        }
+
+        public static void ReleasePortPresenter(BasePortPresenter portPresenter)
+        {
+            Type portPresenterType = portPresenter.GetType();
+            if (s_PortPresenters.TryGetValue(portPresenterType, out Stack<BasePortPresenter> portPresenters))
+            {
+                portPresenters.Push(portPresenter);
+            }
+        }
+
+        private BasePortData m_PortData;
+
+        private PortView m_PortView;
+
+        private VisualElement m_PortContentView;
+
+        public virtual void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
+        {
+            m_PortData = portData;
+            m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
+            m_PortContentView = m_PortView;
+        }
+
+        public BasePortData GetPortData()
+        {
+            return m_PortData;
+        }
+
+        public PortView GetPortView()
+        {
+            return m_PortView;
+        }
+
+        public VisualElement GetPortContentView()
+        {
+            return m_PortContentView;
+        }
+
+        public virtual void OnRelease()
+        {
+            ReleasePortPresenter(this);
+        }
+    }
+}

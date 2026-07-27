@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YBFramework.Editor
+namespace YBFramework.Editor.Graph
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public sealed class GraphDrawerAttribute : Attribute
