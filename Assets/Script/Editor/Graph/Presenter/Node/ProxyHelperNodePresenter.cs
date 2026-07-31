@@ -7,19 +7,17 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [GraphDrawer(typeof(ProxyHelperNodeData))]
-    public sealed class ProxyTargetNodeDrawer : BaseNodeDrawer
+    [EditorPresenter(typeof(ProxyHelperNodeData))]
+    public sealed class ProxyHelperNodePresenter : BaseNodePresenter
     {
         private Toggle m_IsProxyInputToggle;
 
         private SerializedProperty m_NodeSerializedProperty;
 
-        private NodeView m_NodeView;
-
-        public override NodeView CreateNodeView(BaseNodeData nodeData, SerializedProperty serializedProperty)
+        public override void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
-            m_NodeSerializedProperty = serializedProperty;
-            m_NodeView = base.CreateNodeView(nodeData, serializedProperty);
+            m_NodeSerializedProperty = nodeSerializedProperty;
+            base.Initialize(nodeData, nodeSerializedProperty);
             VisualElement buttonContainer = new()
             {
                 style =
@@ -27,31 +25,30 @@ namespace YBFramework.Editor.Graph
                     flexDirection = FlexDirection.Row
                 }
             };
-            Button addButton = new Button(OnAddClicked)
+            Button addButton = new(OnAddClicked)
             {
                 text = "添加"
             };
-            Button removeButton = new Button(OnRemoveClicked)
+            Button removeButton = new(OnRemoveClicked)
             {
                 text = "删除"
             };
             buttonContainer.Add(addButton);
             buttonContainer.Add(removeButton);
             ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)nodeData;
-            m_IsProxyInputToggle = new Toggle("是否为输入端口代理辅助")
+            m_IsProxyInputToggle = new Toggle("只连接输入")
             {
                 value = proxyHelperNodeData.IsInputPortsProxyHelper
             };
             m_IsProxyInputToggle.RegisterValueChangedCallback(OnIsProxyInputChanged);
             m_NodeView.contentContainer.Add(m_IsProxyInputToggle);
             m_NodeView.contentContainer.Add(buttonContainer);
-            return m_NodeView;
         }
 
         private void OnAddClicked()
         {
-            ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_BindNodeData;
-            ProxyHelperPortData proxyHelperPortData = new ProxyHelperPortData
+            ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_NodeData;
+            ProxyHelperPortData proxyHelperPortData = new()
             {
                 PortID = ++proxyHelperNodeData.SourcePortID
             };
@@ -66,7 +63,14 @@ namespace YBFramework.Editor.Graph
             proxyHelperPortData.SetCapacity(proxyHelperPortData.GetCapacity());
             proxyHelperNodeData.ProxyHelperPortsData.Add(proxyHelperPortData);
             m_NodeSerializedProperty.serializedObject.Update();
-            CreatePortView(m_NodeView, m_NodeSerializedProperty, proxyHelperPortData);
+
+            BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(ProxyHelperPortData));
+            if (portPresenter != null)
+            {
+                portPresenter.Initialize(proxyHelperPortData, m_NodeSerializedProperty.FindPropertyRelative(proxyHelperPortData.GetFiledName()));
+                AddPortPresenter(portPresenter);
+            }
+
             m_NodeView.RefreshPortContainerDisplay();
         }
 
@@ -77,7 +81,7 @@ namespace YBFramework.Editor.Graph
 
         private void OnIsProxyInputChanged(ChangeEvent<bool> evt)
         {
-            ProxyHelperNodeData bindNodeData = (ProxyHelperNodeData)m_BindNodeData;
+            ProxyHelperNodeData bindNodeData = (ProxyHelperNodeData)m_NodeData;
             IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GetGraphAsset().GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {

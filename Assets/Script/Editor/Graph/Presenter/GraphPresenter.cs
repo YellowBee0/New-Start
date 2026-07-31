@@ -3,13 +3,12 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.Bridge.Data;
+using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph.Presenter
 {
     public sealed class GraphPresenter
     {
-      
-
         private static readonly Stack<GraphPresenter> s_GraphPresenters = new();
 
         public static GraphPresenter AllocateGraphPresenter()
@@ -40,7 +39,7 @@ namespace YBFramework.Editor.Graph.Presenter
             m_GraphAsset.Initialize();
             m_SO = new SerializedObject(graphAsset);
             m_SO.Update();
-            m_NodeDataListProperty = m_SO.FindProperty("m_NodeData");
+            m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
             m_NodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
             m_GraphView = new CustomGraphView(graphAsset)
             {
@@ -56,8 +55,7 @@ namespace YBFramework.Editor.Graph.Presenter
                 if (nodePresenter != null)
                 {
                     nodePresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
-                    m_GraphView.AddNodeView(nodePresenter.GetNodeView());
-                    m_NodePresenters.Add(nodePresenter);
+                    AddNodePresenter(nodePresenter);
                 }
             }
         }
@@ -71,7 +69,7 @@ namespace YBFramework.Editor.Graph.Presenter
         {
             return m_GraphView;
         }
-
+        
         public IReadOnlyList<BaseNodePresenter> GetNodePresenters()
         {
             return m_NodePresenters;
@@ -88,6 +86,18 @@ namespace YBFramework.Editor.Graph.Presenter
                 }
             }
             return null;
+        }
+
+        public void AddNodePresenter(BaseNodePresenter nodePresenter)
+        {
+            m_GraphView.AddNodeView(nodePresenter.GetNodeView());
+            m_NodePresenters.Add(nodePresenter);
+        }
+
+        public void RemoveNodePresenter(BaseNodePresenter nodePresenter)
+        {
+            m_GraphView.RemoveNodeView(nodePresenter.GetNodeView());
+            m_NodePresenters.Remove(nodePresenter);
         }
 
         public void UpdateSO()

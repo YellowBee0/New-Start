@@ -4,13 +4,14 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [GraphDrawer(typeof(ProxyHelperPortData))]
-    public sealed class ProxyTargetPortDrawer : BasePortDrawer
+    [EditorPresenter(typeof(ProxyHelperPortData))]
+    public sealed class ProxyHelperPortPresenter : BasePortPresenter
     {
-        public override VisualElement CreatePortContentView(BasePortData portData, SerializedProperty serializedProperty, out PortView portView)
+        public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
+            base.Initialize(portData, portSerializedProperty);
             VisualElement portContentView = new();
-            portContentView.Add(base.CreatePortContentView(portData, serializedProperty, out portView));
+            portContentView.Add(m_PortContentView);
             ProxyHelperPortData proxyHelperPortData = (ProxyHelperPortData)portData;
             TextField proxyNameField = new()
             {
@@ -18,13 +19,13 @@ namespace YBFramework.Editor.Graph
             };
             proxyNameField.RegisterValueChangedCallback(OnProxyNameChange);
             portContentView.Add(proxyNameField);
-            return portContentView;
+            m_PortContentView = portContentView;
         }
 
         private void OnProxyNameChange(ChangeEvent<string> evt)
         {
             //TODO:需要支持Undo
-            ((ProxyHelperPortData)m_BindPortData).ProxyName = evt.newValue;
+            ((ProxyHelperPortData)m_PortData).ProxyName = evt.newValue;
         }
     }
 }

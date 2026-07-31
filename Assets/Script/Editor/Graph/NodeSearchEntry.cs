@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 using YBFramework.Bridge.Editor;
 using YBFramework.Common;
+using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
 {
@@ -206,15 +207,15 @@ namespace YBFramework.Editor.Graph
 
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
-            CustomGraphView mainGraphView = GraphWindow.GetInstance().GetMainGraphView();
-            if (mainGraphView != null)
+            GraphPresenter openedGraphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
+            if (openedGraphPresenter != null)
             {
                 (Type nodeType, IEnumerable<NodeCreateLimitAttribute> createLimits) nodeMetaData = GetSelectNodeMetaData(SearchTreeEntry.name);
                 if (nodeMetaData.nodeType != null)
                 {
                     foreach (NodeCreateLimitAttribute nodeCreateLimitAttribute in nodeMetaData.createLimits)
                     {
-                        if (!nodeCreateLimitAttribute.CanCreate(mainGraphView.BindGraphAsset, nodeMetaData.nodeType))
+                        if (!nodeCreateLimitAttribute.CanCreate(openedGraphPresenter.GetGraphAsset(), nodeMetaData.nodeType))
                         {
                             return false;
                         }
@@ -222,19 +223,20 @@ namespace YBFramework.Editor.Graph
                     //TODO:需要支持Undo
                     if (Activator.CreateInstance(nodeMetaData.nodeType) is BaseNodeData nodeData)
                     {
-                        BaseNodeDrawer nodeDrawer = BaseNodeDrawer.AllocateNodeDrawer(nodeMetaData.nodeType);
-                        if (nodeDrawer != null)
+                        BaseNodePresenter nodePresenter = BaseNodePresenter.AllocateNodePresenter(nodeMetaData.nodeType);
+                        if (nodePresenter != null)
                         {
+                            CustomGraphView graphView = openedGraphPresenter.GetGraphView();
                             //创建NodeData内部持久化数据
                             nodeData.CreateData();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
                             //创建节点时初始话节点名和位置
                             nodeData.Name = SearchTreeEntry.name;
-                            nodeData.Position = mainGraphView.contentViewContainer.WorldToLocal(worldPos);
+                            nodeData.Position = graphView.contentViewContainer.WorldToLocal(worldPos);
                             //使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
                             //存在持久化数据
-                            nodeData.NodeID = ++mainGraphView.BindGraphAsset.SourceNodeID;
+                            nodeData.NodeID = ++openedGraphPresenter.GetGraphAsset().SourceNodeID;
                             //端口同理
                             //存在持久化数据
                             foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
@@ -243,13 +245,13 @@ namespace YBFramework.Editor.Graph
                             }
                             //添加数据
                             //存在持久化数据
-                            mainGraphView.BindGraphAsset.AddNodeData(nodeData);
-                            nodeData.SetGraphAsset(mainGraphView.BindGraphAsset);
+                            openedGraphPresenter.GetGraphAsset().AddNodeData(nodeData);
+                            nodeData.SetGraphAsset(openedGraphPresenter.GetGraphAsset());
                             //初始化运行时数据，非持久化
                             nodeData.Initialize();
-                            //TODO:SO更新是在这里还是在AddNodeData函数中？
-                            /*mainGraphView.BindGraphDrawer.UpdateSO();
-                            mainGraphView.AddNodeView(nodeDrawer.CreateNodeView(nodeData, mainGraphView.BindGraphDrawer.GetNodeSerializedProperty(nodeData)));*/
+                            openedGraphPresenter.UpdateSO();
+                            nodePresenter.Initialize(nodeData, openedGraphPresenter.GetNodeSerializedProperty(nodeData));
+                            openedGraphPresenter.AddNodePresenter(nodePresenter);
                             return true;
                         }
                     }

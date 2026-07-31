@@ -4,13 +4,13 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace YBFramework.Editor.Graph
+namespace YBFramework.Editor
 {
-    public sealed class GraphDrawerMap
+    public sealed class EditorPresenterMap
     {
-        private static readonly GraphDrawerMap s_Instance = new();
+        private static readonly EditorPresenterMap s_Instance = new();
 
-        public static GraphDrawerMap GetInstance()
+        public static EditorPresenterMap GetInstance()
         {
             return s_Instance;
         }
@@ -24,16 +24,16 @@ namespace YBFramework.Editor.Graph
                 Debug.Log("Graph drawer map has initialized");
                 return;
             }
-            TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<GraphDrawerAttribute>();
+            TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<EditorPresenterAttribute>();
             for (int i = 0; i < types.Count; i++)
             {
                 Type drawerType = types[i];
-                GraphDrawerAttribute attribute = drawerType.GetCustomAttribute<GraphDrawerAttribute>();
+                EditorPresenterAttribute attribute = drawerType.GetCustomAttribute<EditorPresenterAttribute>();
                 if (attribute != null)
                 {
-                    if (!m_GraphDrawers.TryAdd(attribute.DrawType, drawerType))
+                    if (!m_GraphDrawers.TryAdd(attribute.RuntimeType, drawerType))
                     {
-                        Debug.LogWarning($"{attribute.DrawType} is already exists");
+                        Debug.LogWarning($"{attribute.RuntimeType} is already exists");
                     }
                 }
             }

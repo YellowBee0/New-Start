@@ -6,13 +6,14 @@ using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph
 {
+    [EditorPresenter(typeof(BaseNodeData))]
     public class BaseNodePresenter
     {
         private static readonly Dictionary<Type, Stack<BaseNodePresenter>> s_NodePresenters = new();
 
         public static BaseNodePresenter AllocateNodePresenter(Type nodeDataType)
         {
-            Type nodePresenterType = GraphDrawerMap.GetInstance().GetDrawerType(nodeDataType);
+            Type nodePresenterType = EditorPresenterMap.GetInstance().GetDrawerType(nodeDataType);
             if (nodePresenterType == null)
             {
                 return null;
@@ -34,9 +35,9 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        private BaseNodeData m_NodeData;
+        protected BaseNodeData m_NodeData;
 
-        private NodeView m_NodeView;
+        protected NodeView m_NodeView;
 
         private readonly List<BasePortPresenter> m_PortPresenters = new();
 
@@ -50,9 +51,7 @@ namespace YBFramework.Editor.Graph
                 if (portPresenter != null)
                 {
                     portPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFiledName()));
-                    m_NodeView.AddPortContentView(portPresenter.GetPortContentView(), portData.GetDirection());
-                    m_NodeView.AddPortView(portPresenter.GetPortView());
-                    m_PortPresenters.Add(portPresenter);
+                    AddPortPresenter(portPresenter);
                 }
             }
             m_NodeView.RefreshPortContainerDisplay();
@@ -66,6 +65,25 @@ namespace YBFramework.Editor.Graph
         public NodeView GetNodeView()
         {
             return m_NodeView;
+        }
+
+        public IReadOnlyList<BasePortPresenter> GetPortPresenters()
+        {
+            return m_PortPresenters;
+        }
+        
+        public void AddPortPresenter(BasePortPresenter portPresenter)
+        {
+            m_NodeView.AddPortView(portPresenter.GetPortView());
+            m_NodeView.AddPortContentView(portPresenter.GetPortContentView(), portPresenter.GetPortData().GetDirection());
+            m_PortPresenters.Add(portPresenter);
+        }
+
+        public void RemovePortPresenter(BasePortPresenter portPresenter)
+        {
+            m_NodeView.RemovePortView(portPresenter.GetPortView());
+            m_NodeView.RemovePortContentView(portPresenter.GetPortContentView(), portPresenter.GetPortData().GetDirection());
+            m_PortPresenters.Add(portPresenter);
         }
 
         public void OnRelease()

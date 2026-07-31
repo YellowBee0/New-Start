@@ -12,7 +12,7 @@ namespace YBFramework.Editor.Graph
 
         public static BasePortPresenter AllocatePortPresenter(Type portDataType)
         {
-            Type portPresenterType = GraphDrawerMap.GetInstance().GetDrawerType(portDataType);
+            Type portPresenterType = EditorPresenterMap.GetInstance().GetDrawerType(portDataType);
             if (portPresenterType == null)
             {
                 return null;
@@ -34,11 +34,11 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        private BasePortData m_PortData;
+        protected BasePortData m_PortData;
 
-        private PortView m_PortView;
+        protected PortView m_PortView;
 
-        private VisualElement m_PortContentView;
+        protected VisualElement m_PortContentView;
 
         public virtual void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {

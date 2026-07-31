@@ -54,6 +54,11 @@ namespace YBFramework.Bridge.Data
                     {
                         ProxyHelperPortData proxyHelperPortData = proxyTargetNodeData.ProxyHelperPortsData[j];
                         //insideNodeData和insidePortData一般都不为null，只有在数据非法修改后才可能为null，所以这里就不做判断
+                        if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
+                        {
+                            Debug.LogWarning($"Port in graph:{ProxyGraphAsset.name} node id:{proxyTargetNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
+                            continue;
+                        }
                         ProxyPortData proxyPortData = GetProxyPortData(proxyHelperPortData.TargetPortConnectionData.NodeID, proxyHelperPortData.TargetPortConnectionData.PortID);
                         //TODO:这里只做了少了会添加，但是多了不会删除。需要取两个集合的交集
                         if (proxyPortData == null)

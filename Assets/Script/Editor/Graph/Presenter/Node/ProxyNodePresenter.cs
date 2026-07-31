@@ -6,14 +6,14 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [GraphDrawer(typeof(ProxyNodeData))]
-    public sealed class ProxyNodeDrawer : BaseNodeDrawer
+    [EditorPresenter(typeof(ProxyNodeData))]
+    public sealed class ProxyNodePresenter : BaseNodePresenter
     {
         private ObjectField m_ProxyGraphAssetField;
 
-        public override NodeView CreateNodeView(BaseNodeData nodeData, SerializedProperty serializedProperty)
+        public override void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
-            NodeView nodeView = base.CreateNodeView(nodeData, serializedProperty);
+            base.Initialize(nodeData, nodeSerializedProperty);
             ProxyNodeData proxyNodeData = (ProxyNodeData)nodeData;
             m_ProxyGraphAssetField = new ObjectField
             {
@@ -22,19 +22,18 @@ namespace YBFramework.Editor.Graph
                 objectType = typeof(GraphAsset)
             };
             m_ProxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
-            nodeView.contentContainer.Add(m_ProxyGraphAssetField);
-            return nodeView;
+            m_NodeView.contentContainer.Add(m_ProxyGraphAssetField);
         }
 
         private void OnProxyGraphAssetChanged(ChangeEvent<Object> evt)
         {
-            ProxyNodeData proxyNodeData = (ProxyNodeData)m_BindNodeData;
+            ProxyNodeData proxyNodeData = (ProxyNodeData)m_NodeData;
             if (evt.newValue is GraphAsset proxyGraphAsset)
             {
                 if ((proxyNodeData.GetGraphAsset().GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
                 {
                     //TODO:需要支持Undo
-                    proxyNodeData.ProxyGraphAsset = proxyGraphAsset; 
+                    proxyNodeData.ProxyGraphAsset = proxyGraphAsset;
                     return;
                 }
                 Debug.LogError($"This graph type:{proxyNodeData.GetGraphAsset().GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");

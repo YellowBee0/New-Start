@@ -4,12 +4,13 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
+using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
 {
     public sealed class GraphWindow : EditorWindow
     {
-#region single instance
+        #region single instance
         private static GraphWindow s_Instance;
 
         [MenuItem("Window/Graph")]
@@ -29,41 +30,40 @@ namespace YBFramework.Editor.Graph
         {
             return s_Instance;
         }
-#endregion
+        #endregion
+        private readonly Stack<GraphPresenter> m_GraphPresenterPool = new();
 
-        private readonly Stack<GraphDrawer> m_GraphDrawerPool = new();
-
-        private readonly Dictionary<string, CustomGraphView> m_DrawnGraphViews = new();
-
+        private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
+        
         private readonly List<string> m_FilteredGraphAssetNames = new();
 
         private readonly List<string> m_GraphAssetNames = new();
 
         private readonly List<string> m_GraphAssetPaths = new();
+        
+        [NonSerialized] private string m_FilterGraphAssetNameStr;
+
+        [NonSerialized] private string m_OpenedGraphAssetPath;
+        
+        private GraphPresenter m_OpenedPresenter;
 
         private ListView m_ListView;
 
         private VisualElement m_GraphContainer;
 
-        private CustomGraphView m_MainGraphView;
-
-        [NonSerialized] private string m_FilterGraphAssetNameStr;
-
-        [NonSerialized] private string m_MainGraphAssetPath;
-
-        public CustomGraphView GetMainGraphView()
+        public GraphPresenter GetOpenedPresenter()
         {
-            return m_MainGraphView;
+            return m_OpenedPresenter;
         }
 
-        public GraphDrawer AllocateGraphDrawer()
+        public GraphPresenter AllocateGraphPresenter()
         {
-            return m_GraphDrawerPool.Count > 0 ? m_GraphDrawerPool.Pop() : new GraphDrawer();
+            return m_GraphPresenterPool.Count > 0 ? m_GraphPresenterPool.Pop() : new GraphPresenter();
         }
 
-        public void ReleaseGraphDrawer(GraphDrawer graphDrawer)
+        public void ReleaseGraphPresenter(GraphPresenter graphPresenter)
         {
-            m_GraphDrawerPool.Push(graphDrawer);
+            m_GraphPresenterPool.Push(graphPresenter);
         }
 
         private void CreateGUI()
@@ -76,7 +76,7 @@ namespace YBFramework.Editor.Graph
                 }
                 s_Instance = this;
             }
-            GraphDrawerMap.GetInstance().Initialize();
+            EditorPresenterMap.GetInstance().Initialize();
             //1、初始化节点筛选窗口
             NodeSearchEntry.InitializeNodeSearchTree();
 
@@ -185,9 +185,9 @@ namespace YBFramework.Editor.Graph
 
         private void ChangeMainGraphView(string graphAssetPath)
         {
-            if (m_MainGraphAssetPath != graphAssetPath)
+            if (m_OpenedGraphAssetPath != graphAssetPath)
             {
-                if (!m_DrawnGraphViews.TryGetValue(graphAssetPath, out CustomGraphView graphView))
+                if (!m_LoadGraphPresenters.TryGetValue(graphAssetPath, out GraphPresenter graphPresenter))
                 {
                     GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
                     if (graphAsset == null)
@@ -195,16 +195,15 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
-                    SerializedObject serializedObject = new SerializedObject(graphAsset);
-                    serializedObject.Update();
-                    graphAsset.Initialize();
-                    graphView = AllocateGraphDrawer().CreateGraphView(graphAsset, serializedObject);
-                    m_DrawnGraphViews.Add(graphAssetPath, graphView);
+                    graphPresenter = AllocateGraphPresenter();
+                    graphPresenter.Initialize(graphAsset);
+                    m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);
                 }
-                m_MainGraphView?.RemoveFromHierarchy();
+                m_OpenedPresenter?.GetGraphView().RemoveFromHierarchy();
+                CustomGraphView graphView = graphPresenter.GetGraphView();
                 m_GraphContainer.Add(graphView);
-                m_MainGraphAssetPath = graphAssetPath;
-                m_MainGraphView = graphView;
+                m_OpenedGraphAssetPath = graphAssetPath;
+                m_OpenedPresenter = graphPresenter;
             }
         }
 
