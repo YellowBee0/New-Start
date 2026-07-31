@@ -15,7 +15,7 @@ namespace YBFramework.GameLogic.Graph
             m_PortID = data.PortID;
             m_MethodInfo = data.GetMethodInfo();
         }
-        
+
         public void SetTarget(object target)
         {
             m_Target = target;

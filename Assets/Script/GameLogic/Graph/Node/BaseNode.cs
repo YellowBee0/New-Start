@@ -10,7 +10,7 @@ namespace YBFramework.GameLogic.Graph
         {
             return m_NodeID;
         }
-        
+
         public BasePort GetPort(int portID)
         {
             foreach (BasePort port in (IValueIterator<BasePort>)this)
@@ -26,7 +26,7 @@ namespace YBFramework.GameLogic.Graph
         public abstract bool Iterator(int index, out BasePort current);
 
         public abstract void OnStart();
-        
+
         public abstract void OnStop();
 
         public abstract void OnReset();

@@ -53,7 +53,7 @@ namespace YBFramework.Editor.Graph
         {
             m_OnDisconnect -= onDisconnect;
         }
-        
+
 
         /// <summary>
         /// PortView视图上连接连线，如果数据也得修改，需要一起调用BindPortData的Connect函数

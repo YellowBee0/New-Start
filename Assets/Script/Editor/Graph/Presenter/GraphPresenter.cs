@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.Bridge.Data;
-using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph.Presenter
 {
@@ -69,7 +68,7 @@ namespace YBFramework.Editor.Graph.Presenter
         {
             return m_GraphView;
         }
-        
+
         public IReadOnlyList<BaseNodePresenter> GetNodePresenters()
         {
             return m_NodePresenters;

@@ -10,7 +10,7 @@ namespace YBFramework.Editor.Graph
     public sealed class ValueInputPortPresenter : BasePortPresenter
     {
         private PropertyField m_ValueField;
-        
+
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
             base.Initialize(portData, portSerializedProperty);

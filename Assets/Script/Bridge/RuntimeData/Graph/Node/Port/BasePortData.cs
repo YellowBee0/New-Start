@@ -63,7 +63,7 @@ namespace YBFramework.Bridge.Data
         {
             m_NodeData = nodeData;
         }
-        
+
         public void SetFiledName(string filedName)
         {
             m_FiledName = filedName;

@@ -34,17 +34,17 @@ namespace YBFramework.Editor.Graph
         private readonly Stack<GraphPresenter> m_GraphPresenterPool = new();
 
         private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
-        
+
         private readonly List<string> m_FilteredGraphAssetNames = new();
 
         private readonly List<string> m_GraphAssetNames = new();
 
         private readonly List<string> m_GraphAssetPaths = new();
-        
+
         [NonSerialized] private string m_FilterGraphAssetNameStr;
 
         [NonSerialized] private string m_OpenedGraphAssetPath;
-        
+
         private GraphPresenter m_OpenedPresenter;
 
         private ListView m_ListView;

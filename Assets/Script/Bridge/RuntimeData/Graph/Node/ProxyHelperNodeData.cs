@@ -67,7 +67,7 @@ namespace YBFramework.Bridge.Data
                 proxyHelperPortData.SetPortColor(DefaultColor);
                 proxyHelperPortData.SetCapacity(DEFAULT_PORT_CAPACITY);
                 //正常情况下nodeData和portData都不会为null
-                if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID==0)
+                if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
                 {
                     Debug.LogWarning($"Port id:{proxyHelperPortData.PortID} did not connect any other port");
                     continue;
