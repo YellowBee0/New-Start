@@ -48,20 +48,7 @@ namespace YBFramework.Editor.Graph
         private void OnAddClicked()
         {
             ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_NodeData;
-            ProxyHelperPortData proxyHelperPortData = new()
-            {
-                PortID = ++proxyHelperNodeData.SourcePortID
-            };
-            proxyHelperPortData.SetNodeData(proxyHelperNodeData);
-            proxyHelperPortData.CreateData();
-            proxyHelperPortData.SetFiledName(string.Format(ProxyHelperNodeData.PORT_HELPER_DATA_PATH, proxyHelperNodeData.ProxyHelperPortsData.Count));
-            proxyHelperPortData.SetPortName(string.Format(ProxyHelperNodeData.PORT_HELPER_NAME, proxyHelperNodeData.ProxyHelperPortsData.Count));
-            Direction direction = proxyHelperNodeData.IsInputPortsProxyHelper ? Direction.Input : Direction.Output;
-            proxyHelperPortData.SetDirection(direction);
-            proxyHelperPortData.SetCapacity(ProxyHelperNodeData.DEFAULT_PORT_CAPACITY);
-            proxyHelperPortData.SetPortColor(ProxyHelperNodeData.DefaultColor);
-            proxyHelperPortData.SetCapacity(proxyHelperPortData.GetCapacity());
-            proxyHelperNodeData.ProxyHelperPortsData.Add(proxyHelperPortData);
+            ProxyHelperPortData proxyHelperPortData = proxyHelperNodeData.InitializeSerializedProxyHelperPortData();
             m_NodeSerializedProperty.serializedObject.Update();
 
             BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(ProxyHelperPortData));

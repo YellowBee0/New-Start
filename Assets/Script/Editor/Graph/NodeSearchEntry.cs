@@ -237,12 +237,6 @@ namespace YBFramework.Editor.Graph
                             //使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
                             //存在持久化数据
                             nodeData.NodeID = ++openedGraphPresenter.GetGraphAsset().SourceNodeID;
-                            //端口同理
-                            //存在持久化数据
-                            foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
-                            {
-                                portData.PortID = ++nodeData.SourcePortID;
-                            }
                             //添加数据
                             //存在持久化数据
                             openedGraphPresenter.GetGraphAsset().AddNodeData(nodeData);

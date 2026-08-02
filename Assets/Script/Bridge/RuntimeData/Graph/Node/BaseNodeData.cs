@@ -34,13 +34,23 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
+        public static TPortData CreatePortData<TPortData>(int portID) where TPortData : BasePortData, new()
+        {
+            TPortData portData = new TPortData
+            {
+                PortID = portID
+            };
+            portData.CreateData();
+            return portData;
+        }
+        
         protected GraphAsset m_GraphAsset;
 
         public string Name;
 
         public Vector2 Position;
 
-        public int SourcePortID;
+        //public int SourcePortID;
 
         public GraphAsset GetGraphAsset()
         {

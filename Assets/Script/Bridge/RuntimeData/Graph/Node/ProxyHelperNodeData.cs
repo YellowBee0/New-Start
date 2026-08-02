@@ -30,8 +30,44 @@ namespace YBFramework.Bridge.Data
 
         public List<ProxyHelperPortData> ProxyHelperPortsData;
 
+        public int PortID;
+
         public bool IsInputPortsProxyHelper;
 
+        public void CreateProxyHelperPortData()
+        {
+            ProxyHelperPortData proxyHelperPortData = CreatePortData<ProxyHelperPortData>(++PortID);
+            InitializeProxyHelperPortData(proxyHelperPortData,ProxyHelperPortsData.Count);
+            ProxyHelperPortsData.Add(proxyHelperPortData);
+        }
+        
+        public ProxyHelperPortData InitializeSerializedProxyHelperPortData()
+        {
+            ProxyHelperPortData proxyHelperPortData = CreatePortData<ProxyHelperPortData>(++PortID);
+            InitializeProxyHelperPortData(proxyHelperPortData,ProxyHelperPortsData.Count);
+            ProxyHelperPortsData.Add(proxyHelperPortData);
+            return proxyHelperPortData;
+        }
+
+        private void InitializeProxyHelperPortData(ProxyHelperPortData proxyHelperPortData, int index)
+        {
+            proxyHelperPortData.SetNodeData(this);
+            proxyHelperPortData.SetFiledName(string.Format(PORT_HELPER_DATA_PATH, index));
+            proxyHelperPortData.SetPortName(string.Format(PORT_HELPER_NAME, index));
+            proxyHelperPortData.SetDirection(IsInputPortsProxyHelper ? Direction.Input : Direction.Output);
+            proxyHelperPortData.SetPortColor(DefaultColor);
+            proxyHelperPortData.SetCapacity(DEFAULT_PORT_CAPACITY);
+            //正常情况下nodeData和portData都不会为null
+            if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
+            {
+                Debug.LogWarning($"Port id:{proxyHelperPortData.PortID} did not connect any other port");
+                return;
+            }
+            BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyHelperPortData.TargetPortConnectionData.NodeID);
+            BasePortData portData = nodeData.GetPortData(proxyHelperPortData.TargetPortConnectionData.PortID);
+            proxyHelperPortData.SetTargetPortData(portData);
+        }
+        
         public override BaseNode CreateRuntimeInstance()
         {
             Debug.Log("Editor only node:proxy helper node is tried to create a runtime node");

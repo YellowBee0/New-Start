@@ -32,8 +32,7 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         public override void CreateData()
         {
-            StringInputTest = new ValueInputPortData<string>();
-            StringInputTest.CreateData();
+            StringInputTest = CreatePortData<ValueInputPortData<string>>(1);
         }
 
         public override void Initialize()
