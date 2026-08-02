@@ -3,11 +3,11 @@
 namespace YBFramework.Editor
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    public sealed class EditorPresenterAttribute : Attribute
+    public sealed class RuntimeToEditorAttribute : Attribute
     {
         public readonly Type RuntimeType;
 
-        public EditorPresenterAttribute(Type runtimeType)
+        public RuntimeToEditorAttribute(Type runtimeType)
         {
             RuntimeType = runtimeType;
         }

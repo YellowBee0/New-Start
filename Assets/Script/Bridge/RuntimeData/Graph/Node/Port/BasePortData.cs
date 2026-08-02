@@ -156,6 +156,7 @@ namespace YBFramework.Bridge.Data
 
         public virtual void Connect(BasePortData other)
         {
+            //被连接的端口需要设置IsUsed为true，且来自其他端口连接需要添加当前端口
             IsUsed = true;
             other.IsUsed = true;
             other.m_PortConnectionDataFromOther.Add(new PortConnectionData
@@ -167,6 +168,7 @@ namespace YBFramework.Bridge.Data
 
         public virtual void Disconnect(BasePortData other)
         {
+            //被断开连接的端口需要同步断开自身来自其他端口的连接
             for (int i = 0; i < other.m_PortConnectionDataFromOther.Count; i++)
             {
                 PortConnectionData portConnectionData = other.m_PortConnectionDataFromOther[i];
@@ -179,6 +181,27 @@ namespace YBFramework.Bridge.Data
                     }
                     return;
                 }
+            }
+        }
+
+        public void DisconnectAll()
+        {
+            foreach (PortConnectionData portConnectionData in (IValueIterator<PortConnectionData>)this)
+            {
+                if (portConnectionData.NodeID == 0 || portConnectionData.PortID == 0)
+                {
+                    continue;
+                }
+                BaseNodeData nodeData = m_NodeData.GetGraphAsset().GetNodeData(portConnectionData.NodeID);
+                BasePortData portData = nodeData.GetPortData(portConnectionData.PortID);
+                Disconnect(portData);
+            }
+            for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
+            {
+                PortConnectionData portConnectionData = m_PortConnectionDataFromOther[i];
+                BaseNodeData nodeData = m_NodeData.GetGraphAsset().GetNodeData(portConnectionData.PortID);
+                BasePortData portData = nodeData.GetPortData(portConnectionData.PortID);
+                portData.Disconnect(this);
             }
         }
 

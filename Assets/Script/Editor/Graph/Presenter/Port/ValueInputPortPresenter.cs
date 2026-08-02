@@ -6,7 +6,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [EditorPresenter(typeof(ValueInputPortData<>))]
+    [RuntimeToEditor(typeof(ValueInputPortData<>))]
     public sealed class ValueInputPortPresenter : BasePortPresenter
     {
         private PropertyField m_ValueField;
@@ -27,6 +27,13 @@ namespace YBFramework.Editor.Graph
                 portContentView.Add(m_ValueField);
                 m_PortContentView = portContentView;
             }
+        }
+
+        public override void OnRelease()
+        {
+            base.OnRelease();
+            m_PortView.UnregisterOnConnectCallback(OnConnectOther);
+            m_PortView.UnregisterOnDisconnectCallback(OnDisconnectOther);
         }
 
         private void OnConnectOther(Port other)

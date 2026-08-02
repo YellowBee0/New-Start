@@ -1,10 +1,11 @@
 ﻿using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [EditorPresenter(typeof(ProxyHelperPortData))]
+    [RuntimeToEditor(typeof(ProxyHelperPortData))]
     public sealed class ProxyHelperPortPresenter : BasePortPresenter
     {
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
@@ -18,6 +19,8 @@ namespace YBFramework.Editor.Graph
                 value = proxyHelperPortData.ProxyName
             };
             proxyNameField.RegisterValueChangedCallback(OnProxyNameChange);
+            m_PortView.RegisterOnConnectCallback(OnConnect);
+            m_PortView.RegisterOnDisconnectCallback(OnDisconnect);
             portContentView.Add(proxyNameField);
             m_PortContentView = portContentView;
         }
@@ -26,6 +29,24 @@ namespace YBFramework.Editor.Graph
         {
             //TODO:需要支持Undo
             ((ProxyHelperPortData)m_PortData).ProxyName = evt.newValue;
+        }
+
+        private void OnConnect(Port other)
+        {
+            PortView otherPortView = (PortView)other;
+            ProxyHelperPortData proxyHelperPortData = (ProxyHelperPortData)m_PortData;
+            //TODO:需要支持Undo
+            proxyHelperPortData.ProxyName = otherPortView.BindPortData.GetPortName();
+            proxyHelperPortData.SetTargetPortData(otherPortView.BindPortData);
+        }
+
+        private void OnDisconnect(Port other)
+        {
+            PortView otherPortView = (PortView)other;
+            ProxyHelperPortData proxyHelperPortData = (ProxyHelperPortData)m_PortData;
+            //TODO:需要支持Undo
+            proxyHelperPortData.ProxyName = null;
+            proxyHelperPortData.SetTargetPortData(null);
         }
     }
 }

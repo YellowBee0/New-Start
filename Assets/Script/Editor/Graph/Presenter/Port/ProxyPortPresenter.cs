@@ -3,7 +3,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [EditorPresenter(typeof(ProxyPortData))]
+    [RuntimeToEditor(typeof(ProxyPortData))]
     public sealed class ProxyPortPresenter : BasePortPresenter
     {
         private BasePortPresenter m_InternalPortPresenter;
@@ -19,6 +19,12 @@ namespace YBFramework.Editor.Graph
                 m_PortView = m_InternalPortPresenter.GetPortView();
                 m_PortContentView = m_InternalPortPresenter.GetPortContentView();
             }
+        }
+
+        public override void OnRelease()
+        {
+            base.OnRelease();
+            ReleasePortPresenter(m_InternalPortPresenter);
         }
     }
 }

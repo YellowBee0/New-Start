@@ -7,7 +7,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [EditorPresenter(typeof(ProxyHelperNodeData))]
+    [RuntimeToEditor(typeof(ProxyHelperNodeData))]
     public sealed class ProxyHelperNodePresenter : BaseNodePresenter
     {
         private Toggle m_IsProxyInputToggle;

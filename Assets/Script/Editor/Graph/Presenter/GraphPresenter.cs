@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.Bridge.Data;
+using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph.Presenter
 {
@@ -42,7 +43,7 @@ namespace YBFramework.Editor.Graph.Presenter
             m_NodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
             m_GraphView = new CustomGraphView(graphAsset)
             {
-                nodeCreationRequest = ShowNodeSearchView,
+                nodeCreationRequest = ShowNodeSearchView
             };
             m_GraphView.graphViewChanged += OnGraphViewChanged;
             m_GraphView.OnEdgeConnect += OnEdgeConnect;
@@ -55,6 +56,38 @@ namespace YBFramework.Editor.Graph.Presenter
                 {
                     nodePresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
                     AddNodePresenter(nodePresenter);
+                }
+            }
+
+            for (int i = 0; i < m_NodePresenters.Count; i++)
+            {
+                BaseNodePresenter fromNodePresenter = m_NodePresenters[i];
+                IReadOnlyList<BasePortPresenter> fromPortPresenters = fromNodePresenter.GetPortPresenters();
+                for (int j = 0; j < fromPortPresenters.Count; j++)
+                {
+                    BasePortPresenter fromPortPresenter = fromPortPresenters[j];
+                    foreach (PortConnectionData portConnectionData in (IValueIterator<PortConnectionData>)fromPortPresenter.GetPortData())
+                    {
+                        for (int k = 0; k < m_NodePresenters.Count; k++)
+                        {
+                            BaseNodePresenter toNodePresenter = m_NodePresenters[k];
+                            if (toNodePresenter.GetNodeData().NodeID == portConnectionData.NodeID)
+                            {
+                                IReadOnlyList<BasePortPresenter> toPortPresenters = toNodePresenter.GetPortPresenters();
+                                for (int l = 0; l < toPortPresenters.Count; l++)
+                                {
+                                    BasePortPresenter toPortPresenter = toPortPresenters[l];
+                                    if (toPortPresenter.GetPortData().PortID == portConnectionData.PortID)
+                                    {
+                                        Edge edge = fromPortPresenter.GetPortView().ConnectTo(toPortPresenter.GetPortView());
+                                        m_GraphView.AddElement(edge);
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -132,9 +165,7 @@ namespace YBFramework.Editor.Graph.Presenter
                         PortView outputPortView = (PortView)edge.output;
                         inputPortView.BindPortData.Disconnect(outputPortView.BindPortData);
                         outputPortView.BindPortData.Disconnect(inputPortView.BindPortData);
-                        edge.input.Disconnect(edge);
-                        edge.output.Disconnect(edge);
-                        m_GraphView.RemoveElement(edge);
+                        CustomGraphView.DisConnect(m_GraphView, edge);
                     }
                 }
             }
@@ -201,9 +232,7 @@ namespace YBFramework.Editor.Graph.Presenter
                 toRemoveInputPortView.BindPortData.Disconnect(toRemoveOutputPortView.BindPortData);
                 toRemoveOutputPortView.BindPortData.Disconnect(toRemoveInputPortView.BindPortData);
                 //视图上是必须两个端口都调用Disconnect
-                toRemoveInputPortView.Disconnect(singleConnectionToRemove);
-                toRemoveOutputPortView.Disconnect(singleConnectionToRemove);
-                m_GraphView.RemoveElement(singleConnectionToRemove);
+                CustomGraphView.DisConnect(m_GraphView, singleConnectionToRemove);
             }
             if (isInputCanConnectOutput)
             {
@@ -213,9 +242,7 @@ namespace YBFramework.Editor.Graph.Presenter
             {
                 outputPortView.BindPortData.Connect(inputPortView.BindPortData);
             }
-            inputPortView.Connect(edge);
-            outputPortView.Connect(edge);
-            m_GraphView.AddElement(edge);
+            CustomGraphView.Connect(m_GraphView, edge);
         }
     }
 }

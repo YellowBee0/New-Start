@@ -10,7 +10,7 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class GraphWindow : EditorWindow
     {
-        #region single instance
+#region single instance
         private static GraphWindow s_Instance;
 
         [MenuItem("Window/Graph")]
@@ -30,8 +30,7 @@ namespace YBFramework.Editor.Graph
         {
             return s_Instance;
         }
-        #endregion
-        private readonly Stack<GraphPresenter> m_GraphPresenterPool = new();
+#endregion
 
         private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
 
@@ -56,16 +55,6 @@ namespace YBFramework.Editor.Graph
             return m_OpenedPresenter;
         }
 
-        public GraphPresenter AllocateGraphPresenter()
-        {
-            return m_GraphPresenterPool.Count > 0 ? m_GraphPresenterPool.Pop() : new GraphPresenter();
-        }
-
-        public void ReleaseGraphPresenter(GraphPresenter graphPresenter)
-        {
-            m_GraphPresenterPool.Push(graphPresenter);
-        }
-
         private void CreateGUI()
         {
             if (s_Instance != this)
@@ -76,7 +65,7 @@ namespace YBFramework.Editor.Graph
                 }
                 s_Instance = this;
             }
-            EditorPresenterMap.GetInstance().Initialize();
+            RuntimeToEditorMap.GetInstance().Initialize();
             //1、初始化节点筛选窗口
             NodeSearchEntry.InitializeNodeSearchTree();
 
@@ -195,7 +184,7 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
-                    graphPresenter = AllocateGraphPresenter();
+                    graphPresenter = GraphPresenter.AllocateGraphPresenter();
                     graphPresenter.Initialize(graphAsset);
                     m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);
                 }

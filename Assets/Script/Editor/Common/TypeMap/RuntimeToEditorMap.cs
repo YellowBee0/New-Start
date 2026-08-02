@@ -6,11 +6,11 @@ using UnityEngine;
 
 namespace YBFramework.Editor
 {
-    public sealed class EditorPresenterMap
+    public sealed class RuntimeToEditorMap
     {
-        private static readonly EditorPresenterMap s_Instance = new();
+        private static readonly RuntimeToEditorMap s_Instance = new();
 
-        public static EditorPresenterMap GetInstance()
+        public static RuntimeToEditorMap GetInstance()
         {
             return s_Instance;
         }
@@ -24,11 +24,11 @@ namespace YBFramework.Editor
                 Debug.Log("Graph drawer map has initialized");
                 return;
             }
-            TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<EditorPresenterAttribute>();
+            TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<RuntimeToEditorAttribute>();
             for (int i = 0; i < types.Count; i++)
             {
                 Type drawerType = types[i];
-                EditorPresenterAttribute attribute = drawerType.GetCustomAttribute<EditorPresenterAttribute>();
+                RuntimeToEditorAttribute attribute = drawerType.GetCustomAttribute<RuntimeToEditorAttribute>();
                 if (attribute != null)
                 {
                     if (!m_GraphDrawers.TryAdd(attribute.RuntimeType, drawerType))

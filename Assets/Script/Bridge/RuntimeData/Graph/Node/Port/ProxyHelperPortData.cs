@@ -31,6 +31,17 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 
+        public override bool Iterator(int index, out PortConnectionData current)
+        {
+            if (index == 0)
+            {
+                current = TargetPortConnectionData;
+                return true;
+            }
+            current = null;
+            return false;
+        }
+
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
             if (TargetPortConnectionData.NodeID == nodeId && TargetPortConnectionData.PortID == portId)

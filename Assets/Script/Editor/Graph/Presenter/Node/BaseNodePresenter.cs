@@ -6,14 +6,14 @@ using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph
 {
-    [EditorPresenter(typeof(BaseNodeData))]
+    [RuntimeToEditor(typeof(BaseNodeData))]
     public class BaseNodePresenter
     {
         private static readonly Dictionary<Type, Stack<BaseNodePresenter>> s_NodePresenters = new();
 
         public static BaseNodePresenter AllocateNodePresenter(Type nodeDataType)
         {
-            Type nodePresenterType = EditorPresenterMap.GetInstance().GetDrawerType(nodeDataType);
+            Type nodePresenterType = RuntimeToEditorMap.GetInstance().GetDrawerType(nodeDataType);
             if (nodePresenterType == null)
             {
                 return null;
@@ -39,7 +39,7 @@ namespace YBFramework.Editor.Graph
 
         protected NodeView m_NodeView;
 
-        private readonly List<BasePortPresenter> m_PortPresenters = new();
+        protected readonly List<BasePortPresenter> m_PortPresenters = new();
 
         public virtual void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {

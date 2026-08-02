@@ -14,7 +14,7 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class NodeSearchEntry : ScriptableObject, ISearchWindowProvider
     {
-        #region Node search tree initialize
+#region Node search tree initialize
         private sealed class NodeMenuBranch : NodeMenuOption
         {
             private readonly List<NodeMenuOption> m_Options = new();
@@ -196,7 +196,7 @@ namespace YBFramework.Editor.Graph
             }
             return hasAddToResult;
         }
-        #endregion
+#endregion
 
         private List<SearchTreeEntry> m_SearchTreeEntries;
 

@@ -43,6 +43,47 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         private const string LIST_DATA_PATH = nameof(m_ProxyPortsData) + ".Array.data[{0}]";
 
+        public void ChangeProxyGraphAsset(GraphAsset proxyGraphAsset)
+        {
+            m_ProxyPortsData.Clear();
+            //确保初始化
+            proxyGraphAsset.Initialize();
+            if (proxyGraphAsset != null)
+            {
+                IReadOnlyList<BaseNodeData> nodeData = proxyGraphAsset.GetNodesData();
+                for (int i = 0; i < nodeData.Count; i++)
+                {
+                    if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
+                    {
+                        for (int j = 0; j < proxyHelperNodeData.ProxyHelperPortsData.Count; j++)
+                        {
+                            ProxyHelperPortData proxyHelperPortData = proxyHelperNodeData.ProxyHelperPortsData[j];
+                            if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
+                            {
+                                Debug.LogWarning($"Port in graph:{ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
+                                continue;
+                            }
+                            ProxyPortData proxyPortData = new ProxyPortData
+                            {
+                                ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone(),
+                                PortID = ++SourcePortID,
+                                TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID
+                            };
+                            proxyPortData.SetNodeData(this);
+                            proxyPortData.CreateData();
+                            //TODO:这里创建端口并添加到集合并不会更新数据到SO，导致获取不到序列化对象。但是这里也获取不到SO。
+                            // 目前想的解决办法是不直接更新数据，而是显示有问题的数据，比如哪一个被移除，哪一个是新增。
+                            // 让用户能够知道改变，然后只给出一个更新按钮
+                            m_ProxyPortsData.Add(proxyPortData);
+                            proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
+                            proxyPortData.SetFiledName(string.Format(LIST_DATA_PATH, j));
+                        }
+                    }
+                }
+            }
+            ProxyGraphAsset = proxyGraphAsset;
+        }
+
         public void MergeProxyTargetNodeData()
         {
             IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodesData();
@@ -92,6 +133,7 @@ namespace YBFramework.Bridge.Data
             {
                 return;
             }
+            base.Initialize();
             //确保蓝图中节点全部初始化
             ProxyGraphAsset.Initialize();
             MergeProxyTargetNodeData();

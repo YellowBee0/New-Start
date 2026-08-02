@@ -12,7 +12,7 @@ namespace YBFramework.Editor.Graph
 
         public static BasePortPresenter AllocatePortPresenter(Type portDataType)
         {
-            Type portPresenterType = EditorPresenterMap.GetInstance().GetDrawerType(portDataType);
+            Type portPresenterType = RuntimeToEditorMap.GetInstance().GetDrawerType(portDataType);
             if (portPresenterType == null)
             {
                 return null;
