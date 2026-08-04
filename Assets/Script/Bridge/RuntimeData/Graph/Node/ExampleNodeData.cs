@@ -12,6 +12,8 @@ namespace YBFramework.Bridge.Data
 #endif
     public sealed class ExampleNodeData : BaseNodeData
     {
+        private MethodPortData m_MethodPortData;
+        
         public ValueInputPortData<string> StringInputTest;
 
         public override BaseNode CreateRuntimeInstance()
@@ -30,14 +32,13 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        public override void CreateData()
+        public override void InitializeSerializedData()
         {
             StringInputTest = CreatePortData<ValueInputPortData<string>>(1);
         }
 
         public override void Initialize()
         {
-            base.Initialize();
             StringInputTest.SetFiledName(nameof(StringInputTest));
             StringInputTest.SetPortViewArgs("string输入测试", PortViewArgsTemplate.ValueInput);
         }

@@ -13,61 +13,56 @@ namespace YBFramework.Bridge.Data
     [NodeExistCountLimit(2)]
     public sealed class ProxyHelperNodeData : BaseNodeData
     {
-        public const string PORT_HELPER_DATA_PATH = nameof(ProxyHelperPortsData) + ".Array.data[{0}]";
+        [SerializeField] private List<ProxyHelperPortData> m_ProxyHelperPortsData;
 
-        public const string PORT_HELPER_NAME = "代理目标端口{0}";
+        [SerializeField] private int m_ProxyHelperPortDataIDRecord;
 
-        public const Port.Capacity DEFAULT_PORT_CAPACITY = Port.Capacity.Single;
-
-        public static readonly Color DefaultColor = Color.green;
+        public bool IsInputPortsProxyHelper;
 
         /// <summary>
         /// 当作为代理的蓝图里面代理端口发生新增或者删除时调用这个委托。
         /// 新增或者删除都是在蓝图视图中发生。
         /// 参数1为节点id，参数2为端口id，参数3为是否为新增true/false代表新增/删除
         /// </summary>
-        public Action<int, int, bool> OnProxyDataChanged;
+        private Action<int, int, bool> m_OnProxyDataChanged;
 
-        public List<ProxyHelperPortData> ProxyHelperPortsData;
-
-        public int PortID;
-
-        public bool IsInputPortsProxyHelper;
-
-        public void CreateProxyHelperPortData()
+        public IReadOnlyList<ProxyHelperPortData> GetProxyHelperPortsData()
         {
-            ProxyHelperPortData proxyHelperPortData = CreatePortData<ProxyHelperPortData>(++PortID);
-            InitializeProxyHelperPortData(proxyHelperPortData,ProxyHelperPortsData.Count);
-            ProxyHelperPortsData.Add(proxyHelperPortData);
-        }
-        
-        public ProxyHelperPortData InitializeSerializedProxyHelperPortData()
-        {
-            ProxyHelperPortData proxyHelperPortData = CreatePortData<ProxyHelperPortData>(++PortID);
-            InitializeProxyHelperPortData(proxyHelperPortData,ProxyHelperPortsData.Count);
-            ProxyHelperPortsData.Add(proxyHelperPortData);
-            return proxyHelperPortData;
+            return m_ProxyHelperPortsData;
         }
 
-        private void InitializeProxyHelperPortData(ProxyHelperPortData proxyHelperPortData, int index)
+        public int AllocateProxyHelperPortDataID()
+        {
+            return ++m_ProxyHelperPortDataIDRecord;
+        }
+
+        public void InitializeProxyHelperPortData(ProxyHelperPortData proxyHelperPortData, int index)
         {
             proxyHelperPortData.SetNodeData(this);
-            proxyHelperPortData.SetFiledName(string.Format(PORT_HELPER_DATA_PATH, index));
-            proxyHelperPortData.SetPortName(string.Format(PORT_HELPER_NAME, index));
+            proxyHelperPortData.SetFiledName($"{nameof(m_ProxyHelperPortsData)}.Array.data[{index}]");
+            proxyHelperPortData.SetPortName($"代理目标端口{index}");
             proxyHelperPortData.SetDirection(IsInputPortsProxyHelper ? Direction.Input : Direction.Output);
-            proxyHelperPortData.SetPortColor(DefaultColor);
-            proxyHelperPortData.SetCapacity(DEFAULT_PORT_CAPACITY);
-            //正常情况下nodeData和portData都不会为null
-            if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
+            proxyHelperPortData.SetPortColor(Color.green);
+            proxyHelperPortData.SetCapacity(Port.Capacity.Single);
+            //端口刚创建出来或者没有连接其他端口时连线会为0，0
+            if (proxyHelperPortData.TargetPortConnectionData.NodeID != 0 && proxyHelperPortData.TargetPortConnectionData.PortID != 0)
             {
-                Debug.LogWarning($"Port id:{proxyHelperPortData.PortID} did not connect any other port");
-                return;
+                BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyHelperPortData.TargetPortConnectionData.NodeID);
+                BasePortData portData = nodeData.GetPortData(proxyHelperPortData.TargetPortConnectionData.PortID);
+                proxyHelperPortData.SetTargetPortData(portData);
             }
-            BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyHelperPortData.TargetPortConnectionData.NodeID);
-            BasePortData portData = nodeData.GetPortData(proxyHelperPortData.TargetPortConnectionData.PortID);
-            proxyHelperPortData.SetTargetPortData(portData);
         }
-        
+
+        public void AddProxyHelperPortData(ProxyHelperPortData portData)
+        {
+            m_ProxyHelperPortsData.Add(portData);
+        }
+
+        public void RemoveProxyHelperPortData(ProxyHelperPortData portData)
+        {
+            m_ProxyHelperPortsData.Remove(portData);
+        }
+
         public override BaseNode CreateRuntimeInstance()
         {
             Debug.Log("Editor only node:proxy helper node is tried to create a runtime node");
@@ -76,41 +71,25 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out BasePortData current)
         {
-            if (index < ProxyHelperPortsData.Count)
+            if (index < m_ProxyHelperPortsData.Count)
             {
-                current = ProxyHelperPortsData[index];
+                current = m_ProxyHelperPortsData[index];
                 return true;
             }
             current = null;
             return false;
         }
 
-        public override void CreateData()
+        public override void InitializeSerializedData()
         {
-            ProxyHelperPortsData = new List<ProxyHelperPortData>();
+            m_ProxyHelperPortsData = new List<ProxyHelperPortData>();
         }
 
         public override void Initialize()
         {
-            base.Initialize();
-            Direction direction = IsInputPortsProxyHelper ? Direction.Input : Direction.Output;
-            for (int i = 0; i < ProxyHelperPortsData.Count; i++)
+            for (int i = 0; i < m_ProxyHelperPortsData.Count; i++)
             {
-                ProxyHelperPortData proxyHelperPortData = ProxyHelperPortsData[i];
-                proxyHelperPortData.SetFiledName(string.Format(PORT_HELPER_DATA_PATH, i));
-                proxyHelperPortData.SetPortName(string.Format(PORT_HELPER_NAME, i));
-                proxyHelperPortData.SetDirection(direction);
-                proxyHelperPortData.SetPortColor(DefaultColor);
-                proxyHelperPortData.SetCapacity(DEFAULT_PORT_CAPACITY);
-                //正常情况下nodeData和portData都不会为null
-                if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
-                {
-                    Debug.LogWarning($"Port id:{proxyHelperPortData.PortID} did not connect any other port");
-                    continue;
-                }
-                BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyHelperPortData.TargetPortConnectionData.NodeID);
-                BasePortData portData = nodeData.GetPortData(proxyHelperPortData.TargetPortConnectionData.PortID);
-                proxyHelperPortData.SetTargetPortData(portData);
+                InitializeProxyHelperPortData(m_ProxyHelperPortsData[i], i);
             }
         }
     }

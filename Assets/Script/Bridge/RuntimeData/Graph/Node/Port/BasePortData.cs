@@ -240,7 +240,7 @@ namespace YBFramework.Bridge.Data
 
         public abstract BasePortData Clone();
 
-        public virtual void CreateData()
+        public virtual void InitializeSerializedData()
         {
             m_PortConnectionDataFromOther = new List<PortConnectionData>();
         }

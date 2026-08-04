@@ -38,7 +38,8 @@ namespace YBFramework.GameLogic.Graph
 
         public void InitializeFromProxyNodeData(ProxyNodeData nodeData)
         {
-            m_Graph = nodeData.ProxyGraphAsset.CreateGraph();
+            //TODO:这里的GetProxyGraphAsset可能为null
+            m_Graph = nodeData.GetProxyGraphAsset().CreateGraph();
             IReadOnlyList<ProxyPortData> proxyPortsData = nodeData.GetProxyPortsData();
             for (int i = 0; i < proxyPortsData.Count; i++)
             {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
@@ -48,16 +47,18 @@ namespace YBFramework.Editor.Graph
         private void OnAddClicked()
         {
             ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_NodeData;
-            ProxyHelperPortData proxyHelperPortData = proxyHelperNodeData.InitializeSerializedProxyHelperPortData();
+            ProxyHelperPortData proxyHelperPortData = BaseNodeData.CreatePortData<ProxyHelperPortData>(proxyHelperNodeData.AllocateProxyHelperPortDataID());
+            proxyHelperNodeData.InitializeProxyHelperPortData(proxyHelperPortData, proxyHelperNodeData.GetProxyHelperPortsData().Count);
+            proxyHelperNodeData.AddProxyHelperPortData(proxyHelperPortData);
             m_NodeSerializedProperty.serializedObject.Update();
-
+            //创建端口视图
             BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(ProxyHelperPortData));
             if (portPresenter != null)
             {
                 portPresenter.Initialize(proxyHelperPortData, m_NodeSerializedProperty.FindPropertyRelative(proxyHelperPortData.GetFiledName()));
                 AddPortPresenter(portPresenter);
             }
-
+            //刷新Node视图
             m_NodeView.RefreshPortContainerDisplay();
         }
 

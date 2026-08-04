@@ -20,7 +20,7 @@ namespace YBFramework.Editor.Graph
             m_ProxyGraphAssetField = new ObjectField
             {
                 allowSceneObjects = false,
-                value = proxyNodeData.ProxyGraphAsset,
+                value = proxyNodeData.GetProxyGraphAsset(),
                 objectType = typeof(GraphAsset)
             };
             m_ProxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
@@ -35,24 +35,23 @@ namespace YBFramework.Editor.Graph
                 if ((proxyNodeData.GetGraphAsset().GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
                 {
                     //TODO:需要支持Undo
-                    //proxyNodeData.ProxyGraphAsset = proxyGraphAsset;
+                    //修改数据
+                    proxyNodeData.SetProxyGraphAsset(proxyGraphAsset);
+                    //修改视图
                     //通过GraphWindow获取打开的GraphView可能和当前修改的Port的GraphView不是同一个
                     GraphPresenter graphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
                     for (int i = 0; i < m_PortPresenters.Count; i++)
                     {
                         BasePortPresenter portPresenter = m_PortPresenters[i];
-                        portPresenter.GetPortData().DisconnectAll();
-                        //通过GraphWindow获取打开的GraphView可能和当前修改的Port的GraphView不是同一个
                         CustomGraphView graphView = graphPresenter.GetGraphView();
                         CustomGraphView.DisconnectAll(graphView, portPresenter.GetPortView());
-                        m_NodeView.RemovePortContentView(portPresenter.GetPortContentView(),portPresenter.GetPortData().GetDirection());
+                        m_NodeView.RemovePortContentView(portPresenter.GetPortContentView(), portPresenter.GetPortData().GetDirection());
                         portPresenter.OnRelease();
                     }
                     m_PortPresenters.Clear();
-                    proxyNodeData.ChangeProxyGraphAsset(proxyGraphAsset);
                     //创建端口时先更新数据
                     graphPresenter.UpdateSO();
-                    
+
                     //重新调用一次创建内部端口
                     foreach (BasePortData portData in (IValueIterator<BasePortData>)m_NodeData)
                     {
@@ -73,7 +72,7 @@ namespace YBFramework.Editor.Graph
             {
                 Debug.LogError($"{evt.newValue} is not type of GraphAsset");
             }
-            m_ProxyGraphAssetField.SetValueWithoutNotify(proxyNodeData.ProxyGraphAsset);
+            m_ProxyGraphAssetField.SetValueWithoutNotify(proxyNodeData.GetProxyGraphAsset());
         }
     }
 }

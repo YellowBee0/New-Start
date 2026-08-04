@@ -16,11 +16,16 @@ namespace YBFramework.Bridge.Data
     {
         [SerializeField] private List<ProxyPortData> m_ProxyPortsData;
 
-        public GraphAsset ProxyGraphAsset;
+        [SerializeField] private GraphAsset m_ProxyGraphAsset;
 
         public IReadOnlyList<ProxyPortData> GetProxyPortsData()
         {
             return m_ProxyPortsData;
+        }
+
+        public GraphAsset GetProxyGraphAsset()
+        {
+            return m_ProxyGraphAsset;
         }
 
         public override BaseNode CreateRuntimeInstance()
@@ -41,28 +46,15 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        private const string LIST_DATA_PATH = nameof(m_ProxyPortsData) + ".Array.data[{0}]";
+        [SerializeField] private int m_ProxyPortDataIDRecord;
 
-        public int PortID;
-
-        private ProxyPortData InitializeSerializedProxyPortData(ProxyHelperPortData proxyHelperPortData)
+        public void SetProxyGraphAsset(GraphAsset proxyGraphAsset)
         {
-            ProxyPortData proxyPortData = CreatePortData<ProxyPortData>(++PortID);
-            proxyPortData.ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone();
-            proxyPortData.TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID;
-            m_ProxyPortsData.Add(proxyPortData);
-            return proxyPortData;
-        }
-
-        private void InitializeProxyPortData(ProxyPortData proxyPortData, ProxyHelperPortData proxyHelperPortData, int index)
-        {
-            proxyPortData.SetNodeData(this);
-            proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
-            proxyPortData.SetFiledName(string.Format(LIST_DATA_PATH, index));
-        }
-
-        public void ChangeProxyGraphAsset(GraphAsset proxyGraphAsset)
-        {
+            //断开所有连接，清空数据
+            for (int i = 0; i < m_ProxyPortsData.Count; i++)
+            {
+                m_ProxyPortsData[i].DisconnectAll();
+            }
             m_ProxyPortsData.Clear();
             //确保初始化
             proxyGraphAsset.Initialize();
@@ -73,100 +65,75 @@ namespace YBFramework.Bridge.Data
                 {
                     if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
                     {
-                        for (int j = 0; j < proxyHelperNodeData.ProxyHelperPortsData.Count; j++)
+                        IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
+                        for (int j = 0; j < proxyHelperPortsData.Count; j++)
                         {
-                            ProxyHelperPortData proxyHelperPortData = proxyHelperNodeData.ProxyHelperPortsData[j];
+                            ProxyHelperPortData proxyHelperPortData = proxyHelperPortsData[j];
                             if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
                             {
-                                Debug.LogWarning($"Port in graph:{ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
+                                Debug.LogWarning($"Port in graph:{m_ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
                                 continue;
                             }
-                            ProxyPortData proxyPortData = InitializeSerializedProxyPortData(proxyHelperPortData);
+                            ProxyPortData proxyPortData = CreatePortData<ProxyPortData>(++m_ProxyPortDataIDRecord);
+                            proxyPortData.ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone();
+                            proxyPortData.TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID;
                             InitializeProxyPortData(proxyPortData, proxyHelperPortData, j);
-                            //TODO:这里创建端口并添加到集合并不会更新数据到SO，导致获取不到序列化对象。但是这里也获取不到SO。
-                            // 目前想的解决办法是不直接更新数据，而是显示有问题的数据，比如哪一个被移除，哪一个是新增。
-                            // 让用户能够知道改变，然后只给出一个更新按钮
-                        }
-                        //创建端口步骤：1、创建端口实例，调用CreatePortData，设置port id，创建需要序列化的数据
-                        //2、设置NodeData
-                        //3、初始化端口非序列化数据（端口朝向、容量、颜色、名字、字段名字。。。）
-                    }
-                }
-            }
-            ProxyGraphAsset = proxyGraphAsset;
-        }
-
-        public void MergeProxyTargetNodeData()
-        {
-            IReadOnlyList<BaseNodeData> nodeData = ProxyGraphAsset.GetNodesData();
-            for (int i = 0; i < nodeData.Count; i++)
-            {
-                if (nodeData[i] is ProxyHelperNodeData proxyTargetNodeData)
-                {
-                    for (int j = 0; j < proxyTargetNodeData.ProxyHelperPortsData.Count; j++)
-                    {
-                        ProxyHelperPortData proxyHelperPortData = proxyTargetNodeData.ProxyHelperPortsData[j];
-                        //insideNodeData和insidePortData一般都不为null，只有在数据非法修改后才可能为null，所以这里就不做判断
-                        if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
-                        {
-                            Debug.LogWarning($"Port in graph:{ProxyGraphAsset.name} node id:{proxyTargetNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
-                            continue;
-                        }
-                        ProxyPortData proxyPortData = GetProxyPortData(proxyHelperPortData.TargetPortConnectionData.NodeID, proxyHelperPortData.TargetPortConnectionData.PortID);
-                        //TODO:这里只做了少了会添加，但是多了不会删除。需要取两个集合的交集
-                        if (proxyPortData == null)
-                        {
-                            Debug.Log("Proxy node didn't save proxy port data for port address:" +
-                                      $"node id:{proxyHelperPortData.TargetPortConnectionData.NodeID} port id:{proxyHelperPortData.TargetPortConnectionData.PortID},this will create a new one");
-                            proxyPortData = new ProxyPortData
-                            {
-                                ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone(),
-                                TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID
-                            };
-                            //TODO:这里创建端口并添加到集合并不会更新数据到SO，导致获取不到序列化对象。但是这里也获取不到SO。
-                            // 目前想的解决办法是不直接更新数据，而是显示有问题的数据，比如哪一个被移除，哪一个是新增。
-                            // 让用户能够知道改变，然后只给出一个更新按钮
                             m_ProxyPortsData.Add(proxyPortData);
                         }
-                        proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
                     }
                 }
             }
+            m_ProxyGraphAsset = proxyGraphAsset;
         }
 
-        public override void CreateData()
+        public override void InitializeSerializedData()
         {
             m_ProxyPortsData = new List<ProxyPortData>();
         }
 
         public override void Initialize()
         {
-            if (ProxyGraphAsset == null)
+            if (m_ProxyGraphAsset == null)
             {
                 return;
             }
-            base.Initialize();
             //确保蓝图中节点全部初始化
-            ProxyGraphAsset.Initialize();
-            MergeProxyTargetNodeData();
-            for (int i = 0; i < m_ProxyPortsData.Count; i++)
+            m_ProxyGraphAsset.Initialize();
+            IReadOnlyList<BaseNodeData> nodeData = m_ProxyGraphAsset.GetNodesData();
+            for (int i = 0; i < nodeData.Count; i++)
             {
-                m_ProxyPortsData[i].SetFiledName(string.Format(LIST_DATA_PATH, i));
-            }
-            //TODO:在这里查找蓝图中ProxyTargetNodeData，获取最新的数据，需要对比数据是否有改变，有改变需要针对改变的对象进行删除或者重新Clone
-        }
-
-        private ProxyPortData GetProxyPortData(int nodeID, int portID)
-        {
-            for (int i = 0; i < m_ProxyPortsData.Count; i++)
-            {
-                ProxyPortData proxyPortData = m_ProxyPortsData[i];
-                if (proxyPortData.TargetNodeID == nodeID && proxyPortData.ClonedTargetPortData.PortID == portID)
+                if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
                 {
-                    return proxyPortData;
+                    IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
+                    for (int j = 0; j < proxyHelperPortsData.Count; j++)
+                    {
+                        ProxyHelperPortData proxyHelperPortData = proxyHelperPortsData[j];
+                        int targetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID;
+                        int targetPortID = proxyHelperPortData.TargetPortConnectionData.PortID;
+                        if (targetNodeID == 0 || targetPortID == 0)
+                        {
+                            Debug.LogWarning($"Port in graph:{m_ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
+                            continue;
+                        }
+                        for (int k = 0; k < m_ProxyPortsData.Count; k++)
+                        {
+                            ProxyPortData proxyPortData = m_ProxyPortsData[k];
+                            if (proxyPortData.TargetNodeID == targetNodeID && proxyPortData.ClonedTargetPortData.PortID == targetPortID)
+                            {
+                                InitializeProxyPortData(proxyPortData, proxyHelperPortData, k);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
-            return null;
+        }
+        
+        private void InitializeProxyPortData(ProxyPortData proxyPortData, ProxyHelperPortData proxyHelperPortData, int index)
+        {
+            proxyPortData.SetNodeData(this);
+            proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
+            proxyPortData.SetFiledName($"{nameof(m_ProxyPortsData)}.Array.data[{index}]");
         }
 #endif
     }

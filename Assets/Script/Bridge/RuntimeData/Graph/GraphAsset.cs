@@ -2,7 +2,9 @@
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
+using System;
 using YBFramework.Bridge.Editor;
+using YBFramework.Common;
 #endif
 
 namespace YBFramework.Bridge.Data
@@ -58,6 +60,10 @@ namespace YBFramework.Bridge.Data
             {
                 BaseNodeData nodeData = m_NodesData[i];
                 nodeData.SetGraphAsset(this);
+                foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
+                {
+                    portData.SetNodeData(nodeData);
+                }
                 nodeData.Initialize();
             }
             m_IsInitialized = true;

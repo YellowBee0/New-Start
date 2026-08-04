@@ -36,21 +36,19 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         public static TPortData CreatePortData<TPortData>(int portID) where TPortData : BasePortData, new()
         {
-            TPortData portData = new TPortData
+            TPortData portData = new()
             {
                 PortID = portID
             };
-            portData.CreateData();
+            portData.InitializeSerializedData();
             return portData;
         }
-        
+
         protected GraphAsset m_GraphAsset;
 
         public string Name;
 
         public Vector2 Position;
-
-        //public int SourcePortID;
 
         public GraphAsset GetGraphAsset()
         {
@@ -62,20 +60,16 @@ namespace YBFramework.Bridge.Data
             m_GraphAsset = graphAsset;
         }
 
-        public abstract void CreateData();
+        /// <summary>
+        /// 创建序列化数据并初始化这些数据
+        /// </summary>
+        public abstract void InitializeSerializedData();
 
         /// <summary>
         /// 初始化节点数据，初始化的数据不会持久化。
-        /// 重写Initialize必须在第一行写base.Initialize，这段会设置每个端口的所有节点
         /// 该函数总是在创建节点视图或者使用节点API之前调用
         /// </summary>
-        public virtual void Initialize()
-        {
-            foreach (BasePortData portData in (IValueIterator<BasePortData>)this)
-            {
-                portData.SetNodeData(this);
-            }
-        }
+        public abstract void Initialize();
 #endif
     }
 }
