@@ -69,16 +69,12 @@ namespace YBFramework.Bridge.Data
                         for (int j = 0; j < proxyHelperPortsData.Count; j++)
                         {
                             ProxyHelperPortData proxyHelperPortData = proxyHelperPortsData[j];
-                            if (proxyHelperPortData.TargetPortConnectionData.NodeID == 0 || proxyHelperPortData.TargetPortConnectionData.PortID == 0)
+                            if (proxyHelperPortData.GetProxyPortIndex().NodeID == 0 || proxyHelperPortData.GetProxyPortIndex().PortID == 0)
                             {
                                 Debug.LogWarning($"Port in graph:{m_ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
                                 continue;
                             }
-                            ProxyPortData proxyPortData = CreatePortData<ProxyPortData>(++m_ProxyPortDataIDRecord);
-                            proxyPortData.ClonedTargetPortData = proxyHelperPortData.GetTargetPortData().Clone();
-                            proxyPortData.TargetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID;
-                            InitializeProxyPortData(proxyPortData, proxyHelperPortData, j);
-                            m_ProxyPortsData.Add(proxyPortData);
+                            CloneProxyPortDataFromProxyHelperPortData(proxyHelperPortData);
                         }
                     }
                 }
@@ -104,36 +100,54 @@ namespace YBFramework.Bridge.Data
             {
                 if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
                 {
+                    //TODO:需要处理代理节点删除或者新增
                     IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
                     for (int j = 0; j < proxyHelperPortsData.Count; j++)
                     {
                         ProxyHelperPortData proxyHelperPortData = proxyHelperPortsData[j];
-                        int targetNodeID = proxyHelperPortData.TargetPortConnectionData.NodeID;
-                        int targetPortID = proxyHelperPortData.TargetPortConnectionData.PortID;
+                        int targetNodeID = proxyHelperPortData.GetProxyPortIndex().NodeID;
+                        int targetPortID = proxyHelperPortData.GetProxyPortIndex().PortID;
                         if (targetNodeID == 0 || targetPortID == 0)
                         {
                             Debug.LogWarning($"Port in graph:{m_ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
                             continue;
                         }
+                        bool isNotFound = true;
                         for (int k = 0; k < m_ProxyPortsData.Count; k++)
                         {
                             ProxyPortData proxyPortData = m_ProxyPortsData[k];
-                            if (proxyPortData.TargetNodeID == targetNodeID && proxyPortData.ClonedTargetPortData.PortID == targetPortID)
+                            if (proxyPortData.GetProxyNodeID() == targetNodeID && proxyPortData.GetClonedProxyPortData().PortID == targetPortID)
                             {
                                 InitializeProxyPortData(proxyPortData, proxyHelperPortData, k);
+                                isNotFound = false;
                                 break;
                             }
                         }
+                        if (isNotFound)
+                        {
+                            CloneProxyPortDataFromProxyHelperPortData(proxyHelperPortData);
+                        }
                     }
+                    //查找到两次就break
                 }
             }
         }
-        
+
+        private void CloneProxyPortDataFromProxyHelperPortData(ProxyHelperPortData proxyHelperPortData)
+        {
+            ProxyPortData proxyPortData = CreatePortData<ProxyPortData>();
+            proxyPortData.PortID = ++m_ProxyPortDataIDRecord;
+            proxyPortData.CloneProxyPortDataFromProxyHelperPortData(proxyHelperPortData);
+            InitializeProxyPortData(proxyPortData, proxyHelperPortData, m_ProxyPortsData.Count);
+            m_ProxyPortsData.Add(proxyPortData);
+        }
+
         private void InitializeProxyPortData(ProxyPortData proxyPortData, ProxyHelperPortData proxyHelperPortData, int index)
         {
             proxyPortData.SetNodeData(this);
-            proxyPortData.SetProxyTargetPortData(proxyHelperPortData);
             proxyPortData.SetFiledName($"{nameof(m_ProxyPortsData)}.Array.data[{index}]");
+            proxyPortData.SetPortName(string.IsNullOrEmpty(proxyHelperPortData.ProxyName) ? proxyHelperPortData.GetProxyPortData().GetPortName() : proxyHelperPortData.ProxyName);
+            proxyPortData.MergeData(proxyHelperPortData.GetProxyPortData());
         }
 #endif
     }

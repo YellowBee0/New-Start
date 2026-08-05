@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
@@ -8,14 +9,21 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class ProxyHelperPortData : BasePortData
     {
-        //TODO:这个被创建出来时直接使用代理目标端口的name
         public string ProxyName;
 
-        public PortConnectionData TargetPortConnectionData;
+        /// <summary>
+        /// 代理端口的索引，同时也是连线数据
+        /// </summary>
+        [SerializeField] private PortConnectionData m_ProxyPortIndex;
 
         private BasePortData m_TargetPortData;
 
-        public BasePortData GetTargetPortData()
+        public PortConnectionData GetProxyPortIndex()
+        {
+            return m_ProxyPortIndex;
+        }
+        
+        public BasePortData GetProxyPortData()
         {
             return m_TargetPortData;
         }
@@ -35,25 +43,69 @@ namespace YBFramework.Bridge.Data
         {
             if (index == 0)
             {
-                current = TargetPortConnectionData;
+                current = m_ProxyPortIndex;
                 return true;
             }
             current = null;
             return false;
         }
 
+        public override string GetPortName()
+        {
+            if (m_TargetPortData != null)
+            {
+                return m_TargetPortData.GetPortName();
+            }
+            return m_TargetPortData.GetPortName();
+        }
+
+        public override void SetPortName(string portName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Direction GetDirection()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetDirection(Direction direction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Port.Capacity GetCapacity()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetCapacity(Port.Capacity capacity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Color GetPortColor()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetPortColor(Color portColor)
+        {
+            throw new NotImplementedException();
+        }
+
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
-            if (TargetPortConnectionData.NodeID == nodeId && TargetPortConnectionData.PortID == portId)
+            if (m_ProxyPortIndex.NodeID == nodeId && m_ProxyPortIndex.PortID == portId)
             {
-                return TargetPortConnectionData;
+                return m_ProxyPortIndex;
             }
             return null;
         }
 
         public override int GetPortConnectionDataCountFromSelf()
         {
-            if (TargetPortConnectionData.NodeID != 0 && TargetPortConnectionData.PortID != 0)
+            if (m_ProxyPortIndex.NodeID != 0 && m_ProxyPortIndex.PortID != 0)
             {
                 return 1;
             }
@@ -68,17 +120,17 @@ namespace YBFramework.Bridge.Data
         public override void Connect(BasePortData other)
         {
             base.Connect(other);
-            TargetPortConnectionData.NodeID = other.GetNodeData().NodeID;
-            TargetPortConnectionData.PortID = other.PortID;
+            m_ProxyPortIndex.NodeID = other.GetNodeData().NodeID;
+            m_ProxyPortIndex.PortID = other.PortID;
         }
 
         public override void Disconnect(BasePortData other)
         {
             base.Disconnect(other);
-            if (TargetPortConnectionData.NodeID == other.GetNodeData().NodeID && TargetPortConnectionData.PortID == other.PortID)
+            if (m_ProxyPortIndex.NodeID == other.GetNodeData().NodeID && m_ProxyPortIndex.PortID == other.PortID)
             {
-                TargetPortConnectionData.NodeID = 0;
-                TargetPortConnectionData.PortID = 0;
+                m_ProxyPortIndex.NodeID = 0;
+                m_ProxyPortIndex.PortID = 0;
             }
             if (GetPortConnectionDataCount() == 0)
             {

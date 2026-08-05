@@ -46,14 +46,6 @@ namespace YBFramework.Bridge.Data
 
         protected BaseNodeData m_NodeData;
 
-        protected string m_PortName;
-
-        protected Direction m_Direction;
-
-        protected Port.Capacity m_Capacity;
-
-        protected Color m_PortColor;
-
         public BaseNodeData GetNodeData()
         {
             return m_NodeData;
@@ -64,7 +56,7 @@ namespace YBFramework.Bridge.Data
             m_NodeData = nodeData;
         }
 
-        public void SetFiledName(string filedName)
+        public virtual void SetFiledName(string filedName)
         {
             m_FiledName = filedName;
         }
@@ -74,45 +66,21 @@ namespace YBFramework.Bridge.Data
             return m_FiledName;
         }
 
-        public string GetPortName()
-        {
-            return m_PortName;
-        }
+        public abstract string GetPortName();
 
-        public virtual void SetPortName(string portName)
-        {
-            m_PortName = portName;
-        }
+        public abstract void SetPortName(string portName);
 
-        public Direction GetDirection()
-        {
-            return m_Direction;
-        }
+        public abstract Direction GetDirection();
 
-        public virtual void SetDirection(Direction direction)
-        {
-            m_Direction = direction;
-        }
+        public abstract void SetDirection(Direction direction);
 
-        public Port.Capacity GetCapacity()
-        {
-            return m_Capacity;
-        }
+        public abstract Port.Capacity GetCapacity();
 
-        public virtual void SetCapacity(Port.Capacity capacity)
-        {
-            m_Capacity = capacity;
-        }
+        public abstract void SetCapacity(Port.Capacity capacity);
 
-        public Color GetPortColor()
-        {
-            return m_PortColor;
-        }
+        public abstract Color GetPortColor();
 
-        public virtual void SetPortColor(Color portColor)
-        {
-            m_PortColor = portColor;
-        }
+        public abstract void SetPortColor(Color portColor);
 
         public void SetPortViewArgs(string portName, PortViewArgsTemplate argsTemplate)
         {
@@ -238,12 +206,12 @@ namespace YBFramework.Bridge.Data
 
         public abstract int GetPortConnectionDataCountFromSelf();
 
-        public abstract BasePortData Clone();
-
         public virtual void InitializeSerializedData()
         {
             m_PortConnectionDataFromOther = new List<PortConnectionData>();
         }
+        
+        public abstract BasePortData Clone();
 
         /// <summary>
         /// 用于代理端口从真实的端口获取不可序列化的数据，比如绘制参数PortViewArgs，MethodPortData的MethodInfo
@@ -251,11 +219,9 @@ namespace YBFramework.Bridge.Data
         /// <param name="dataToMerge">代理目标</param>
         public virtual void MergeData(BasePortData dataToMerge)
         {
-            //TODO:这里proxyPortData如果Clone了一个proxyPortData，那么获取到的这些数据可能全部为默认值
-            m_PortName = dataToMerge.m_PortName;
-            m_Direction = dataToMerge.m_Direction;
-            m_Capacity = dataToMerge.m_Capacity;
-            m_PortColor = dataToMerge.m_PortColor;
+            SetDirection(dataToMerge.GetDirection());
+            SetCapacity(dataToMerge.GetCapacity());
+            SetPortColor(dataToMerge.GetPortColor());
         }
 #endif
     }

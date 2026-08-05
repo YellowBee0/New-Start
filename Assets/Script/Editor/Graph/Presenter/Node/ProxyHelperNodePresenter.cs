@@ -47,8 +47,8 @@ namespace YBFramework.Editor.Graph
         private void OnAddClicked()
         {
             ProxyHelperNodeData proxyHelperNodeData = (ProxyHelperNodeData)m_NodeData;
-            ProxyHelperPortData proxyHelperPortData = BaseNodeData.CreatePortData<ProxyHelperPortData>(proxyHelperNodeData.AllocateProxyHelperPortDataID());
-            proxyHelperNodeData.InitializeProxyHelperPortData(proxyHelperPortData, proxyHelperNodeData.GetProxyHelperPortsData().Count);
+            //TODO:需要支持Undo
+            ProxyHelperPortData proxyHelperPortData = BaseNodeData.CreatePortData<ProxyHelperPortData>();
             proxyHelperNodeData.AddProxyHelperPortData(proxyHelperPortData);
             m_NodeSerializedProperty.serializedObject.Update();
             //创建端口视图

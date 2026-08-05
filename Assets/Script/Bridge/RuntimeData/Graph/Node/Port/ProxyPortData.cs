@@ -14,9 +14,11 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class ProxyPortData : BasePortData
     {
-        [SerializeReference] public BasePortData ClonedTargetPortData;
+        [SerializeReference] private BasePortData m_ClonedProxyPortData;
 
-        public int TargetNodeID;
+        [SerializeField] private int m_ProxyNodeID;
+
+        private bool m_IsValid;
 
         /// <summary>
         /// 运行时递归获取重写的端口数据，用于覆盖代理蓝图端口的内部值
@@ -24,11 +26,11 @@ namespace YBFramework.Bridge.Data
         /// <returns>重写的端口数据</returns>
         public BasePortData GetRecursionClonedTargetPortData()
         {
-            if (ClonedTargetPortData is ProxyPortData proxyPortData)
+            if (m_ClonedProxyPortData is ProxyPortData proxyPortData)
             {
                 return proxyPortData.GetRecursionClonedTargetPortData();
             }
-            return ClonedTargetPortData;
+            return m_ClonedProxyPortData;
         }
 
         public override BasePort CreateRuntimeInstance()
@@ -39,61 +41,116 @@ namespace YBFramework.Bridge.Data
 
         public override bool Iterator(int index, out PortConnectionData current)
         {
-            if (ClonedTargetPortData != null)
+            if (m_ClonedProxyPortData != null)
             {
-                return ClonedTargetPortData.Iterator(index, out current);
+                return m_ClonedProxyPortData.Iterator(index, out current);
             }
             current = null;
             return false;
         }
 #if UNITY_EDITOR
-        //节点初始化的时候调用
-        public void SetProxyTargetPortData(ProxyHelperPortData proxyHelperPortData)
+        public int GetProxyNodeID()
         {
-            ClonedTargetPortData.MergeData(proxyHelperPortData.GetTargetPortData());
-            ClonedTargetPortData.SetFiledName(nameof(ClonedTargetPortData));
-            ClonedTargetPortData.SetPortName(string.IsNullOrEmpty(proxyHelperPortData.ProxyName) ? proxyHelperPortData.GetTargetPortData().GetPortName() : proxyHelperPortData.ProxyName);
-            ClonedTargetPortData.SetNodeData(m_NodeData);
+            return m_ProxyNodeID;
+        }
+
+        public BasePortData GetClonedProxyPortData()
+        {
+            return m_ClonedProxyPortData;
+        }
+
+        public void CloneProxyPortDataFromProxyHelperPortData(ProxyHelperPortData proxyHelperPortData)
+        {
+            m_ClonedProxyPortData = proxyHelperPortData.GetProxyPortData().Clone();
+            m_ProxyNodeID = proxyHelperPortData.GetProxyPortIndex().NodeID;
+        }
+
+        public void Initialize(ProxyHelperPortData proxyHelperPortData)
+        {
+            m_ClonedProxyPortData.SetNodeData(m_NodeData);
+            m_ClonedProxyPortData.MergeData(proxyHelperPortData.GetProxyPortData());
+            m_ClonedProxyPortData.SetFiledName(nameof(m_ClonedProxyPortData));
+            m_ClonedProxyPortData.SetPortName(string.IsNullOrEmpty(proxyHelperPortData.ProxyName) ? proxyHelperPortData.GetProxyPortData().GetPortName() : proxyHelperPortData.ProxyName);
+        }
+
+        public override void SetFiledName(string filedName)
+        {
+            base.SetFiledName(filedName);
+            m_ClonedProxyPortData.SetFiledName(nameof(m_ClonedProxyPortData));
+        }
+
+        public override string GetPortName()
+        {
+            return m_ClonedProxyPortData.GetPortName();
         }
 
         public override void SetPortName(string portName)
         {
-            ClonedTargetPortData.SetPortName(portName);
+            m_ClonedProxyPortData.SetPortName(portName);
+        }
+
+        public override Direction GetDirection()
+        {
+            return m_ClonedProxyPortData.GetDirection();
         }
 
         public override void SetDirection(Direction direction)
         {
-            ClonedTargetPortData.SetDirection(direction);
+            m_ClonedProxyPortData.SetDirection(direction);
+        }
+
+        public override Port.Capacity GetCapacity()
+        {
+            return m_ClonedProxyPortData.GetCapacity();
         }
 
         public override void SetCapacity(Port.Capacity capacity)
         {
-            ClonedTargetPortData.SetCapacity(capacity);
+            m_ClonedProxyPortData.SetCapacity(capacity);
+        }
+
+        public override Color GetPortColor()
+        {
+            return m_ClonedProxyPortData.GetPortColor();
         }
 
         public override void SetPortColor(Color portColor)
         {
-            ClonedTargetPortData.SetPortColor(portColor);
+            m_ClonedProxyPortData.SetPortColor(portColor);
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
         {
-            return ClonedTargetPortData?.GetPortConnectionDataFromSelf(nodeId, portId);
+            return m_ClonedProxyPortData.GetPortConnectionDataFromSelf(nodeId, portId);
         }
 
         public override int GetPortConnectionDataCountFromSelf()
         {
-            return ClonedTargetPortData?.GetPortConnectionDataCountFromSelf() ?? 0;
+            return m_ClonedProxyPortData.GetPortConnectionDataCountFromSelf();
+        }
+
+        public override bool CanConnect(BasePortData other)
+        {
+            return m_IsValid && m_ClonedProxyPortData.CanConnect(other);
         }
 
         public override BasePortData Clone()
         {
             ProxyPortData proxyPortData = new()
             {
-                ClonedTargetPortData = ClonedTargetPortData.Clone(),
-                TargetNodeID = m_NodeData.NodeID
+                m_ClonedProxyPortData = m_ClonedProxyPortData.Clone(),
+                m_ProxyNodeID = m_NodeData.NodeID
             };
             return proxyPortData;
+        }
+
+        public override void MergeData(BasePortData dataToMerge)
+        {
+            if (dataToMerge is ProxyPortData proxyPortData)
+            {
+                dataToMerge = proxyPortData.GetRecursionClonedTargetPortData();
+            }
+            m_ClonedProxyPortData.MergeData(dataToMerge);
         }
 #endif
     }

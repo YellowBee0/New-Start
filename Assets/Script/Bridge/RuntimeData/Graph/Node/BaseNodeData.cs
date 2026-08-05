@@ -34,12 +34,9 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
-        public static TPortData CreatePortData<TPortData>(int portID) where TPortData : BasePortData, new()
+        public static TPortData CreatePortData<TPortData>() where TPortData : BasePortData, new()
         {
-            TPortData portData = new()
-            {
-                PortID = portID
-            };
+            TPortData portData = new();
             portData.InitializeSerializedData();
             return portData;
         }

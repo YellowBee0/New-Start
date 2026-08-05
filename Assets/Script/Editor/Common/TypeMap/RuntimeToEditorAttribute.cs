@@ -1,7 +1,9 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace YBFramework.Editor
 {
+    [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public sealed class RuntimeToEditorAttribute : Attribute
     {

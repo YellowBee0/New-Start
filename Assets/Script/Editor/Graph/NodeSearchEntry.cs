@@ -228,28 +228,13 @@ namespace YBFramework.Editor.Graph
                             CustomGraphView graphView = openedGraphPresenter.GetGraphView();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
-                            //创建节点步骤
-                            //1、创建NodeData内部持久化数据
-                            //存在持久化数据
-                            nodeData.InitializeSerializedData();
-                            //2、使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
-                            //存在持久化数据
-                            nodeData.NodeID = ++openedGraphPresenter.GetGraphAsset().SourceNodeID;
-                            //3、创建节点时初始话节点名和位置
-                            //存在持久化数据
-                            nodeData.Name = SearchTreeEntry.name;
-                            nodeData.Position = graphView.contentViewContainer.WorldToLocal(worldPos);
                             //添加数据
                             //存在持久化数据
                             openedGraphPresenter.GetGraphAsset().AddNodeData(nodeData);
-                            //初始化非序列化数据
-                            //不存在数据持久化
-                            nodeData.SetGraphAsset(openedGraphPresenter.GetGraphAsset());
-                            foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
-                            {
-                                portData.SetNodeData(nodeData);
-                            }
-                            nodeData.Initialize();
+                            //创建节点时初始话节点名和位置
+                            //存在持久化数据
+                            nodeData.Name = SearchTreeEntry.name;
+                            nodeData.Position = graphView.contentViewContainer.WorldToLocal(worldPos);
                             //更新SO，保证能够拿到SerializedProperty
                             openedGraphPresenter.UpdateSO();
                             //初始化节点视图

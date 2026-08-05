@@ -31,30 +31,10 @@ namespace YBFramework.Bridge.Data
             return m_ProxyHelperPortsData;
         }
 
-        public int AllocateProxyHelperPortDataID()
-        {
-            return ++m_ProxyHelperPortDataIDRecord;
-        }
-
-        public void InitializeProxyHelperPortData(ProxyHelperPortData proxyHelperPortData, int index)
-        {
-            proxyHelperPortData.SetNodeData(this);
-            proxyHelperPortData.SetFiledName($"{nameof(m_ProxyHelperPortsData)}.Array.data[{index}]");
-            proxyHelperPortData.SetPortName($"代理目标端口{index}");
-            proxyHelperPortData.SetDirection(IsInputPortsProxyHelper ? Direction.Input : Direction.Output);
-            proxyHelperPortData.SetPortColor(Color.green);
-            proxyHelperPortData.SetCapacity(Port.Capacity.Single);
-            //端口刚创建出来或者没有连接其他端口时连线会为0，0
-            if (proxyHelperPortData.TargetPortConnectionData.NodeID != 0 && proxyHelperPortData.TargetPortConnectionData.PortID != 0)
-            {
-                BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyHelperPortData.TargetPortConnectionData.NodeID);
-                BasePortData portData = nodeData.GetPortData(proxyHelperPortData.TargetPortConnectionData.PortID);
-                proxyHelperPortData.SetTargetPortData(portData);
-            }
-        }
-
         public void AddProxyHelperPortData(ProxyHelperPortData portData)
         {
+            portData.PortID = ++m_ProxyHelperPortDataIDRecord;
+            InitializeProxyHelperPortData(portData, m_ProxyHelperPortsData.Count);
             m_ProxyHelperPortsData.Add(portData);
         }
 
@@ -90,6 +70,25 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < m_ProxyHelperPortsData.Count; i++)
             {
                 InitializeProxyHelperPortData(m_ProxyHelperPortsData[i], i);
+            }
+        }
+
+        private void InitializeProxyHelperPortData(ProxyHelperPortData proxyHelperPortData, int index)
+        {
+            proxyHelperPortData.SetNodeData(this);
+            proxyHelperPortData.SetFiledName($"{nameof(m_ProxyHelperPortsData)}.Array.data[{index}]");
+            proxyHelperPortData.SetPortName($"代理目标端口{index}");
+            proxyHelperPortData.SetDirection(IsInputPortsProxyHelper ? Direction.Input : Direction.Output);
+            proxyHelperPortData.SetPortColor(Color.green);
+            proxyHelperPortData.SetCapacity(Port.Capacity.Single);
+            //端口刚创建出来或者没有连接其他端口时连线会为0，0
+            int proxyPortNodeID = proxyHelperPortData.GetProxyPortIndex().NodeID;
+            int proxyPortPortID = proxyHelperPortData.GetProxyPortIndex().PortID;
+            if (proxyPortNodeID != 0 && proxyPortPortID != 0)
+            {
+                BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyPortNodeID);
+                BasePortData portData = nodeData.GetPortData(proxyPortPortID);
+                proxyHelperPortData.SetTargetPortData(portData);
             }
         }
     }

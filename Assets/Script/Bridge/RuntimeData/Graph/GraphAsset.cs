@@ -79,6 +79,21 @@ namespace YBFramework.Bridge.Data
         /// <param name="nodeData">添加的节点数据</param>
         public void AddNodeData(BaseNodeData nodeData)
         {
+            nodeData.Initialize();
+            //创建节点步骤
+            //1、创建NodeData内部持久化数据
+            //存在持久化数据
+            nodeData.InitializeSerializedData();
+            //2、使用蓝图分配节点id，保证唯一，且起始id为1而不是0（因为端口连线在序列化时必然不为null，且NodeID和PortID初始值为0，为避免初始数据导致连线有问题，id就统一从1开始）
+            //存在持久化数据
+            nodeData.NodeID = ++SourceNodeID;
+            //初始化非序列化数据
+            //不存在数据持久化
+            nodeData.SetGraphAsset(this);
+            foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
+            {
+                portData.SetNodeData(nodeData);
+            }
             m_NodesData.Add(nodeData);
         }
 
