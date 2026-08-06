@@ -15,8 +15,6 @@ namespace YBFramework.Bridge.Data
     {
         [SerializeField] private List<ProxyHelperPortData> m_ProxyHelperPortsData;
 
-        [SerializeField] private int m_ProxyHelperPortDataIDRecord;
-
         public bool IsInputPortsProxyHelper;
 
         /// <summary>
@@ -33,7 +31,7 @@ namespace YBFramework.Bridge.Data
 
         public void AddProxyHelperPortData(ProxyHelperPortData portData)
         {
-            portData.PortID = ++m_ProxyHelperPortDataIDRecord;
+            portData.PortID = GetNextPortID();
             InitializeProxyHelperPortData(portData, m_ProxyHelperPortsData.Count);
             m_ProxyHelperPortsData.Add(portData);
         }

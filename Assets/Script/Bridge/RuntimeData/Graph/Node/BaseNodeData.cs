@@ -41,11 +41,23 @@ namespace YBFramework.Bridge.Data
             return portData;
         }
 
+        /// <summary>
+        /// Port的计数器
+        /// 添加这个计算器的原因：一个节点在代码中很有可能会修改端口，比如删除一个值输入端口，添加一个函数端口。
+        /// 如果没有这个计数器，端口id可能会重复，但是节点类型却不相同，导致运行时报错
+        /// </summary>
+        [SerializeField] private int m_PortCounter;
+
         protected GraphAsset m_GraphAsset;
 
         public string Name;
 
         public Vector2 Position;
+
+        protected int GetNextPortID()
+        {
+            return ++m_PortCounter;
+        }
 
         public GraphAsset GetGraphAsset()
         {

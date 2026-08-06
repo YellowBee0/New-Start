@@ -46,8 +46,6 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        [SerializeField] private int m_ProxyPortDataIDRecord;
-
         public void SetProxyGraphAsset(GraphAsset proxyGraphAsset)
         {
             //断开所有连接，清空数据
@@ -136,7 +134,7 @@ namespace YBFramework.Bridge.Data
         private void CloneProxyPortDataFromProxyHelperPortData(ProxyHelperPortData proxyHelperPortData)
         {
             ProxyPortData proxyPortData = CreatePortData<ProxyPortData>();
-            proxyPortData.PortID = ++m_ProxyPortDataIDRecord;
+            proxyPortData.PortID = GetNextPortID();
             proxyPortData.CloneProxyPortDataFromProxyHelperPortData(proxyHelperPortData);
             InitializeProxyPortData(proxyPortData, proxyHelperPortData, m_ProxyPortsData.Count);
             m_ProxyPortsData.Add(proxyPortData);

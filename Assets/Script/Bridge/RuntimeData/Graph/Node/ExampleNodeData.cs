@@ -35,7 +35,7 @@ namespace YBFramework.Bridge.Data
         public override void InitializeSerializedData()
         {
             StringInputTest = CreatePortData<ValueInputPortData<string>>();
-            StringInputTest.PortID = 1;
+            StringInputTest.PortID = GetNextPortID();
         }
 
         public override void Initialize()

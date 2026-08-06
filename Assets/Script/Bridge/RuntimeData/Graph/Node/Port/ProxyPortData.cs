@@ -18,21 +18,11 @@ namespace YBFramework.Bridge.Data
 
         [SerializeField] private int m_ProxyNodeID;
 
-        private bool m_IsValid;
-
-        /// <summary>
-        /// 运行时递归获取重写的端口数据，用于覆盖代理蓝图端口的内部值
-        /// </summary>
-        /// <returns>重写的端口数据</returns>
-        public BasePortData GetRecursionClonedTargetPortData()
+        public BasePortData GetClonedProxyPortData()
         {
-            if (m_ClonedProxyPortData is ProxyPortData proxyPortData)
-            {
-                return proxyPortData.GetRecursionClonedTargetPortData();
-            }
             return m_ClonedProxyPortData;
         }
-
+        
         public override BasePort CreateRuntimeInstance()
         {
             ProxyPort proxyPort = new();
@@ -53,24 +43,11 @@ namespace YBFramework.Bridge.Data
         {
             return m_ProxyNodeID;
         }
-
-        public BasePortData GetClonedProxyPortData()
-        {
-            return m_ClonedProxyPortData;
-        }
-
+        
         public void CloneProxyPortDataFromProxyHelperPortData(ProxyHelperPortData proxyHelperPortData)
         {
             m_ClonedProxyPortData = proxyHelperPortData.GetProxyPortData().Clone();
             m_ProxyNodeID = proxyHelperPortData.GetProxyPortIndex().NodeID;
-        }
-
-        public void Initialize(ProxyHelperPortData proxyHelperPortData)
-        {
-            m_ClonedProxyPortData.SetNodeData(m_NodeData);
-            m_ClonedProxyPortData.MergeData(proxyHelperPortData.GetProxyPortData());
-            m_ClonedProxyPortData.SetFiledName(nameof(m_ClonedProxyPortData));
-            m_ClonedProxyPortData.SetPortName(string.IsNullOrEmpty(proxyHelperPortData.ProxyName) ? proxyHelperPortData.GetProxyPortData().GetPortName() : proxyHelperPortData.ProxyName);
         }
 
         public override void SetFiledName(string filedName)
@@ -79,44 +56,25 @@ namespace YBFramework.Bridge.Data
             m_ClonedProxyPortData.SetFiledName(nameof(m_ClonedProxyPortData));
         }
 
-        public override string GetPortName()
-        {
-            return m_ClonedProxyPortData.GetPortName();
-        }
-
         public override void SetPortName(string portName)
         {
+            base.SetPortName(portName);
             m_ClonedProxyPortData.SetPortName(portName);
-        }
-
-        public override Direction GetDirection()
-        {
-            return m_ClonedProxyPortData.GetDirection();
         }
 
         public override void SetDirection(Direction direction)
         {
-            m_ClonedProxyPortData.SetDirection(direction);
-        }
-
-        public override Port.Capacity GetCapacity()
-        {
-            return m_ClonedProxyPortData.GetCapacity();
+            Debug.LogWarning($"It's useless to set proxy port's port direction: {direction}, because the proxy port's direction is limited by the proxy port's direction");
         }
 
         public override void SetCapacity(Port.Capacity capacity)
         {
-            m_ClonedProxyPortData.SetCapacity(capacity);
-        }
-
-        public override Color GetPortColor()
-        {
-            return m_ClonedProxyPortData.GetPortColor();
+            Debug.LogWarning($"It's useless to set proxy port's port capacity: {capacity}, because the proxy port's capacity is limited by the proxy port's capacity");
         }
 
         public override void SetPortColor(Color portColor)
         {
-            m_ClonedProxyPortData.SetPortColor(portColor);
+            Debug.LogWarning($"It's useless to set proxy port's port color: {portColor}, because the proxy port's color is limited by the proxy port's color");
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)
@@ -131,7 +89,7 @@ namespace YBFramework.Bridge.Data
 
         public override bool CanConnect(BasePortData other)
         {
-            return m_IsValid && m_ClonedProxyPortData.CanConnect(other);
+            return m_ClonedProxyPortData.CanConnect(other);
         }
 
         public override BasePortData Clone()
@@ -146,11 +104,11 @@ namespace YBFramework.Bridge.Data
 
         public override void MergeData(BasePortData dataToMerge)
         {
-            if (dataToMerge is ProxyPortData proxyPortData)
-            {
-                dataToMerge = proxyPortData.GetRecursionClonedTargetPortData();
-            }
-            m_ClonedProxyPortData.MergeData(dataToMerge);
+            ProxyPortData proxyPortDataToMerge = (ProxyPortData)dataToMerge;
+            m_ClonedProxyPortData.MergeData(proxyPortDataToMerge.m_ClonedProxyPortData);
+            m_Direction = m_ClonedProxyPortData.GetDirection();
+            m_Capacity = m_ClonedProxyPortData.GetCapacity();
+            m_PortColor = m_ClonedProxyPortData.GetPortColor();
         }
 #endif
     }

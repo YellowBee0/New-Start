@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
@@ -22,7 +21,7 @@ namespace YBFramework.Bridge.Data
         {
             return m_ProxyPortIndex;
         }
-        
+
         public BasePortData GetProxyPortData()
         {
             return m_TargetPortData;
@@ -48,50 +47,6 @@ namespace YBFramework.Bridge.Data
             }
             current = null;
             return false;
-        }
-
-        public override string GetPortName()
-        {
-            if (m_TargetPortData != null)
-            {
-                return m_TargetPortData.GetPortName();
-            }
-            return m_TargetPortData.GetPortName();
-        }
-
-        public override void SetPortName(string portName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Direction GetDirection()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetDirection(Direction direction)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Port.Capacity GetCapacity()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetCapacity(Port.Capacity capacity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Color GetPortColor()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetPortColor(Color portColor)
-        {
-            throw new NotImplementedException();
         }
 
         public override PortConnectionData GetPortConnectionDataFromSelf(int nodeId, int portId)

@@ -59,6 +59,9 @@ namespace YBFramework.Editor.Graph.Presenter
                 }
             }
 
+            //TODO:连线的时候有可能存在端口数据被意外删除，比如程序删除了某个节点的端口代码，导致序列化数据不存在这个端口，但是连线数据还在（还在的数据只有连接到删除端口的数据）；
+            // 再比如代理辅助节点删除了一个端口代理，代理节点依旧保存了原始的数据。
+            // 对此需要一个类或者集合用于保存这些意外删除的数据的连线，因为只能获取到连线数据，端口名、方向（运行时数据）都找不到了。
             for (int i = 0; i < m_NodePresenters.Count; i++)
             {
                 BaseNodePresenter fromNodePresenter = m_NodePresenters[i];

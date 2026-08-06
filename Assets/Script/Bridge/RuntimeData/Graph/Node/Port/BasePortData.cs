@@ -42,23 +42,21 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         [SerializeField] protected List<PortConnectionData> m_PortConnectionDataFromOther;
 
-        private string m_FiledName;
-
         protected BaseNodeData m_NodeData;
+
+        protected string m_FiledName;
+
+        protected string m_PortName;
+
+        protected Direction m_Direction;
+
+        protected Port.Capacity m_Capacity;
+
+        protected Color m_PortColor;
 
         public BaseNodeData GetNodeData()
         {
             return m_NodeData;
-        }
-
-        public void SetNodeData(BaseNodeData nodeData)
-        {
-            m_NodeData = nodeData;
-        }
-
-        public virtual void SetFiledName(string filedName)
-        {
-            m_FiledName = filedName;
         }
 
         public string GetFiledName()
@@ -66,21 +64,25 @@ namespace YBFramework.Bridge.Data
             return m_FiledName;
         }
 
-        public abstract string GetPortName();
+        public string GetPortName()
+        {
+            return m_PortName;
+        }
 
-        public abstract void SetPortName(string portName);
+        public Direction GetDirection()
+        {
+            return m_Direction;
+        }
 
-        public abstract Direction GetDirection();
+        public Port.Capacity GetCapacity()
+        {
+            return m_Capacity;
+        }
 
-        public abstract void SetDirection(Direction direction);
-
-        public abstract Port.Capacity GetCapacity();
-
-        public abstract void SetCapacity(Port.Capacity capacity);
-
-        public abstract Color GetPortColor();
-
-        public abstract void SetPortColor(Color portColor);
+        public Color GetPortColor()
+        {
+            return m_PortColor;
+        }
 
         public void SetPortViewArgs(string portName, PortViewArgsTemplate argsTemplate)
         {
@@ -115,6 +117,36 @@ namespace YBFramework.Bridge.Data
                 default:
                     throw new ArgumentOutOfRangeException(nameof(argsTemplate), argsTemplate, null);
             }
+        }
+
+        public virtual void SetNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData = nodeData;
+        }
+
+        public virtual void SetFiledName(string filedName)
+        {
+            m_FiledName = filedName;
+        }
+
+        public virtual void SetPortName(string portName)
+        {
+            m_PortName = portName;
+        }
+
+        public virtual void SetDirection(Direction direction)
+        {
+            m_Direction = direction;
+        }
+
+        public virtual void SetCapacity(Port.Capacity capacity)
+        {
+            m_Capacity = capacity;
+        }
+
+        public virtual void SetPortColor(Color portColor)
+        {
+            m_PortColor = portColor;
         }
 
         public virtual bool CanConnect(BasePortData other)
@@ -215,13 +247,14 @@ namespace YBFramework.Bridge.Data
 
         /// <summary>
         /// 用于代理端口从真实的端口获取不可序列化的数据，比如绘制参数PortViewArgs，MethodPortData的MethodInfo
+        /// 调用MergeData必须保证端口对应
         /// </summary>
         /// <param name="dataToMerge">代理目标</param>
         public virtual void MergeData(BasePortData dataToMerge)
         {
-            SetDirection(dataToMerge.GetDirection());
-            SetCapacity(dataToMerge.GetCapacity());
-            SetPortColor(dataToMerge.GetPortColor());
+            m_Direction = dataToMerge.GetDirection();
+            m_Capacity = dataToMerge.GetCapacity();
+            m_PortColor = dataToMerge.GetPortColor();
         }
 #endif
     }
