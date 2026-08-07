@@ -10,7 +10,7 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class GraphWindow : EditorWindow
     {
-#region single instance
+        #region single instance
         private static GraphWindow s_Instance;
 
         [MenuItem("Window/Graph")]
@@ -30,8 +30,10 @@ namespace YBFramework.Editor.Graph
         {
             return s_Instance;
         }
-#endregion
+        #endregion
 
+        private static readonly List<string> s_GraphAssetPaths = new();
+        
         private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
 
         private readonly List<string> m_FilteredGraphAssetNames = new();
@@ -49,6 +51,72 @@ namespace YBFramework.Editor.Graph
         private ListView m_ListView;
 
         private VisualElement m_GraphContainer;
+
+        //TODO:蓝图资源更新逻辑
+        private static void InitializeGraphAssetPaths()
+        {
+            string[] guids = AssetDatabase.FindAssets($"t:{nameof(GraphAsset)}");
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string graphPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                s_GraphAssetPaths.Add(graphPath);
+            }
+        }
+
+        [MenuItem("Tools/Migrate Graph Assets")]
+        public static void MigrateSerializedData()
+        {
+            for (int i = 0; i < s_GraphAssetPaths.Count; i++)
+            {
+                string graphAssetPath = s_GraphAssetPaths[i];
+                GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
+                if (graphAsset != null)
+                {
+                    graphAsset.InitializeReference();
+                    IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
+                    bool isDirty = false;
+                    for (int j = 0; j < nodesData.Count; j++)
+                    {
+                        if (nodesData[i].MigrateSerializedData(graphAsset))
+                        {
+                            isDirty = true;
+                        }
+                    }
+                    if (isDirty)
+                    {
+                        EditorUtility.SetDirty(graphAsset);
+                    }
+                }
+            }
+            AssetDatabase.SaveAssets();
+        }
+
+        public static void MigrateProxyNodeSerializedData(ProxyHelperNodeData proxyHelperNodeData)
+        {
+            GraphAsset proxyGraphAsset = proxyHelperNodeData.GetGraphAsset();
+            for (int i = 0; i < s_GraphAssetPaths.Count; i++)
+            {
+                string graphAssetPath = s_GraphAssetPaths[i];
+                GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
+                if (graphAsset != null)
+                {
+                    IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
+                    bool isDirty = false;
+                    for (int j = 0; j < nodesData.Count; j++)
+                    {
+                        if (nodesData[i] is ProxyNodeData proxyNodeData && proxyNodeData.GetProxyGraphAsset() == proxyGraphAsset)
+                        {
+                            //在这里迁移代理数据
+                        }
+                    }
+                    if (isDirty)
+                    {
+                        EditorUtility.SetDirty(graphAsset);
+                    }
+                }
+            }
+            AssetDatabase.SaveAssets();
+        }
 
         public GraphPresenter GetOpenedPresenter()
         {
@@ -184,6 +252,7 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
+                    graphAsset.InitializeReference();
                     graphPresenter = GraphPresenter.AllocateGraphPresenter();
                     graphPresenter.Initialize(graphAsset);
                     m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);

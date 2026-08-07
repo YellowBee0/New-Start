@@ -36,7 +36,7 @@ namespace YBFramework.Editor.Graph.Presenter
         public void Initialize(GraphAsset graphAsset)
         {
             m_GraphAsset = graphAsset;
-            m_GraphAsset.Initialize();
+            m_GraphAsset.InitializeNodeData();
             m_SO = new SerializedObject(graphAsset);
             m_SO.Update();
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");

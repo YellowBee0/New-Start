@@ -79,6 +79,26 @@ namespace YBFramework.Bridge.Data
         /// 该函数总是在创建节点视图或者使用节点API之前调用
         /// </summary>
         public abstract void Initialize();
+
+        /// <summary>
+        /// 迁移节点数据
+        /// 当新增/删除端口或者其他序列化且带有初始值的数据时调用
+        /// 函数在调用过一次后内部实现需要及时删除，以免出现重复迁移数据
+        /// </summary>
+        /// <param name="graphAsset">节点数据所在的GraphAsset，用于保存迁移的数据以便显示和查看</param>
+        /// <returns>是否迁移</returns>
+        public virtual bool MigrateSerializedData(GraphAsset graphAsset)
+        {
+            bool isMigrated = false;
+            foreach (BasePortData portData in (IValueIterator<BasePortData>)this)
+            {
+                if (portData.MigrateSerializedData(graphAsset))
+                {
+                    isMigrated = true;
+                }
+            }
+            return isMigrated;
+        }
 #endif
     }
 }

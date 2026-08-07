@@ -2,7 +2,6 @@
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using System;
 using YBFramework.Bridge.Editor;
 using YBFramework.Common;
 #endif
@@ -41,7 +40,9 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         [SerializeField] private GraphType m_GraphType;
 
-        private bool m_IsInitialized;
+        private bool m_IsInitializedReference;
+
+        private bool m_IsInitializedNodeData;
 
         public int SourceNodeID;
 
@@ -50,23 +51,34 @@ namespace YBFramework.Bridge.Data
             return m_GraphType;
         }
 
-        public void Initialize()
+        public void InitializeReference()
         {
-            if (m_IsInitialized)
+            if (!m_IsInitializedReference)
+            {
+                for (int i = 0; i < m_NodesData.Count; i++)
+                {
+                    BaseNodeData nodeData = m_NodesData[i];
+                    nodeData.SetGraphAsset(this);
+                    foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
+                    {
+                        portData.SetNodeData(nodeData);
+                    }
+                }
+            }
+            m_IsInitializedReference = true;
+        }
+
+        public void InitializeNodeData()
+        {
+            if (m_IsInitializedNodeData)
             {
                 return;
             }
             for (int i = 0; i < m_NodesData.Count; i++)
             {
-                BaseNodeData nodeData = m_NodesData[i];
-                nodeData.SetGraphAsset(this);
-                foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
-                {
-                    portData.SetNodeData(nodeData);
-                }
-                nodeData.Initialize();
+                m_NodesData[i].Initialize();
             }
-            m_IsInitialized = true;
+            m_IsInitializedNodeData = true;
         }
 
         /// <summary>
@@ -112,7 +124,7 @@ namespace YBFramework.Bridge.Data
 
         private void OnDisable()
         {
-            m_IsInitialized = false;
+            m_IsInitializedNodeData = false;
         }
 #endif
     }

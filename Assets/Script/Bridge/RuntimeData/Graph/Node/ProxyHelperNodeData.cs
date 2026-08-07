@@ -17,13 +17,6 @@ namespace YBFramework.Bridge.Data
 
         public bool IsInputPortsProxyHelper;
 
-        /// <summary>
-        /// 当作为代理的蓝图里面代理端口发生新增或者删除时调用这个委托。
-        /// 新增或者删除都是在蓝图视图中发生。
-        /// 参数1为节点id，参数2为端口id，参数3为是否为新增true/false代表新增/删除
-        /// </summary>
-        private Action<int, int, bool> m_OnProxyDataChanged;
-
         public IReadOnlyList<ProxyHelperPortData> GetProxyHelperPortsData()
         {
             return m_ProxyHelperPortsData;

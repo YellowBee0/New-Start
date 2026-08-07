@@ -110,6 +110,11 @@ namespace YBFramework.Bridge.Data
             m_Capacity = m_ClonedProxyPortData.GetCapacity();
             m_PortColor = m_ClonedProxyPortData.GetPortColor();
         }
+
+        public override bool MigrateSerializedData(GraphAsset graphAsset)
+        {
+            return m_ClonedProxyPortData.MigrateSerializedData(graphAsset);
+        }
 #endif
     }
 }

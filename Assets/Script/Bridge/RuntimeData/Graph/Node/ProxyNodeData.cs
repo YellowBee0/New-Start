@@ -55,7 +55,7 @@ namespace YBFramework.Bridge.Data
             }
             m_ProxyPortsData.Clear();
             //确保初始化
-            proxyGraphAsset.Initialize();
+            proxyGraphAsset.InitializeNodeData();
             if (proxyGraphAsset != null)
             {
                 IReadOnlyList<BaseNodeData> nodeData = proxyGraphAsset.GetNodesData();
@@ -80,6 +80,42 @@ namespace YBFramework.Bridge.Data
             m_ProxyGraphAsset = proxyGraphAsset;
         }
 
+        public bool MigrateProxyHelperNodeData(ProxyHelperNodeData proxyHelperNodeData)
+        {
+            bool isMigrated = false;
+            IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
+            for (int i = 0; i < proxyHelperPortsData.Count; i++)
+            {
+                ProxyHelperPortData proxyHelperPortData = proxyHelperPortsData[i];
+                int targetNodeID = proxyHelperPortData.GetProxyPortIndex().NodeID;
+                int targetPortID = proxyHelperPortData.GetProxyPortIndex().PortID;
+                if (targetNodeID == 0 || targetPortID == 0)
+                {
+                    //这个换到上一级调用时判断
+                    Debug.LogWarning($"Port in graph:{m_ProxyGraphAsset.name} node id:{proxyHelperNodeData.NodeID} port id:{proxyHelperPortData.PortID} did not connect any other port");
+                    continue;
+                }
+                bool isNotFound = true;
+                for (int k = 0; k < m_ProxyPortsData.Count; k++)
+                {
+                    ProxyPortData proxyPortData = m_ProxyPortsData[k];
+                    if (proxyPortData.GetProxyNodeID() == targetNodeID && proxyPortData.GetClonedProxyPortData().PortID == targetPortID)
+                    {
+                        isNotFound = false;
+                        break;
+                    }
+                }
+                if (isNotFound)
+                {
+                    //TODO:这里Clone有一步获取内部代理端口并没有赋初始值，导致不能找到
+                    CloneProxyPortDataFromProxyHelperPortData(proxyHelperPortData);
+                    isMigrated = true;
+                }
+            }
+            //TODO:遍历查看哪一个端口这里有，但是代理辅助没有。找到后删除数据和连线，并设置isMigrated = true
+            return isMigrated;
+        }
+
         public override void InitializeSerializedData()
         {
             m_ProxyPortsData = new List<ProxyPortData>();
@@ -92,7 +128,7 @@ namespace YBFramework.Bridge.Data
                 return;
             }
             //确保蓝图中节点全部初始化
-            m_ProxyGraphAsset.Initialize();
+            m_ProxyGraphAsset.InitializeNodeData();
             IReadOnlyList<BaseNodeData> nodeData = m_ProxyGraphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {

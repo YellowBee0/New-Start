@@ -242,7 +242,7 @@ namespace YBFramework.Bridge.Data
         {
             m_PortConnectionDataFromOther = new List<PortConnectionData>();
         }
-        
+
         public abstract BasePortData Clone();
 
         /// <summary>
@@ -255,6 +255,18 @@ namespace YBFramework.Bridge.Data
             m_Direction = dataToMerge.GetDirection();
             m_Capacity = dataToMerge.GetCapacity();
             m_PortColor = dataToMerge.GetPortColor();
+        }
+
+        /// <summary>
+        /// 迁移端口数据
+        /// 如果端口新增/删除需要序列化且带有初始值的数据时需要在蓝图里调用这个函数
+        /// 函数在调用过一次后内部实现需要及时删除，以免出现重复迁移数据
+        /// </summary>
+        /// <param name="graphAsset">端口数据所在的GraphAsset，用于保存迁移的数据以便显示和查看</param>
+        /// <returns>是否迁移</returns>
+        public virtual bool MigrateSerializedData(GraphAsset graphAsset)
+        {
+            return false;
         }
 #endif
     }
