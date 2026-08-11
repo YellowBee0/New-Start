@@ -41,14 +41,16 @@ namespace YBFramework.Bridge.Data
             return portData;
         }
 
+        protected GraphAsset m_GraphAsset;
+        
+        private bool m_IsInitialized;
+        
         /// <summary>
         /// Port的计数器
         /// 添加这个计算器的原因：一个节点在代码中很有可能会修改端口，比如删除一个值输入端口，添加一个函数端口。
         /// 如果没有这个计数器，端口id可能会重复，但是节点类型却不相同，导致运行时报错
         /// </summary>
         [SerializeField] private int m_PortCounter;
-
-        protected GraphAsset m_GraphAsset;
 
         public string Name;
 
@@ -68,17 +70,26 @@ namespace YBFramework.Bridge.Data
         {
             m_GraphAsset = graphAsset;
         }
-
-        /// <summary>
-        /// 创建序列化数据并初始化这些数据
-        /// </summary>
-        public abstract void InitializeSerializedData();
-
+        
         /// <summary>
         /// 初始化节点数据，初始化的数据不会持久化。
         /// 该函数总是在创建节点视图或者使用节点API之前调用
         /// </summary>
-        public abstract void Initialize();
+        public void Initialize()
+        {
+            if (!m_IsInitialized)
+            {
+                OnInitialize();
+                m_IsInitialized = true;
+            }
+        }
+        
+        /// <summary>
+        /// 创建序列化数据并初始化这些数据
+        /// </summary>
+        public abstract void InitializeSerializedData();
+        
+        protected abstract void OnInitialize();
 
         /// <summary>
         /// 迁移节点数据

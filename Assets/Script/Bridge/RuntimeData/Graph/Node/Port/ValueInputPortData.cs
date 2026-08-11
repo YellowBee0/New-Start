@@ -76,7 +76,7 @@ namespace YBFramework.Bridge.Data
             string json = EditorJsonUtility.ToJson(this);
             EditorJsonUtility.FromJsonOverwrite(json, portData);
             portData.IsUsed = false;
-            portData.m_PortConnectionDataFromOther.Clear();
+            portData.m_PortConnectionsDataFromOther.Clear();
             portData.DelegatePortConnectionData.NodeID = 0;
             portData.DelegatePortConnectionData.PortID = 0;
             return portData;

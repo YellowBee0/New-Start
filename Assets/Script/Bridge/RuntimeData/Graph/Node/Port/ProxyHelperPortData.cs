@@ -46,6 +46,14 @@ namespace YBFramework.Bridge.Data
 
         public BasePortData GetProxyPortData()
         {
+            if (m_TargetPortData == null && (m_ProxyPortIndex.NodeID != 0 || m_ProxyPortIndex.PortID != 0))
+            {
+                BaseNodeData nodeData = m_NodeData.GetGraphAsset().GetNodeData(m_ProxyPortIndex.NodeID);
+                if (nodeData != null)
+                {
+                    m_TargetPortData = nodeData.GetPortData(m_ProxyPortIndex.PortID);
+                }
+            }
             return m_TargetPortData;
         }
 
@@ -163,7 +171,7 @@ namespace YBFramework.Bridge.Data
 
         public override BasePortData Clone()
         {
-            throw new Exception("this port can not clone for proxy port");
+            throw new Exception($"{nameof(ProxyHelperPortData)} can not clone for proxy port data");
         }
     }
 }

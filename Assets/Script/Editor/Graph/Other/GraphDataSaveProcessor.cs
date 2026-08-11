@@ -69,7 +69,7 @@ namespace YBFramework.Editor.Graph
                 GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
                 if (graphAsset != null)
                 {
-                    graphAsset.InitializeReference();
+                    graphAsset.InitializeBackReference();
                     IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
                     bool isDirty = false;
                     for (int j = 0; j < nodesData.Count; j++)
@@ -91,6 +91,7 @@ namespace YBFramework.Editor.Graph
         [MethodMark("Save Connect Proxy Helper Node Data")]
         private static void SaveConnectProxyHelperNodeDataProcess()
         {
+            ProxyHelperPortData.GetConnectDataToSave();
         }
 
         [MethodMark("Save Disconnect Proxy Helper Node Data")]
@@ -127,6 +128,12 @@ namespace YBFramework.Editor.Graph
 
         private static string[] OnWillSaveAssets(string[] paths)
         {
+            EditorApplication.delayCall += DoProcess;
+            return paths;
+        }
+
+        private static void DoProcess()
+        {
             IReadOnlyList<string> processNames = GraphDataSaveProcessBridge.GetProcessNames();
             for (int i = 0; i < processNames.Count; i++)
             {
@@ -140,7 +147,6 @@ namespace YBFramework.Editor.Graph
                 s_SaveProcesses[i].Invoke();
             }
             s_SaveProcesses.Clear();
-            return paths;
         }
     }
 }

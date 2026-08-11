@@ -36,9 +36,7 @@ namespace YBFramework.Editor.Graph.Presenter
         public void Initialize(GraphAsset graphAsset)
         {
             m_GraphAsset = graphAsset;
-            m_GraphAsset.InitializeNodeData();
             m_SO = new SerializedObject(graphAsset);
-            m_SO.Update();
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
             m_NodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GetGraphType());
             m_GraphView = new CustomGraphView(graphAsset)
@@ -54,6 +52,7 @@ namespace YBFramework.Editor.Graph.Presenter
                 BaseNodePresenter nodePresenter = BaseNodePresenter.AllocateNodePresenter(nodeData.GetType());
                 if (nodePresenter != null)
                 {
+                    nodeData.Initialize();
                     nodePresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
                     AddNodePresenter(nodePresenter);
                 }

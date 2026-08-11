@@ -72,7 +72,7 @@ namespace YBFramework.Editor.Graph
                 GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
                 if (graphAsset != null)
                 {
-                    graphAsset.InitializeReference();
+                    graphAsset.InitializeBackReference();
                     IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
                     bool isDirty = false;
                     for (int j = 0; j < nodesData.Count; j++)
@@ -252,7 +252,7 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
-                    graphAsset.InitializeReference();
+                    graphAsset.InitializeBackReference();
                     graphPresenter = GraphPresenter.AllocateGraphPresenter();
                     graphPresenter.Initialize(graphAsset);
                     m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);

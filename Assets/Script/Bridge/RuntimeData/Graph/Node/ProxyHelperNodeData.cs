@@ -56,7 +56,7 @@ namespace YBFramework.Bridge.Data
             m_ProxyHelperPortsData = new List<ProxyHelperPortData>();
         }
 
-        public override void Initialize()
+        protected override void OnInitialize()
         {
             for (int i = 0; i < m_ProxyHelperPortsData.Count; i++)
             {
@@ -78,6 +78,8 @@ namespace YBFramework.Bridge.Data
             if (proxyPortNodeID != 0 && proxyPortPortID != 0)
             {
                 BaseNodeData nodeData = m_GraphAsset.GetNodeData(proxyPortNodeID);
+                //确保初始化
+                nodeData.Initialize();
                 BasePortData portData = nodeData.GetPortData(proxyPortPortID);
                 proxyHelperPortData.SetTargetPortData(portData);
             }

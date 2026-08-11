@@ -42,8 +42,6 @@ namespace YBFramework.Bridge.Data
 
         private bool m_IsInitializedReference;
 
-        private bool m_IsInitializedNodeData;
-
         public int SourceNodeID;
 
         public GraphType GetGraphType()
@@ -51,7 +49,7 @@ namespace YBFramework.Bridge.Data
             return m_GraphType;
         }
 
-        public void InitializeReference()
+        public void InitializeBackReference()
         {
             if (!m_IsInitializedReference)
             {
@@ -66,19 +64,6 @@ namespace YBFramework.Bridge.Data
                 }
             }
             m_IsInitializedReference = true;
-        }
-
-        public void InitializeNodeData()
-        {
-            if (m_IsInitializedNodeData)
-            {
-                return;
-            }
-            for (int i = 0; i < m_NodesData.Count; i++)
-            {
-                m_NodesData[i].Initialize();
-            }
-            m_IsInitializedNodeData = true;
         }
 
         /// <summary>
@@ -120,11 +105,6 @@ namespace YBFramework.Bridge.Data
         public void RemoveNodeData(BaseNodeData nodeData)
         {
             m_NodesData.Remove(nodeData);
-        }
-
-        private void OnDisable()
-        {
-            m_IsInitializedNodeData = false;
         }
 #endif
     }

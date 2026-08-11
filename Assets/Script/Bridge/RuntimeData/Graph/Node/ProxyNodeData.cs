@@ -54,8 +54,6 @@ namespace YBFramework.Bridge.Data
                 m_ProxyPortsData[i].DisconnectAll();
             }
             m_ProxyPortsData.Clear();
-            //确保初始化
-            proxyGraphAsset.InitializeNodeData();
             if (proxyGraphAsset != null)
             {
                 IReadOnlyList<BaseNodeData> nodeData = proxyGraphAsset.GetNodesData();
@@ -63,6 +61,8 @@ namespace YBFramework.Bridge.Data
                 {
                     if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
                     {
+                        //确保初始化
+                        proxyHelperNodeData.Initialize();
                         IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
                         for (int j = 0; j < proxyHelperPortsData.Count; j++)
                         {
@@ -121,19 +121,19 @@ namespace YBFramework.Bridge.Data
             m_ProxyPortsData = new List<ProxyPortData>();
         }
 
-        public override void Initialize()
+        protected override void OnInitialize()
         {
             if (m_ProxyGraphAsset == null)
             {
                 return;
             }
-            //确保蓝图中节点全部初始化
-            m_ProxyGraphAsset.InitializeNodeData();
             IReadOnlyList<BaseNodeData> nodeData = m_ProxyGraphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 if (nodeData[i] is ProxyHelperNodeData proxyHelperNodeData)
                 {
+                    //确保初始化
+                    proxyHelperNodeData.Initialize();
                     //TODO:需要处理代理节点删除或者新增
                     IReadOnlyList<ProxyHelperPortData> proxyHelperPortsData = proxyHelperNodeData.GetProxyHelperPortsData();
                     for (int j = 0; j < proxyHelperPortsData.Count; j++)

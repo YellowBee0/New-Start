@@ -38,7 +38,7 @@ namespace YBFramework.Bridge.Data
             StringInputTest.PortID = GetNextPortID();
         }
 
-        public override void Initialize()
+        protected override void OnInitialize()
         {
             StringInputTest.SetFiledName(nameof(StringInputTest));
             StringInputTest.SetPortViewArgs("string输入测试", PortViewArgsTemplate.ValueInput);

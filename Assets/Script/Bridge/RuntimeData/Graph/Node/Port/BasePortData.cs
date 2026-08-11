@@ -40,7 +40,7 @@ namespace YBFramework.Bridge.Data
             return false;
         }
 #if UNITY_EDITOR
-        [SerializeField] protected List<PortConnectionData> m_PortConnectionDataFromOther;
+        [SerializeField] protected List<PortConnectionData> m_PortConnectionsDataFromOther;
 
         protected BaseNodeData m_NodeData;
 
@@ -53,6 +53,11 @@ namespace YBFramework.Bridge.Data
         protected Port.Capacity m_Capacity;
 
         protected Color m_PortColor;
+
+        public IReadOnlyList<PortConnectionData> GetPortConnectionsDataFromOther()
+        {
+            return m_PortConnectionsDataFromOther;
+        }
 
         public BaseNodeData GetNodeData()
         {
@@ -159,7 +164,7 @@ namespace YBFramework.Bridge.Data
             //被连接的端口需要设置IsUsed为true，且来自其他端口连接需要添加当前端口
             IsUsed = true;
             other.IsUsed = true;
-            other.m_PortConnectionDataFromOther.Add(new PortConnectionData
+            other.m_PortConnectionsDataFromOther.Add(new PortConnectionData
             {
                 NodeID = m_NodeData.NodeID,
                 PortID = PortID
@@ -169,12 +174,12 @@ namespace YBFramework.Bridge.Data
         public virtual void Disconnect(BasePortData other)
         {
             //被断开连接的端口需要同步断开自身来自其他端口的连接
-            for (int i = 0; i < other.m_PortConnectionDataFromOther.Count; i++)
+            for (int i = 0; i < other.m_PortConnectionsDataFromOther.Count; i++)
             {
-                PortConnectionData portConnectionData = other.m_PortConnectionDataFromOther[i];
+                PortConnectionData portConnectionData = other.m_PortConnectionsDataFromOther[i];
                 if (portConnectionData.NodeID == m_NodeData.NodeID && portConnectionData.PortID == PortID)
                 {
-                    other.m_PortConnectionDataFromOther.RemoveAt(i);
+                    other.m_PortConnectionsDataFromOther.RemoveAt(i);
                     if (other.GetPortConnectionDataCount() == 0)
                     {
                         other.IsUsed = false;
@@ -196,9 +201,9 @@ namespace YBFramework.Bridge.Data
                 BasePortData portData = nodeData.GetPortData(portConnectionData.PortID);
                 Disconnect(portData);
             }
-            for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
+            for (int i = 0; i < m_PortConnectionsDataFromOther.Count; i++)
             {
-                PortConnectionData portConnectionData = m_PortConnectionDataFromOther[i];
+                PortConnectionData portConnectionData = m_PortConnectionsDataFromOther[i];
                 BaseNodeData nodeData = m_NodeData.GetGraphAsset().GetNodeData(portConnectionData.PortID);
                 BasePortData portData = nodeData.GetPortData(portConnectionData.PortID);
                 portData.Disconnect(this);
@@ -213,9 +218,9 @@ namespace YBFramework.Bridge.Data
 
         public PortConnectionData GetPortConnectionDataFromOther(int nodeId, int portId)
         {
-            for (int i = 0; i < m_PortConnectionDataFromOther.Count; i++)
+            for (int i = 0; i < m_PortConnectionsDataFromOther.Count; i++)
             {
-                PortConnectionData portConnectionData = m_PortConnectionDataFromOther[i];
+                PortConnectionData portConnectionData = m_PortConnectionsDataFromOther[i];
                 if (portConnectionData.NodeID == nodeId && portConnectionData.PortID == portId)
                 {
                     return portConnectionData;
@@ -233,14 +238,14 @@ namespace YBFramework.Bridge.Data
 
         public int GetPortConnectionDataFromOtherCount()
         {
-            return m_PortConnectionDataFromOther?.Count ?? 0;
+            return m_PortConnectionsDataFromOther?.Count ?? 0;
         }
 
         public abstract int GetPortConnectionDataCountFromSelf();
 
         public virtual void InitializeSerializedData()
         {
-            m_PortConnectionDataFromOther = new List<PortConnectionData>();
+            m_PortConnectionsDataFromOther = new List<PortConnectionData>();
         }
 
         public abstract BasePortData Clone();
