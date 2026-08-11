@@ -22,6 +22,11 @@ namespace YBFramework.Bridge.Data
         /// <returns>是否执行到下一个元素</returns>
         public abstract bool Iterator(int index, out BasePortData current);
 
+        public ValueEnumerator<BasePortData> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
         public BasePortData GetPortData(int portID)
         {
             foreach (BasePortData portData in (IValueIterator<BasePortData>)this)

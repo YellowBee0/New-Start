@@ -24,6 +24,10 @@ namespace YBFramework.GameLogic.Graph
         }
 
         public abstract bool Iterator(int index, out BasePort current);
+        public ValueEnumerator<BasePort> GetEnumerator()
+        {
+            throw new System.NotImplementedException();
+        }
 
         public abstract void OnStart();
 

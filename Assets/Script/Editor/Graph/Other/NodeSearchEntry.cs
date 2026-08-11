@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 using YBFramework.Bridge.Editor;
-using YBFramework.Common;
 using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
@@ -101,6 +100,7 @@ namespace YBFramework.Editor.Graph
             return nodeSearchEntry;
         }
 
+        //TODO:开放一个创建节点搜索框的接口，可以自定义节点搜索内容，且创建节点也可以自定义。目前准备使用委托的方式创建
         //TODO:这个是否可以开放出去，让同一个类型得节点可以有多个选项，即筛选框得路径不同，选项名字不同
         private static void CreateNodeSearchMenu(Type nodeType, string nodeMenuPath, GraphType graphType)
         {

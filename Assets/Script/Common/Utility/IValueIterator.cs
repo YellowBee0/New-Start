@@ -18,9 +18,6 @@ namespace YBFramework.Common
         /// foreach模式匹配的函数
         /// </summary>
         /// <returns>迭代器（结构体）</returns>
-        ValueEnumerator<TValue> GetEnumerator()
-        {
-            return new ValueEnumerator<TValue>(this);
-        }
+        ValueEnumerator<TValue> GetEnumerator();
     }
 }

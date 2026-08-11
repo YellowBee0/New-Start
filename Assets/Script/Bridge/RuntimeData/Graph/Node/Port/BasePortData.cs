@@ -39,6 +39,11 @@ namespace YBFramework.Bridge.Data
             current = null;
             return false;
         }
+
+        public ValueEnumerator<PortConnectionData> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
 #if UNITY_EDITOR
         [SerializeField] protected List<PortConnectionData> m_PortConnectionsDataFromOther;
 
