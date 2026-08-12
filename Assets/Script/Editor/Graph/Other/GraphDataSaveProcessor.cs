@@ -17,7 +17,7 @@ namespace YBFramework.Editor.Graph
             {
                 m_Method = method;
             }
-            
+
             public void Invoke()
             {
                 m_Method();
@@ -26,7 +26,7 @@ namespace YBFramework.Editor.Graph
 
         private static readonly Dictionary<string, GraphDataSaveProcess> s_AllSaveProcesses = new();
 
-        private static readonly List<GraphDataSaveProcess> s_SaveProcesses;
+        private static readonly List<GraphDataSaveProcess> s_SaveProcesses = new();
 
         private static readonly List<string> s_GraphAssetPaths = new();
 
@@ -35,7 +35,7 @@ namespace YBFramework.Editor.Graph
             return s_GraphAssetPaths;
         }
 
-        public unsafe GraphDataSaveProcessor()
+        static unsafe GraphDataSaveProcessor()
         {
             MethodInfo[] methodInfos = typeof(GraphDataSaveProcessor).GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
             for (int i = 0; i < methodInfos.Length; i++)
@@ -45,11 +45,12 @@ namespace YBFramework.Editor.Graph
                 if (methodMark != null)
                 {
                     delegate*<void> method = (delegate*<void>)methodInfo.MethodHandle.GetFunctionPointer();
-                    s_AllSaveProcesses.Add(methodMark.MarkName,new  GraphDataSaveProcess(method));
+                    s_AllSaveProcesses.Add(methodMark.MarkName, new GraphDataSaveProcess(method));
                 }
             }
         }
 
+        //TODO:蓝图资源更新逻辑
         public static void InitializeGraphAssetPaths()
         {
             string[] guids = AssetDatabase.FindAssets($"t:{nameof(GraphAsset)}");
@@ -98,7 +99,7 @@ namespace YBFramework.Editor.Graph
         private static void SaveDisconnectProxyHelperNodeDataProcess()
         {
         }
-        
+
         private static void MigrateProxyNodeSerializedData(ProxyHelperNodeData proxyHelperNodeData)
         {
             GraphAsset proxyGraphAsset = proxyHelperNodeData.GetGraphAsset();
