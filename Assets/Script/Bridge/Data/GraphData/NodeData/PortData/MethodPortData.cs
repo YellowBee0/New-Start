@@ -15,6 +15,39 @@ namespace YBFramework.Bridge.NewData
 
         private BasePortData[] m_UsedPortsData;
 
+        public void SetMethodInfo(MethodInfo methodInfo)
+        {
+            m_MethodInfo = methodInfo;
+#if UNITY_EDITOR
+            if (methodInfo != null)
+            {
+                m_ParameterInfos = methodInfo.GetParameters();
+                m_ReturnType = methodInfo.ReturnType;
+            }
+#endif
+        }
+
+        public void SetUsedPortsData(params BasePortData[] usedPorts)
+        {
+            m_UsedPortsData = usedPorts;
+        }
+
+        public override bool CheckIsUsed()
+        {
+            bool isUsed = false;
+            if (m_UsedPortsData != null)
+            {
+                for (int i = 0; i < m_UsedPortsData.Length; i++)
+                {
+                    if (m_UsedPortsData[i].CheckIsUsed())
+                    {
+                        isUsed = true;
+                    }
+                }
+            }
+            return isUsed;
+        }
+
         public override int GetIndexPortConnectionDataCount()
         {
             return 0;
@@ -29,18 +62,6 @@ namespace YBFramework.Bridge.NewData
         {
             //TODO:实现初始化逻辑
             return new MethodPort();
-        }
-
-        public void SetMethodInfo(MethodInfo methodInfo)
-        {
-            m_MethodInfo = methodInfo;
-#if UNITY_EDITOR
-            if (methodInfo != null)
-            {
-                m_ParameterInfos = methodInfo.GetParameters();
-                m_ReturnType = methodInfo.ReturnType;
-            }
-#endif
         }
 #if UNITY_EDITOR
         private Type m_ReturnType;

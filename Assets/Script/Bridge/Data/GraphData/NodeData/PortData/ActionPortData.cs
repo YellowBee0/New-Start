@@ -62,8 +62,6 @@ namespace YBFramework.Bridge.NewData
             if (other is MethodPortData methodPortData)
             {
                 base.Connect(other);
-                SetIsUsed(true);
-                other.SetIsUsed(true);
                 bool isExplicitCast = methodPortData.GetReturnType() != typeof(void);
                 m_PortConnectionsData.Add(new DelegatePortConnectionData
                 {
@@ -85,14 +83,6 @@ namespace YBFramework.Bridge.NewData
                     m_PortConnectionsData.RemoveAt(i);
                     break;
                 }
-            }
-            if (GetAllPortConnectionDataCount() == 0)
-            {
-                SetIsUsed(false);
-            }
-            if (other.GetAllPortConnectionDataCount() == 0)
-            {
-                other.SetIsUsed(false);
             }
         }
 

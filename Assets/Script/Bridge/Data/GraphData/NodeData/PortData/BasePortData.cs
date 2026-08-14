@@ -13,18 +13,31 @@ namespace YBFramework.Bridge.NewData
     {
         [SerializeField] protected int m_PortID;
 
-        [SerializeField] protected bool m_IsUsed;
-
         public int GetPortID()
         {
             return m_PortID;
         }
 
-        public bool GetIsUsed()
+        public virtual bool CheckIsUsed()
         {
-            return m_IsUsed;
+            int portConnectionDataCount = GetIndexPortConnectionDataCount();
+            bool isUsed = false;
+            for (int i = 0; i < portConnectionDataCount; i++)
+            {
+                PortConnectionData portConnectionData = IndexPortConnectionData(i);
+                if (portConnectionData != null)
+                {
+                    BaseNodeData nodeData = m_NodeData.GetGraphAsset().FindNodeData(portConnectionData.NodeID);
+                    BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
+                    if (portData.CheckIsUsed())
+                    {
+                        isUsed = true;
+                    }
+                }
+            }
+            return isUsed;
         }
-
+        
         /// <summary>
         /// 获取端口中从自身发起的连线索引个数
         /// </summary>
@@ -83,15 +96,6 @@ namespace YBFramework.Bridge.NewData
         public void SetPortID(int portID)
         {
             m_PortID = portID;
-        }
-
-        public void SetIsUsed(bool isUsed)
-        {
-            if (m_IsUsed != isUsed)
-            {
-                m_OnIsUsedChanged?.Invoke(isUsed);
-                m_IsUsed = isUsed;
-            }
         }
 
         public void RegisterOnIsUsedChanged(Action<bool> onIsUsedChanged)
