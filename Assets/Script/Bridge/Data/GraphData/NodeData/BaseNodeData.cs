@@ -17,10 +17,10 @@ namespace YBFramework.Bridge.NewData
 
         public BasePortData FindPortData(int portID)
         {
-            int portCount = GetPortDataCount();
+            int portCount = GetIndexPortDataCount();
             for (int i = 0; i < portCount; i++)
             {
-                BasePortData portData = GetPortData(i);
+                BasePortData portData = IndexPortData(i);
                 if (portData.GetPortID() == portID)
                 {
                     return portData;
@@ -29,9 +29,9 @@ namespace YBFramework.Bridge.NewData
             return null;
         }
 
-        public abstract int GetPortDataCount();
+        public abstract int GetIndexPortDataCount();
 
-        public abstract BasePortData GetPortData(int index);
+        public abstract BasePortData IndexPortData(int index);
 
         public abstract BaseNode CreateRuntimeInstance();
 #if UNITY_EDITOR
