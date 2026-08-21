@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using YBFramework.Bridge.Data;
 using YBFramework.GameLogic.Graph;
 
 namespace YBFramework.Bridge.NewData
@@ -17,10 +16,10 @@ namespace YBFramework.Bridge.NewData
 
         public BasePortData FindPortData(int portID)
         {
-            int portCount = GetIndexPortDataCount();
+            int portCount = GetPortsDataCount();
             for (int i = 0; i < portCount; i++)
             {
-                BasePortData portData = IndexPortData(i);
+                BasePortData portData = PortDataOfIndex(i);
                 if (portData.GetPortID() == portID)
                 {
                     return portData;
@@ -29,21 +28,49 @@ namespace YBFramework.Bridge.NewData
             return null;
         }
 
-        public abstract int GetIndexPortDataCount();
+        public virtual void FilterUsefulPortData(GraphAsset graphAsset)
+        {
+            //XXX端口属于执行根源，直接调用FilterRuntimePortData(graphAsset,端口id)
+        }
+        
+        public virtual void FilterRuntimePortData(GraphAsset graphAsset, int portID)
+        {
+            int portDataCount = GetPortsDataCount();
+            for (int i = 0; i < portDataCount; i++)
+            {
+                BasePortData portData = PortDataOfIndex(i);
+                if (portData.GetPortID() == portID)
+                {
+                    int portConnectionDataCount = portData.GetPortConnectionsDataCount();
+                    for (int j = 0; j < portConnectionDataCount; j++)
+                    {
+                        PortConnectionData portConnectionData = portData.PortConnectionDataOfIndex(j);
+                        if (portConnectionData != null)
+                        {
+                            BaseNodeData nodeData = graphAsset.FindNodeData(portConnectionData.NodeID);
+                            nodeData?.FilterRuntimePortData(graphAsset, portConnectionData.PortID);
+                        }
+                    }
+                    //添加PortData到创建集合
+                }
+            }
+        }
 
-        public abstract BasePortData IndexPortData(int index);
+        public abstract int GetPortsDataCount();
+
+        public abstract BasePortData PortDataOfIndex(int index);
 
         public abstract BaseNode CreateRuntimeInstance();
 #if UNITY_EDITOR
         private GraphAsset m_GraphAsset;
-        
+
         private bool m_IsInitializePortData;
 
         public GraphAsset GetGraphAsset()
         {
             return m_GraphAsset;
         }
-        
+
         public void InitializePortData()
         {
             if (!m_IsInitializePortData)
@@ -52,9 +79,9 @@ namespace YBFramework.Bridge.NewData
                 m_IsInitializePortData = true;
             }
         }
-        
+
         protected abstract void OnInitializePortData();
-        
+
         public abstract void InitializeSerializedData();
 
         public abstract void InitializePortDataView();

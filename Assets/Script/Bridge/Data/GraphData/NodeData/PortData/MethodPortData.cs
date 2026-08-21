@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
-#if UNITY_EDITOR
-using UnityEditor.Experimental.GraphView;
-#endif
 
 namespace YBFramework.Bridge.NewData
 {
@@ -13,7 +12,9 @@ namespace YBFramework.Bridge.NewData
     {
         private MethodInfo m_MethodInfo;
 
-        private BasePortData[] m_UsedPortsData;
+        [SerializeField] private int m_PortID;
+
+        [SerializeField] private bool m_HasSubPortData;
 
         public void SetMethodInfo(MethodInfo methodInfo)
         {
@@ -27,46 +28,47 @@ namespace YBFramework.Bridge.NewData
 #endif
         }
 
-        public void SetUsedPortsData(params BasePortData[] usedPorts)
+        public override int GetPortID()
         {
-            m_UsedPortsData = usedPorts;
+            return m_PortID;
         }
 
-        public override bool CheckIsUsed()
+        public override bool HasSubPortData()
         {
-            bool isUsed = false;
-            if (m_UsedPortsData != null)
-            {
-                for (int i = 0; i < m_UsedPortsData.Length; i++)
-                {
-                    if (m_UsedPortsData[i].CheckIsUsed())
-                    {
-                        isUsed = true;
-                    }
-                }
-            }
-            return isUsed;
+            return m_HasSubPortData;
         }
 
-        public override int GetIndexPortConnectionDataCount()
+        public override int GetPortConnectionsDataCount()
         {
             return 0;
         }
 
-        public override PortConnectionData IndexPortConnectionData(int index)
+        public override PortConnectionData PortConnectionDataOfIndex(int index)
         {
             return null;
         }
 
         public override BasePort CreateRuntimeInstance()
         {
-            //TODO:实现初始化逻辑
-            return new MethodPort();
+            throw new NotImplementedException();
         }
 #if UNITY_EDITOR
+
+        [SerializeField] private List<PortConnectionData> m_OtherPortConnectionsData;
+
         private Type m_ReturnType;
 
         private ParameterInfo[] m_ParameterInfos;
+
+        private BaseNodeData m_NodeData;
+
+        private string m_PortName;
+
+        private Direction m_Direction;
+
+        private Port.Capacity m_Capacity;
+
+        private Color m_PortColor;
 
         public Type GetReturnType()
         {
@@ -78,33 +80,24 @@ namespace YBFramework.Bridge.NewData
             return m_ParameterInfos;
         }
 
-        private string m_PortName;
-
-        private Direction m_Direction;
-
-        private Port.Capacity m_Capacity;
-
-        private Color m_PortColor;
-
-        public override bool CanConnect(BasePortData other)
+        public override BaseNodeData GetNodeData()
         {
-            return false;
+            return m_NodeData;
         }
 
-        public override BasePortData AsTemplate()
+        public override void SetPortID(int portID)
         {
-            MethodPortData templateData = CreatePortData<MethodPortData>();
-            templateData.m_PortID = m_PortID;
-            return templateData;
+            m_PortID = portID;
         }
 
-        public override void CopyNonSerializedData(BasePortData templateData)
+        public override void SetHasSubPortData(bool hasSubPortData)
         {
-            base.CopyNonSerializedData(templateData);
-            MethodPortData data = (MethodPortData)templateData;
-            m_MethodInfo = data.m_MethodInfo;
-            m_ParameterInfos = data.m_ParameterInfos;
-            m_ReturnType = data.m_ReturnType;
+            m_HasSubPortData = hasSubPortData;
+        }
+
+        public override void SetNodeData(BaseNodeData nodeData)
+        {
+            m_NodeData = nodeData;
         }
 
         public override string GetPortName()
@@ -145,6 +138,74 @@ namespace YBFramework.Bridge.NewData
         public override void SetPortColor(Color portColor)
         {
             m_PortColor = portColor;
+        }
+
+        public override void InitializeSerializedData()
+        {
+            m_OtherPortConnectionsData = new List<PortConnectionData>();
+        }
+
+        public override BasePortData CreateSubPortData()
+        {
+            MethodPortData portData = new();
+            portData.InitializeSerializedData();
+            return portData;
+        }
+
+        public override void RevertNonSerializedData(BasePortData subSourcePortData)
+        {
+            base.RevertNonSerializedData(subSourcePortData);
+            MethodPortData data = (MethodPortData)subSourcePortData;
+            m_MethodInfo = data.m_MethodInfo;
+            m_ParameterInfos = data.m_ParameterInfos;
+            m_ReturnType = data.m_ReturnType;
+        }
+
+        public override int GetOtherPortConnectionsDataCount()
+        {
+            return m_OtherPortConnectionsData.Count;
+        }
+
+        public override PortConnectionData OtherPortConnectDataOfIndex(int index)
+        {
+            return m_OtherPortConnectionsData[index];
+        }
+
+        public override bool CanConnect(BasePortData other)
+        {
+            return false;
+        }
+
+        public override void Connect(BasePortData other)
+        {
+            Debug.LogWarning($"{nameof(MethodPortData)} cannot actively connect to any other port.");
+        }
+
+        public override void Disconnect(BasePortData other)
+        {
+            Debug.LogWarning($"{nameof(MethodPortData)} cannot actively disconnect to any other port.");
+        }
+
+        public override void BeConnected(BasePortData other)
+        {
+            m_OtherPortConnectionsData.Add(new PortConnectionData
+            {
+                NodeID = other.GetNodeData().GetNodeID(),
+                PortID = other.GetPortID()
+            });
+        }
+
+        public override void BeDisconnected(BasePortData other)
+        {
+            for (int i = 0; i < m_OtherPortConnectionsData.Count; i++)
+            {
+                PortConnectionData portConnectionData = m_OtherPortConnectionsData[i];
+                if (portConnectionData.NodeID == other.GetNodeData().GetNodeID() && portConnectionData.PortID == other.GetPortID())
+                {
+                    m_OtherPortConnectionsData.RemoveAt(i);
+                    return;
+                }
+            }
         }
 #endif
     }

@@ -6,6 +6,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
+    //TODO:基类改成abstract，然后用一个CommonPortPresenter实现现在的内容，不在保存BasePortData、PortView和PortContentView字段，而是使用三个抽象函数，具体实现子类去做
     public class BasePortPresenter
     {
         private static readonly Dictionary<Type, Stack<BasePortPresenter>> s_PortPresenters = new();
