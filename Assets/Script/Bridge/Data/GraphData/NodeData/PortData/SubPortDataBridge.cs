@@ -19,8 +19,6 @@ namespace YBFramework.Bridge.NewData
 
         private Direction m_Direction;
 
-        private Port.Capacity m_Capacity;
-
         private Color m_PortColor;
 
         public override int GetPortID()
@@ -81,7 +79,7 @@ namespace YBFramework.Bridge.NewData
 
         public override Port.Capacity GetCapacity()
         {
-            return m_Capacity;
+            return Port.Capacity.Single;
         }
 
         public override Color GetPortColor()
@@ -101,7 +99,7 @@ namespace YBFramework.Bridge.NewData
 
         public override void SetCapacity(Port.Capacity capacity)
         {
-            m_Capacity = capacity;
+            Debug.LogWarning($"{nameof(SubPortDataBridge)} is useless to set a capacity:{capacity},because it is always {Port.Capacity.Single}");
         }
 
         public override void SetPortColor(Color portColor)

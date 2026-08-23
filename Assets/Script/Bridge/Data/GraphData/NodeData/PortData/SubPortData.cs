@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
@@ -15,8 +16,6 @@ namespace YBFramework.Bridge.NewData
         [SerializeField] private int m_SubNodeID;
 
         [SerializeField] private int m_SubPortID;
-
-        [SerializeField] private bool m_HasSubPortData;
 
         public BasePortData GetSubPortData()
         {
@@ -40,7 +39,7 @@ namespace YBFramework.Bridge.NewData
 
         public override bool HasSubPortData()
         {
-            return m_HasSubPortData;
+            return m_SubPortData.HasSubPortData();
         }
 
         public override int GetPortConnectionsDataCount()
@@ -57,6 +56,14 @@ namespace YBFramework.Bridge.NewData
         {
             throw new NotImplementedException();
         }
+
+        public override void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain)
+        {
+            //需要知道父蓝图
+            //需要知道子蓝图
+            //需要知道节点数据？
+            //通过子蓝图查找节点id为m_SubNodeID，端口id为m_SubPortID的端口
+        }
 #if UNITY_EDITOR
         public override BaseNodeData GetNodeData()
         {
@@ -70,7 +77,7 @@ namespace YBFramework.Bridge.NewData
 
         public override void SetHasSubPortData(bool hasSubPortData)
         {
-            m_HasSubPortData = hasSubPortData;
+            m_SubPortData.SetHasSubPortData(hasSubPortData);
         }
 
         public override void SetNodeData(BaseNodeData nodeData)
@@ -128,7 +135,8 @@ namespace YBFramework.Bridge.NewData
             SubPortData subPortData = new()
             {
                 m_SubPortData = m_SubPortData.CreateSubPortData(),
-                m_SubNodeID = GetNodeData().GetNodeID()
+                m_SubNodeID = GetNodeData().GetNodeID(),
+                m_SubPortID = GetPortID()
             };
             return subPortData;
         }

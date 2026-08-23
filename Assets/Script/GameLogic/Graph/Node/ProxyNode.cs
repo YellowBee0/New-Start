@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using YBFramework.Bridge.Data;
+using YBFramework.Bridge.NewData;
 
 namespace YBFramework.GameLogic.Graph
 {
@@ -48,12 +49,16 @@ namespace YBFramework.GameLogic.Graph
                 //node需要判空，但一般不为null，这个校验需要在编辑器中完成
                 BaseNode node = m_Graph.GetNode(proxyPortData.GetProxyNodeID());
                 //port需要判空，但一般不为null，这个校验需要在编辑器中完成
-                //TODO:逻辑有问题，这个proxyTargetPort需要递归找到最终的端口实例
+
                 BasePort proxyTargetPort = node.GetPort(proxyPortData.GetClonedProxyPortData().PortID);
                 proxyPort.SetProxyTargetPort(proxyTargetPort);
                 proxyTargetPort.MergeData(proxyPortData.GetClonedProxyPortData());
                 m_ProxyPorts.Add(proxyPort);
             }
+        }
+
+        public void InitializeFromProxyNodeData(SubNodeData nodeData, SubNodeDataOnCallChain nodeDataOnCallChain)
+        {
         }
     }
 }

@@ -13,7 +13,9 @@ namespace YBFramework.GameLogic.Graph
 
         public override void MergeData(BasePortData dataToMerge)
         {
-            m_ProxyTargetPort.MergeData(dataToMerge);
+            //获取到实际运行时的端口后，直接赋值到子端口，然后调用MergeData合并数据，子端口也得实现MergeData函数，具体实现：强转被合并的数据为子端口数据，再调用实际端口的MergeData
+            ProxyPortData proxyPortData = (ProxyPortData)dataToMerge;
+            m_ProxyTargetPort.MergeData(proxyPortData.GetClonedProxyPortData());
         }
 
         public override BasePort GetActualToConnectPort()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
@@ -19,6 +20,11 @@ namespace YBFramework.Bridge.NewData
         public abstract PortConnectionData PortConnectionDataOfIndex(int index);
 
         public abstract BasePort CreateRuntimeInstance();
+
+        public virtual void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain)
+        {
+            
+        }
 #if UNITY_EDITOR
         #region Base data
         private string m_FieldName;

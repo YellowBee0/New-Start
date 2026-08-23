@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
@@ -28,11 +29,20 @@ namespace YBFramework.Bridge.NewData
             return null;
         }
 
-        public virtual void FilterUsefulPortData(GraphAsset graphAsset)
-        {
-            //XXX端口属于执行根源，直接调用FilterRuntimePortData(graphAsset,端口id)
-        }
+        public abstract int GetPortsDataCount();
+
+        public abstract BasePortData PortDataOfIndex(int index);
+
+        public abstract BaseNode CreateRuntimeInstance(NodeDataOnCallChain nodeDataOnCallChain);
         
+        public virtual void GetCallChain(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<NodeDataOnCallChain>> nodesDataOnChain)
+        {
+        }
+
+        protected virtual void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain, BasePortData portData)
+        {
+        }
+
         public virtual void FilterRuntimePortData(GraphAsset graphAsset, int portID)
         {
             int portDataCount = GetPortsDataCount();
@@ -55,12 +65,6 @@ namespace YBFramework.Bridge.NewData
                 }
             }
         }
-
-        public abstract int GetPortsDataCount();
-
-        public abstract BasePortData PortDataOfIndex(int index);
-
-        public abstract BaseNode CreateRuntimeInstance();
 #if UNITY_EDITOR
         private GraphAsset m_GraphAsset;
 
