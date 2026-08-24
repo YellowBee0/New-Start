@@ -57,8 +57,10 @@ namespace YBFramework.Bridge.NewData
             throw new NotImplementedException();
         }
 
-        public override void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain)
+        public override void LinkOtherPort(CheckValidStack checkValidStack, NodeDataOnCallChain validNodesData)
         {
+            GraphAsset subGraphAsset = checkValidStack.GetCurrentGraphAsset();
+            m_SubPortData.LinkOtherPort(checkValidStack.GetParentStack(), validNodesData);
             //需要知道父蓝图
             //需要知道子蓝图
             //需要知道节点数据？

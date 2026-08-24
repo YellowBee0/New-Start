@@ -12,6 +12,19 @@ namespace YBFramework.Bridge.NewData
 
         [SerializeField] private List<SubPortData> m_SubPortsData;
 
+        public SubPortData GetSubPortDataBySubPortID(int subPortID)
+        {
+            for (int i = 0; i < m_SubPortsData.Count; i++)
+            {
+                SubPortData subPortData = m_SubPortsData[i];
+                if (subPortData.GetSubPortID() == subPortID)
+                {
+                    return subPortData;
+                }
+            }
+            return null;
+        }
+
         public override int GetPortsDataCount()
         {
             return m_SubPortsData.Count;
@@ -24,22 +37,38 @@ namespace YBFramework.Bridge.NewData
 
         public override BaseNode CreateRuntimeInstance(NodeDataOnCallChain nodeDataOnCallChain)
         {
-            ProxyNode  proxyNode = new ProxyNode();
+            ProxyNode proxyNode = new ProxyNode();
             proxyNode.InitializeFromProxyNodeData(this, (SubNodeDataOnCallChain)nodeDataOnCallChain);
             return proxyNode;
         }
 
-        protected override void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain, BasePortData portData)
+        public override void LinkOtherPort(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData, BasePortData portData)
         {
-            if (!dataOnChain.TryGetValue(this, out HashSet<BasePortData> portsDataOnChain))
+            if (!validNodesData.TryGetValue(this, out NodeDataOnCallChain portsDataOnChain))
             {
-                portsDataOnChain = new HashSet<BasePortData>();
-                dataOnChain.Add(this, portsDataOnChain);
+                portsDataOnChain = new SubNodeDataOnCallChain();
+                validNodesData.Add(this, portsDataOnChain);
             }
-            if (portsDataOnChain.Add(portData))
+            SubPortData subPortData = (SubPortData)portData;
+            if (portsDataOnChain.AddPortDataOnCallChain(subPortData))
             {
-                //dataOnChain是一个新的数据，而不是现在这个
-                portData.LinkOtherPortData(m_SubGraphAsset, dataOnChain);
+                //执行子端口在当前蓝图调用链的检查
+                subPortData.LinkOtherPort(checkValidStack, portsDataOnChain);
+                //执行子蓝图中实际的端口调用链检查
+                BaseNodeData subNodeData = m_SubGraphAsset.FindNodeData(subPortData.GetSubNodeID());
+                if (subNodeData != null)
+                {
+                    portData = subNodeData.FindPortData(subPortData.GetSubPortID());
+                    if (portData != null)
+                    {
+                        //检查使用子蓝图的现场
+                        CheckValidStack subCheckValidStack = CheckValidStack.Allocate(m_SubGraphAsset);
+                        subCheckValidStack.SetParentStack(checkValidStack);
+                        //检查子蓝图中实际端口调用链，这一步会出现检查调用链需要返回到父蓝图，父蓝图又会
+                        subNodeData.LinkOtherPort(subCheckValidStack, ((SubNodeDataOnCallChain)portsDataOnChain).GetSubNodesDataOnCallChain(), portData);
+                        CheckValidStack.Free(subCheckValidStack);
+                    }
+                }
             }
         }
 #if UNITY_EDITOR

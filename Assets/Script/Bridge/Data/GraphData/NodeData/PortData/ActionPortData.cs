@@ -41,6 +41,28 @@ namespace YBFramework.Bridge.NewData
         {
             throw new NotImplementedException();
         }
+
+        public override void LinkOtherPort(CheckValidStack checkValidStack, NodeDataOnCallChain validNodesData)
+        {
+            for (int i = 0; i < m_PortConnectionsData.Count; i++)
+            {
+                PortConnectionData portConnectionData = m_PortConnectionsData[i];
+                BaseNodeData nodeData = checkValidStack.GetCurrentGraphAsset().FindNodeData(portConnectionData.NodeID);
+                if (nodeData != null)
+                {
+                    nodeData.LinkOtherPort(checkValidStack, validNodesData);
+                }
+            }
+            if (m_HasSubPortData)
+            {
+                CheckValidStack parentCheckValidStack = checkValidStack.GetParentStack();
+                if (parentCheckValidStack != null)
+                {
+                    SubNodeData parentNodeData = (SubNodeData)parentCheckValidStack.GetCurrentNodeData();
+                    parentNodeData.LinkOtherPort(parentCheckValidStack, null, parentNodeData.GetSubPortDataBySubPortID(GetPortID()));
+                }
+            }
+        }
 #if UNITY_EDITOR
         [SerializeField] private List<PortConnectionData> m_OtherPortConnectionsData;
 

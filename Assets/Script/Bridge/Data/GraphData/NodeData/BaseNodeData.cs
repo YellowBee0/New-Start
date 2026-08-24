@@ -34,37 +34,12 @@ namespace YBFramework.Bridge.NewData
         public abstract BasePortData PortDataOfIndex(int index);
 
         public abstract BaseNode CreateRuntimeInstance(NodeDataOnCallChain nodeDataOnCallChain);
-        
-        public virtual void GetCallChain(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<NodeDataOnCallChain>> nodesDataOnChain)
+
+        public virtual void CheckCallChainValid(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData)
         {
         }
 
-        protected virtual void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain, BasePortData portData)
-        {
-        }
-
-        public virtual void FilterRuntimePortData(GraphAsset graphAsset, int portID)
-        {
-            int portDataCount = GetPortsDataCount();
-            for (int i = 0; i < portDataCount; i++)
-            {
-                BasePortData portData = PortDataOfIndex(i);
-                if (portData.GetPortID() == portID)
-                {
-                    int portConnectionDataCount = portData.GetPortConnectionsDataCount();
-                    for (int j = 0; j < portConnectionDataCount; j++)
-                    {
-                        PortConnectionData portConnectionData = portData.PortConnectionDataOfIndex(j);
-                        if (portConnectionData != null)
-                        {
-                            BaseNodeData nodeData = graphAsset.FindNodeData(portConnectionData.NodeID);
-                            nodeData?.FilterRuntimePortData(graphAsset, portConnectionData.PortID);
-                        }
-                    }
-                    //添加PortData到创建集合
-                }
-            }
-        }
+        public abstract void LinkOtherPort(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData, BasePortData portData);
 #if UNITY_EDITOR
         private GraphAsset m_GraphAsset;
 

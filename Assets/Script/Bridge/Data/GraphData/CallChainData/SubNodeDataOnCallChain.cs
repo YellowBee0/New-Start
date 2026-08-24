@@ -16,6 +16,11 @@ namespace YBFramework.Bridge.NewData
             return m_SubNodesDataOnCallChain.Remove(nodeData);
         }
 
+        public Dictionary<BaseNodeData, NodeDataOnCallChain> GetSubNodesDataOnCallChain()
+        {
+            return m_SubNodesDataOnCallChain;
+        }
+        
         public Dictionary<BaseNodeData, NodeDataOnCallChain>.Enumerator GetSubNodeDataOnCallChain()
         {
             return m_SubNodesDataOnCallChain.GetEnumerator();

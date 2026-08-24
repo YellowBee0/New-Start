@@ -21,9 +21,8 @@ namespace YBFramework.Bridge.NewData
 
         public abstract BasePort CreateRuntimeInstance();
 
-        public virtual void LinkOtherPortData(GraphAsset graphAsset, in Dictionary<BaseNodeData, HashSet<BasePortData>> dataOnChain)
+        public virtual void LinkOtherPort(CheckValidStack checkValidStack, NodeDataOnCallChain validNodesData)
         {
-            
         }
 #if UNITY_EDITOR
         #region Base data
