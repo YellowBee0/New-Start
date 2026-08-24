@@ -57,7 +57,7 @@ namespace YBFramework.GameLogic.Graph
             }
         }
 
-        public void InitializeFromProxyNodeData(SubNodeData nodeData, SubNodeDataOnCallChain nodeDataOnCallChain)
+        public void InitializeFromProxyNodeData(SubNodeData nodeData, SubNodeSliceData subNodeSliceData)
         {
         }
     }

@@ -56,16 +56,6 @@ namespace YBFramework.Bridge.NewData
         {
             throw new NotImplementedException();
         }
-
-        public override void LinkOtherPort(CheckValidStack checkValidStack, NodeDataOnCallChain validNodesData)
-        {
-            GraphAsset subGraphAsset = checkValidStack.GetCurrentGraphAsset();
-            m_SubPortData.LinkOtherPort(checkValidStack.GetParentStack(), validNodesData);
-            //需要知道父蓝图
-            //需要知道子蓝图
-            //需要知道节点数据？
-            //通过子蓝图查找节点id为m_SubNodeID，端口id为m_SubPortID的端口
-        }
 #if UNITY_EDITOR
         public override BaseNodeData GetNodeData()
         {

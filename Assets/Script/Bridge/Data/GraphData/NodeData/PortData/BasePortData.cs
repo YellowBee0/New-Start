@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
@@ -21,11 +20,43 @@ namespace YBFramework.Bridge.NewData
 
         public abstract BasePort CreateRuntimeInstance();
 
-        public virtual void LinkOtherPort(CheckValidStack checkValidStack, NodeDataOnCallChain validNodesData)
+        public void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset)
         {
+            int portConnectionsDataCount = GetPortConnectionsDataCount();
+            for (int i = 0; i < portConnectionsDataCount; i++)
+            {
+                PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
+                if (portConnectionData != null && portConnectionData.NodeID > 0 && portConnectionData.PortID > 0)
+                {
+                    BaseNodeData nodeData = dfsGraphAsset.GetGraphAsset().FindNodeData(portConnectionData.NodeID);
+                    if (nodeData != null)
+                    {
+                        BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
+                        if (portData != null)
+                        {
+                            nodeData.DFSExecutionFlow(dfsGraphAsset, portData);
+                        }
+                    }
+                }
+            }
+            if (HasSubPortData())
+            {
+                DFSGraphAsset parent = dfsGraphAsset.GetParent();
+                if (parent != null)
+                {
+                    SubNodeData subNodeData = (SubNodeData)parent.DFSNodeData.NodeData;
+                    BasePortData portData = subNodeData.FindSubPortDataBySubPortID(GetPortID());
+                    if (portData != null)
+                    {
+                        subNodeData.DFSExecutionFlow(parent, portData);
+                    }
+                }
+            }
         }
 #if UNITY_EDITOR
+
         #region Base data
+
         private string m_FieldName;
 
         public string GetFieldName()
@@ -45,9 +76,11 @@ namespace YBFramework.Bridge.NewData
         }
 
         public abstract void SetNodeData(BaseNodeData nodeData);
+
         #endregion
 
         #region Port view
+
         public abstract string GetPortName();
 
         public abstract Direction GetDirection();
@@ -63,9 +96,11 @@ namespace YBFramework.Bridge.NewData
         public abstract void SetCapacity(Port.Capacity capacity);
 
         public abstract void SetPortColor(Color portColor);
+
         #endregion
 
         #region Data
+
         public abstract void InitializeSerializedData();
 
         /// <summary>
@@ -80,9 +115,11 @@ namespace YBFramework.Bridge.NewData
             SetCapacity(subSourcePortData.GetCapacity());
             SetPortColor(subSourcePortData.GetPortColor());
         }
+
         #endregion
 
         #region Connection
+
         public int GetAllPortConnectionDataCount()
         {
             return GetPortConnectionsDataCount() + GetOtherPortConnectionsDataCount();
@@ -165,7 +202,9 @@ namespace YBFramework.Bridge.NewData
         public abstract void BeConnected(BasePortData other);
 
         public abstract void BeDisconnected(BasePortData other);
+
         #endregion
+
 #endif
     }
 }

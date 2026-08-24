@@ -12,7 +12,7 @@ namespace YBFramework.Bridge.NewData
 
         [SerializeField] private List<SubPortData> m_SubPortsData;
 
-        public SubPortData GetSubPortDataBySubPortID(int subPortID)
+        public SubPortData FindSubPortDataBySubPortID(int subPortID)
         {
             for (int i = 0; i < m_SubPortsData.Count; i++)
             {
@@ -35,38 +35,46 @@ namespace YBFramework.Bridge.NewData
             return m_SubPortsData[index];
         }
 
-        public override BaseNode CreateRuntimeInstance(NodeDataOnCallChain nodeDataOnCallChain)
+        public override BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData)
         {
             ProxyNode proxyNode = new ProxyNode();
-            proxyNode.InitializeFromProxyNodeData(this, (SubNodeDataOnCallChain)nodeDataOnCallChain);
+            proxyNode.InitializeFromProxyNodeData(this, (SubNodeSliceData)nodeSliceData);
             return proxyNode;
         }
 
-        public override void LinkOtherPort(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData, BasePortData portData)
+        public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
         {
-            if (!validNodesData.TryGetValue(this, out NodeDataOnCallChain portsDataOnChain))
+            NodeSliceData nodeSliceData;
+            if (dfsGraphAsset.DFSNodeData.NodeData == this)
             {
-                portsDataOnChain = new SubNodeDataOnCallChain();
-                validNodesData.Add(this, portsDataOnChain);
+                nodeSliceData = dfsGraphAsset.DFSNodeData.NodeSliceData;
             }
-            SubPortData subPortData = (SubPortData)portData;
-            if (portsDataOnChain.AddPortDataOnCallChain(subPortData))
+            else
             {
-                //执行子端口在当前蓝图调用链的检查
-                subPortData.LinkOtherPort(checkValidStack, portsDataOnChain);
-                //执行子蓝图中实际的端口调用链检查
-                BaseNodeData subNodeData = m_SubGraphAsset.FindNodeData(subPortData.GetSubNodeID());
-                if (subNodeData != null)
+                if (!dfsGraphAsset.GetNodesSliceData().TryGetValue(this, out nodeSliceData))
                 {
-                    portData = subNodeData.FindPortData(subPortData.GetSubPortID());
-                    if (portData != null)
+                    nodeSliceData = new SubNodeSliceData();
+                    dfsGraphAsset.GetNodesSliceData().Add(this, nodeSliceData);
+                }
+            }
+            if (nodeSliceData.AddPortSliceData(portData))
+            {
+                dfsGraphAsset.DFSNodeData = new DFSNodeData(this, nodeSliceData);
+                //执行子端口在当前蓝图调用链的检查
+                portData.DFSExecutionFlow(dfsGraphAsset);
+                //执行子蓝图中实际的端口调用链检查
+                SubPortData subPortData = (SubPortData)portData;
+                BaseNodeData nodeDataInSubGraphAsset = m_SubGraphAsset.FindNodeData(subPortData.GetSubNodeID());
+                if (nodeDataInSubGraphAsset != null)
+                {
+                    BasePortData portDataInSubGraphAsset = nodeDataInSubGraphAsset.FindPortData(subPortData.GetSubPortID());
+                    if (portDataInSubGraphAsset != null)
                     {
-                        //检查使用子蓝图的现场
-                        CheckValidStack subCheckValidStack = CheckValidStack.Allocate(m_SubGraphAsset);
-                        subCheckValidStack.SetParentStack(checkValidStack);
+                        DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, ((SubNodeSliceData)nodeSliceData).GetNodesSliceData());
+                        subDFSGraphAsset.SetParent(dfsGraphAsset);
                         //检查子蓝图中实际端口调用链，这一步会出现检查调用链需要返回到父蓝图，父蓝图又会
-                        subNodeData.LinkOtherPort(subCheckValidStack, ((SubNodeDataOnCallChain)portsDataOnChain).GetSubNodesDataOnCallChain(), portData);
-                        CheckValidStack.Free(subCheckValidStack);
+                        nodeDataInSubGraphAsset.DFSExecutionFlow(subDFSGraphAsset, portDataInSubGraphAsset);
+                        DFSGraphAsset.Free(subDFSGraphAsset);
                     }
                 }
             }

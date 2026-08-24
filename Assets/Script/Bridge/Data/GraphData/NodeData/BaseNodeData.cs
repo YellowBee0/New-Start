@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
@@ -33,13 +32,13 @@ namespace YBFramework.Bridge.NewData
 
         public abstract BasePortData PortDataOfIndex(int index);
 
-        public abstract BaseNode CreateRuntimeInstance(NodeDataOnCallChain nodeDataOnCallChain);
+        public abstract BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData);
 
-        public virtual void CheckCallChainValid(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData)
+        public virtual void CheckExecutionSliceEntry(DFSGraphAsset dfsGraphAsset)
         {
         }
 
-        public abstract void LinkOtherPort(CheckValidStack checkValidStack, in Dictionary<BaseNodeData, NodeDataOnCallChain> validNodesData, BasePortData portData);
+        public abstract void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData);
 #if UNITY_EDITOR
         private GraphAsset m_GraphAsset;
 
