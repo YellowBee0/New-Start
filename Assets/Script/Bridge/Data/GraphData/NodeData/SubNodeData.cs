@@ -37,9 +37,29 @@ namespace YBFramework.Bridge.NewData
 
         public override BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData)
         {
-            ProxyNode proxyNode = new ProxyNode();
+            /*ProxyNode proxyNode = new ProxyNode();
             proxyNode.InitializeFromProxyNodeData(this, (SubNodeSliceData)nodeSliceData);
-            return proxyNode;
+            return proxyNode;*/
+            throw new NotImplementedException();
+        }
+
+        public override void CheckExecutionSliceEntry(DFSGraphAsset dfsGraphAsset)
+        {
+            GraphSliceData graphSliceData = dfsGraphAsset.GetGraphSliceData();
+            if (!graphSliceData.TryGetNodeSliceData(this, out NodeSliceData nodeSliceData))
+            {
+                nodeSliceData = new SubNodeSliceData(m_SubGraphAsset, new GraphSliceData());
+                graphSliceData.AddNodeSliceData(this, nodeSliceData);
+            }
+            dfsGraphAsset.DFSNodeData = new DFSNodeData(this, nodeSliceData);
+            DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, new GraphSliceData());
+            subDFSGraphAsset.SetParent(dfsGraphAsset);
+            IReadOnlyList<BaseNodeData> subNodesData = m_SubGraphAsset.GetNodesData();
+            for (int i = 0; i < subNodesData.Count; i++)
+            {
+                subNodesData[i].CheckExecutionSliceEntry(subDFSGraphAsset);
+            }
+            DFSGraphAsset.Free(subDFSGraphAsset);
         }
 
         public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
@@ -51,10 +71,11 @@ namespace YBFramework.Bridge.NewData
             }
             else
             {
-                if (!dfsGraphAsset.GetNodesSliceData().TryGetValue(this, out nodeSliceData))
+                GraphSliceData graphSliceData = dfsGraphAsset.GetGraphSliceData();
+                if (!graphSliceData.TryGetNodeSliceData(this, out nodeSliceData))
                 {
-                    nodeSliceData = new SubNodeSliceData();
-                    dfsGraphAsset.GetNodesSliceData().Add(this, nodeSliceData);
+                    nodeSliceData = new SubNodeSliceData(m_SubGraphAsset, new GraphSliceData());
+                    graphSliceData.AddNodeSliceData(this, nodeSliceData);
                 }
             }
             if (nodeSliceData.AddPortSliceData(portData))
@@ -70,7 +91,7 @@ namespace YBFramework.Bridge.NewData
                     BasePortData portDataInSubGraphAsset = nodeDataInSubGraphAsset.FindPortData(subPortData.GetSubPortID());
                     if (portDataInSubGraphAsset != null)
                     {
-                        DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, ((SubNodeSliceData)nodeSliceData).GetNodesSliceData());
+                        DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, ((SubNodeSliceData)nodeSliceData).SubGraphSliceData);
                         subDFSGraphAsset.SetParent(dfsGraphAsset);
                         //检查子蓝图中实际端口调用链，这一步会出现检查调用链需要返回到父蓝图，父蓝图又会
                         nodeDataInSubGraphAsset.DFSExecutionFlow(subDFSGraphAsset, portDataInSubGraphAsset);
