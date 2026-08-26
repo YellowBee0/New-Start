@@ -40,7 +40,7 @@ namespace YBFramework.Bridge.NewData
 
         public abstract void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData);
 #if UNITY_EDITOR
-        private GraphAsset m_GraphAsset;
+        protected GraphAsset m_GraphAsset;
 
         private bool m_IsInitializePortData;
 
@@ -58,11 +58,9 @@ namespace YBFramework.Bridge.NewData
             }
         }
 
-        protected abstract void OnInitializePortData();
-
         public abstract void InitializeSerializedData();
 
-        public abstract void InitializePortDataView();
+        protected abstract void OnInitializePortData();
 #endif
     }
 }

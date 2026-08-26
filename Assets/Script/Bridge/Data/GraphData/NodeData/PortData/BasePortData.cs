@@ -45,7 +45,7 @@ namespace YBFramework.Bridge.NewData
                 if (parent != null)
                 {
                     SubNodeData subNodeData = (SubNodeData)parent.DFSNodeData.NodeData;
-                    BasePortData portData = subNodeData.FindSubPortDataBySubPortID(GetPortID());
+                    BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(dfsGraphAsset.DFSNodeData.NodeData.GetNodeID(), GetPortID());
                     if (portData != null)
                     {
                         subNodeData.DFSExecutionFlow(parent, portData);

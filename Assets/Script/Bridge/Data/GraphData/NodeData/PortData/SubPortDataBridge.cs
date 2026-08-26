@@ -2,6 +2,7 @@
 using System;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
 namespace YBFramework.Bridge.NewData
@@ -9,9 +10,13 @@ namespace YBFramework.Bridge.NewData
     [Serializable]
     public sealed class SubPortDataBridge : BasePortData
     {
+        public string SubPortDisplayName;
+
         [SerializeField] private int m_PortID;
 
         [SerializeField] private PortConnectionData m_PortConnectionData;
+
+        private BasePortData m_SubPortData;
 
         private BaseNodeData m_NodeData;
 
@@ -20,6 +25,21 @@ namespace YBFramework.Bridge.NewData
         private Direction m_Direction;
 
         private Color m_PortColor;
+
+        public PortConnectionData GetSubPortAddress()
+        {
+            return m_PortConnectionData;
+        }
+        
+        public BasePortData GetSubPortData()
+        {
+            return m_SubPortData;
+        }
+
+        public void SetSubPortData(BasePortData subPortData)
+        {
+            m_SubPortData = subPortData;
+        }
 
         public override int GetPortID()
         {
@@ -133,18 +153,26 @@ namespace YBFramework.Bridge.NewData
 
         public override void Connect(BasePortData other)
         {
-            m_PortConnectionData.NodeID = other.GetNodeData().GetNodeID();
-            m_PortConnectionData.PortID = other.GetPortID();
+            m_SubPortData = other;
+            int subNodeID = other.GetNodeData().GetNodeID();
+            int subPortID = other.GetPortID();
+            m_PortConnectionData.NodeID = subNodeID;
+            m_PortConnectionData.PortID = subPortID;
+            SubPortDataBridgeConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, subNodeID, subPortID, true);
             other.BeConnected(this);
             other.SetHasSubPortData(true);
         }
 
         public override void Disconnect(BasePortData other)
         {
-            if (m_PortConnectionData.NodeID == other.GetNodeData().GetNodeID() && m_PortConnectionData.PortID == other.GetPortID())
+            int subNodeID = other.GetNodeData().GetNodeID();
+            int subPortID = other.GetPortID();
+            if (m_PortConnectionData.NodeID == subNodeID && m_PortConnectionData.PortID == subPortID)
             {
+                m_SubPortData = null;
                 m_PortConnectionData.NodeID = 0;
                 m_PortConnectionData.PortID = 0;
+                SubPortDataBridgeConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, subNodeID, subPortID, false);
                 other.BeDisconnected(this);
                 other.SetHasSubPortData(false);
             }

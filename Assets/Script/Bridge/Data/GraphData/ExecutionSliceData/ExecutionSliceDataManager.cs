@@ -2,11 +2,11 @@
 
 namespace YBFramework.Bridge.NewData
 {
-    public sealed class ExecutionSliceDataManager
+    public static class ExecutionSliceDataManager
     {
-        private readonly Dictionary<GraphAsset, GraphSliceData> m_GraphSliceData = new();
+        private static readonly Dictionary<GraphAsset, GraphSliceData> m_GraphSliceData = new();
 
-        public GraphSliceData GetGraphExecutionSliceData(GraphAsset graphAsset)
+        public static GraphSliceData GetGraphExecutionSliceData(GraphAsset graphAsset)
         {
             if (!m_GraphSliceData.TryGetValue(graphAsset, out GraphSliceData graphSliceData))
             {

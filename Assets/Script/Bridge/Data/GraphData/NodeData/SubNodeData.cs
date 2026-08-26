@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
+#if UNITY_EDITOR
+using System.Buffers;
+#endif
 
 namespace YBFramework.Bridge.NewData
 {
@@ -12,17 +15,28 @@ namespace YBFramework.Bridge.NewData
 
         [SerializeField] private List<SubPortData> m_SubPortsData;
 
-        public SubPortData FindSubPortDataBySubPortID(int subPortID)
+        public GraphAsset GetSubGraphAsset()
+        {
+            return m_SubGraphAsset;
+        }
+
+        public SubPortData FindSubPortDataBySubPortAddress(int subNodeID, int subPortID)
+        {
+            int index = FindSubPortDataIndexBySubPortAddress(subNodeID, subPortID);
+            return index != -1 ? m_SubPortsData[index] : null;
+        }
+
+        private int FindSubPortDataIndexBySubPortAddress(int subNodeID, int subPortID)
         {
             for (int i = 0; i < m_SubPortsData.Count; i++)
             {
                 SubPortData subPortData = m_SubPortsData[i];
-                if (subPortData.GetSubPortID() == subPortID)
+                if (subPortData.GetSubNodeID() == subNodeID && subPortData.GetSubPortID() == subPortID)
                 {
-                    return subPortData;
+                    return i;
                 }
             }
-            return null;
+            return -1;
         }
 
         public override int GetPortsDataCount()
@@ -101,9 +115,120 @@ namespace YBFramework.Bridge.NewData
             }
         }
 #if UNITY_EDITOR
-        protected override void OnInitializePortData()
+        private static SubNodeDataBridge[] InitializeSubNodeDataBridges(GraphAsset subGraphAsset)
         {
-            throw new NotImplementedException();
+            SubNodeDataBridge[] subNodeDataBridges = ArrayPool<SubNodeDataBridge>.Shared.Rent(2);
+            if (subGraphAsset != null)
+            {
+                int count = 0;
+                IReadOnlyList<BaseNodeData> nodesData = subGraphAsset.GetNodesData();
+                for (int i = 0; i < nodesData.Count; i++)
+                {
+                    if (nodesData[i] is SubNodeDataBridge subNodeDataBridge)
+                    {
+                        //确保初始化非序列化数据
+                        subNodeDataBridge.InitializePortData();
+                        subNodeDataBridges[count++] = subNodeDataBridge;
+                        if (count > 1)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            return subNodeDataBridges;
+        }
+
+        private static SubPortDataBridge FindSubPortDataBridge(SubNodeDataBridge[] subNodeDataBridges, int subNodeID, int subPortID)
+        {
+            for (int i = 0; i < subNodeDataBridges.Length; i++)
+            {
+                SubNodeDataBridge subNodeDataBridge = subNodeDataBridges[i];
+                if (subNodeDataBridge != null)
+                {
+                    IReadOnlyList<SubPortDataBridge> subPortDataBridges = subNodeDataBridge.GetSubPortDataBridges();
+                    for (int j = 0; j < subPortDataBridges.Count; j++)
+                    {
+                        SubPortDataBridge subPortDataBridge = subPortDataBridges[j];
+                        PortConnectionData subPortDataAddress = subPortDataBridge.GetSubPortAddress();
+                        if (subPortDataAddress.NodeID == subNodeID && subPortDataAddress.PortID == subPortID)
+                        {
+                            return subPortDataBridge;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public void SetSubGraphAsset(GraphAsset subGraphAsset)
+        {
+            if (m_SubGraphAsset != subGraphAsset)
+            {
+                for (int i = 0; i < m_SubPortsData.Count; i++)
+                {
+                    m_SubPortsData[i].DisconnectAll();
+                }
+                m_SubPortsData.Clear();
+                SubNodeDataBridge[] subNodeDataBridges = InitializeSubNodeDataBridges(subGraphAsset);
+                for (int i = 0; i < subNodeDataBridges.Length; i++)
+                {
+                    SubNodeDataBridge subNodeDataBridge = subNodeDataBridges[i];
+                    if (subNodeDataBridge != null)
+                    {
+                        IReadOnlyList<SubPortDataBridge> subPortDataBridges = subNodeDataBridge.GetSubPortDataBridges();
+                        for (int j = 0; j < subPortDataBridges.Count; j++)
+                        {
+                            SubPortDataBridge subPortDataBridge = subPortDataBridges[j];
+                            SubPortData subPortData = new(subPortDataBridge.GetSubPortData().CreateSubPortData(), subPortDataBridge.GetSubPortAddress().NodeID,
+                                subPortDataBridge.GetSubPortAddress().PortID);
+                            m_SubPortsData.Add(subPortData);
+                        }
+                    }
+                }
+                ArrayPool<SubNodeDataBridge>.Shared.Return(subNodeDataBridges);
+            }
+        }
+
+        public void OnSubPortDataBridgeConnectionChanged(SubPortDataBridge subPortDataBridge, int subNodeID, int subPortID, bool isConnect)
+        {
+            if (isConnect)
+            {
+                SubPortData subPortData = new(subPortDataBridge.GetSubPortData().CreateSubPortData(), subNodeID, subPortID);
+                m_SubPortsData.Add(subPortData);
+            }
+            else
+            {
+                int index = FindSubPortDataIndexBySubPortAddress(subNodeID, subPortID);
+                if (index != -1)
+                {
+                    m_SubPortsData[index].DisconnectAll();
+                    m_SubPortsData.RemoveAt(index);
+                }
+            }
+        }
+
+        //TODO:在Presenter中设置了SubGraphAsset后调用
+        public void InitializeSubPortsData()
+        {
+            SubNodeDataBridge[] subNodeDataBridges = InitializeSubNodeDataBridges(m_SubGraphAsset);
+            for (int i = 0; i < m_SubPortsData.Count; i++)
+            {
+                SubPortData subPortData = m_SubPortsData[i];
+                subPortData.SetFieldName($"{nameof(m_SubPortsData)}.Array.data[{i}]");
+                SubPortDataBridge subPortDataBridge = FindSubPortDataBridge(subNodeDataBridges, subPortData.GetSubNodeID(), subPortData.GetSubPortID());
+                if (subPortDataBridge != null)
+                {
+                    subPortData.SetPortName(string.IsNullOrEmpty(subPortDataBridge.SubPortDisplayName) ? subPortDataBridge.GetSubPortData().GetPortName() : subPortDataBridge.SubPortDisplayName);
+                    subPortData.RevertNonSerializedData(subPortDataBridge.GetSubPortData());
+                }
+                else
+                {
+                    Debug.LogError(
+                        $"{nameof(SubNodeData)} node id:{m_NodeID} port id:{subPortData.GetPortID()} has saved a missing port data,address:node id:{subPortData.GetSubNodeID()} port id:{subPortData.GetSubPortID()}");
+                }
+            }
+            ArrayPool<SubNodeDataBridge>.Shared.Return(subNodeDataBridges);
         }
 
         public override void InitializeSerializedData()
@@ -111,9 +236,9 @@ namespace YBFramework.Bridge.NewData
             m_SubPortsData = new List<SubPortData>();
         }
 
-        public override void InitializePortDataView()
+        protected override void OnInitializePortData()
         {
-            throw new NotImplementedException();
+            InitializeSubPortsData();
         }
 #endif
     }

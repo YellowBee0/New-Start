@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
@@ -57,6 +56,13 @@ namespace YBFramework.Bridge.NewData
             throw new NotImplementedException();
         }
 #if UNITY_EDITOR
+        public SubPortData(BasePortData subPortData, int subNodeID, int subPortID)
+        {
+            m_SubPortData = subPortData;
+            m_SubNodeID = subNodeID;
+            m_SubPortID = subPortID;
+        }
+
         public override BaseNodeData GetNodeData()
         {
             return m_SubPortData.GetNodeData();
@@ -124,13 +130,7 @@ namespace YBFramework.Bridge.NewData
 
         public override BasePortData CreateSubPortData()
         {
-            SubPortData subPortData = new()
-            {
-                m_SubPortData = m_SubPortData.CreateSubPortData(),
-                m_SubNodeID = GetNodeData().GetNodeID(),
-                m_SubPortID = GetPortID()
-            };
-            return subPortData;
+            return new SubPortData(m_SubPortData.CreateSubPortData(), GetNodeData().GetNodeID(), GetPortID());
         }
 
         public override void RevertNonSerializedData(BasePortData subSourcePortData)
