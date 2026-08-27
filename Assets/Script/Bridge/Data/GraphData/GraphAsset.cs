@@ -6,6 +6,7 @@ using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Bridge.Data
 {
+    [CreateAssetMenu(menuName = "Data/GraphAsset", fileName = "NewGraphAsset")]
     public sealed class GraphAsset : ScriptableObject
     {
         [SerializeReference] private List<BaseNodeData> m_NodesData;
@@ -28,16 +29,11 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 #if UNITY_EDITOR
-        private GraphType m_GraphType;
-
-        private bool m_IsInitializedReference;
+        public GraphType GraphType;
 
         public int SourceNodeID;
 
-        public GraphType GetGraphType()
-        {
-            return m_GraphType;
-        }
+        private bool m_IsInitializedReference;
 
         public void InitializeBackReference()
         {
@@ -79,9 +75,9 @@ namespace YBFramework.Bridge.Data
             //不存在数据持久化
             nodeData.SetGraphAsset(this);
             int portDataCount = nodeData.GetPortsDataCount();
-            for (int j = 0; j < portDataCount; j++)
+            for (int i = 0; i < portDataCount; i++)
             {
-                BasePortData portData = nodeData.PortDataOfIndex(j);
+                BasePortData portData = nodeData.PortDataOfIndex(i);
                 portData.SetNodeData(nodeData);
             }
             m_NodesData.Add(nodeData);

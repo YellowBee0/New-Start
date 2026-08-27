@@ -44,6 +44,7 @@ namespace YBFramework.Editor.Graph
         {
             m_NodeData = nodeData;
             m_NodeView = new NodeView(nodeData);
+            nodeData.InitializeSerializedData();
             int portDataCount = nodeData.GetPortsDataCount();
             for (int i = 0; i < portDataCount; i++)
             {

@@ -2,8 +2,8 @@
 using System.Reflection;
 using Script.Common;
 using UnityEditor;
-using YBFramework.Bridge.Editor;
 using YBFramework.Bridge.Data;
+using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Editor.Graph
 {
@@ -49,15 +49,16 @@ namespace YBFramework.Editor.Graph
 
         private static void DoProcess()
         {
-            IReadOnlyList<string> processNames = GraphDataSaveProcessBridge.GetProcessNames();
-            for (int i = 0; i < processNames.Count; i++)
+            HashSet<string>.Enumerator enumerator = GraphAssetSaveProcessRegister.GetProcessNames();
+            while (enumerator.MoveNext())
             {
-                if (s_Processes.TryGetValue(processNames[i], out Process process))
+                string processName = enumerator.Current!;
+                if (s_Processes.TryGetValue(processName, out Process process))
                 {
                     process.Invoke();
                 }
             }
-            GraphDataSaveProcessBridge.ClearProcessNames();
+            GraphAssetSaveProcessRegister.ClearProcessNames();
         }
 
         [MethodMark("Sub port data save process")]

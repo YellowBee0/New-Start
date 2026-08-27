@@ -32,7 +32,7 @@ namespace YBFramework.Editor.Graph
             SubNodeData proxyNodeData = (SubNodeData)m_NodeData;
             if (evt.newValue is GraphAsset proxyGraphAsset)
             {
-                if ((proxyNodeData.GetGraphAsset().GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
+                if ((proxyNodeData.GetGraphAsset().GraphType & proxyGraphAsset.GraphType) == proxyGraphAsset.GraphType)
                 {
                     //TODO:需要支持Undo
                     //修改数据
@@ -66,7 +66,7 @@ namespace YBFramework.Editor.Graph
                     m_NodeView.RefreshPortContainerDisplay();
                     return;
                 }
-                Debug.LogError($"This graph type:{proxyNodeData.GetGraphAsset().GetGraphType()} is not contains proxy graph type:{proxyGraphAsset.GetGraphType()}");
+                Debug.LogError($"This graph type:{proxyNodeData.GetGraphAsset().GraphType} is not contains proxy graph type:{proxyGraphAsset.GraphType}");
             }
             else
             {

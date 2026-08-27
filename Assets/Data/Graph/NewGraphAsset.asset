@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ca43f8a5a0346a18c0f33a8e8572dd2, type: 3}
-  m_Name: New Graph Asset
+  m_Script: {fileID: 11500000, guid: 90024ad055184ac7b65f71a89e806400, type: 3}
+  m_Name: NewGraphAsset
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
-  m_NodeData: []
-  m_GraphType: -1
+  m_NodesData: []
+  GraphType: -1
   SourceNodeID: 0
   references:
     version: 2

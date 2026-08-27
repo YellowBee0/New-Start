@@ -184,9 +184,12 @@ namespace YBFramework.Bridge.Data
                         for (int j = 0; j < subPortDataBridges.Count; j++)
                         {
                             SubPortDataBridge subPortDataBridge = subPortDataBridges[j];
-                            SubPortData subPortData = new(subPortDataBridge.GetSubPortData().CreateSubPortData(), subPortDataBridge.GetSubPortAddress().NodeID,
-                                subPortDataBridge.GetSubPortAddress().PortID);
-                            m_SubPortsData.Add(subPortData);
+                            BasePortData portDataToClone = subPortDataBridge.GetSubPortData();
+                            if (portDataToClone != null)
+                            {
+                                SubPortData subPortData = new(portDataToClone.CreateSubPortData(), subPortDataBridge.GetSubPortAddress().NodeID, subPortDataBridge.GetSubPortAddress().PortID);
+                                m_SubPortsData.Add(subPortData);
+                            }
                         }
                     }
                 }
