@@ -61,13 +61,13 @@ namespace YBFramework.Editor.Graph
             GraphAssetSaveProcessRegister.ClearProcessNames();
         }
 
-        [MethodMark("Sub port data save process")]
-        private static void SubPortDataSaveProcess()
+        [MethodMark("Expose port data save process")]
+        private static void ExposePortDataSaveProcess()
         {
-            IReadOnlyList<SubPortDataBridgeConnectionChangeData.SubGraphConnectionChangeData> subGraphConnectionsChangeData = SubPortDataBridgeConnectionChangeData.GetSubGraphConnectionsChangeData();
+            IReadOnlyList<ExposePortDataConnectionChangeData.SubGraphConnectionChangeData> subGraphConnectionsChangeData = ExposePortDataConnectionChangeData.GetSubGraphConnectionsChangeData();
             for (int i = 0; i < subGraphConnectionsChangeData.Count; i++)
             {
-                SubPortDataBridgeConnectionChangeData.SubGraphConnectionChangeData subGraphConnectionChangeData = subGraphConnectionsChangeData[i];
+                ExposePortDataConnectionChangeData.SubGraphConnectionChangeData subGraphConnectionChangeData = subGraphConnectionsChangeData[i];
                 IReadOnlyList<GraphAsset> allGraphAssets = GraphGlobal.GetAllGraphAssets();
                 for (int j = 0; j < allGraphAssets.Count; j++)
                 {
@@ -79,12 +79,12 @@ namespace YBFramework.Editor.Graph
                         {
                             if (nodesData[k] is SubNodeData subNodeData && subNodeData.GetSubGraphAsset() == subGraphConnectionChangeData.GraphAsset)
                             {
-                                IReadOnlyList<SubPortDataBridgeConnectionChangeData.SubGraphConnectionChangeData.ConnectionChangeData> connectionsChangeData =
+                                IReadOnlyList<ExposePortDataConnectionChangeData.SubGraphConnectionChangeData.ConnectionChangeData> connectionsChangeData =
                                     subGraphConnectionChangeData.GetConnectionsChangeData();
                                 for (int l = 0; l < connectionsChangeData.Count; l++)
                                 {
-                                    SubPortDataBridgeConnectionChangeData.SubGraphConnectionChangeData.ConnectionChangeData connectionChangeData = connectionsChangeData[l];
-                                    subNodeData.OnSubPortDataBridgeConnectionChanged(connectionChangeData.PortData, connectionChangeData.SubNodeID, connectionChangeData.SubPortID,
+                                    ExposePortDataConnectionChangeData.SubGraphConnectionChangeData.ConnectionChangeData connectionChangeData = connectionsChangeData[l];
+                                    subNodeData.OnExposePortDataConnectionChanged(connectionChangeData.ExposePortData, connectionChangeData.ToExposeNodeID, connectionChangeData.ToExposePortID,
                                         connectionChangeData.IsConnect);
                                 }
                                 EditorUtility.SetDirty(graphAsset);
@@ -93,7 +93,7 @@ namespace YBFramework.Editor.Graph
                     }
                 }
             }
-            SubPortDataBridgeConnectionChangeData.Clear();
+            ExposePortDataConnectionChangeData.Clear();
             AssetDatabase.SaveAssets();
         }
     }

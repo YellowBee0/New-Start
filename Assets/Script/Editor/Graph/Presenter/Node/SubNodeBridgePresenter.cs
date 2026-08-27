@@ -6,7 +6,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [RuntimeToEditor(typeof(SubNodeDataBridge))]
+    [RuntimeToEditor(typeof(ExposePortsNodeData))]
     public sealed class SubNodeBridgePresenter : BaseNodePresenter
     {
         private Toggle m_IsProxyInputToggle;
@@ -34,7 +34,7 @@ namespace YBFramework.Editor.Graph
             };
             buttonContainer.Add(addButton);
             buttonContainer.Add(removeButton);
-            SubNodeDataBridge proxyHelperNodeData = (SubNodeDataBridge)nodeData;
+            ExposePortsNodeData proxyHelperNodeData = (ExposePortsNodeData)nodeData;
             m_IsProxyInputToggle = new Toggle("只连接输入")
             {
                 value = proxyHelperNodeData.IsInputPortValid
@@ -46,13 +46,13 @@ namespace YBFramework.Editor.Graph
 
         private void OnAddClicked()
         {
-            SubNodeDataBridge proxyHelperNodeData = (SubNodeDataBridge)m_NodeData;
+            ExposePortsNodeData proxyHelperNodeData = (ExposePortsNodeData)m_NodeData;
             //TODO:需要支持Undo
-            SubPortDataBridge proxyHelperPortData = new();
-            proxyHelperNodeData.AddSubPortDataBridge(proxyHelperPortData);
+            ExposePortData proxyHelperPortData = new();
+            proxyHelperNodeData.AddExposePortData(proxyHelperPortData);
             m_NodeSerializedProperty.serializedObject.Update();
             //创建端口视图
-            BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(SubPortDataBridge));
+            BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(ExposePortData));
             if (portPresenter != null)
             {
                 portPresenter.Initialize(proxyHelperPortData, m_NodeSerializedProperty.FindPropertyRelative(proxyHelperPortData.GetFieldName()));
@@ -69,12 +69,12 @@ namespace YBFramework.Editor.Graph
 
         private void OnIsProxyInputChanged(ChangeEvent<bool> evt)
         {
-            SubNodeDataBridge bindNodeData = (SubNodeDataBridge)m_NodeData;
+            ExposePortsNodeData bindNodeData = (ExposePortsNodeData)m_NodeData;
             IReadOnlyList<BaseNodeData> nodeData = bindNodeData.GetGraphAsset().GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 BaseNodeData baseNodeData = nodeData[i];
-                if (baseNodeData != bindNodeData && baseNodeData is SubNodeDataBridge proxyTargetNodeData)
+                if (baseNodeData != bindNodeData && baseNodeData is ExposePortsNodeData proxyTargetNodeData)
                 {
                     if (proxyTargetNodeData.IsInputPortValid == evt.newValue)
                     {

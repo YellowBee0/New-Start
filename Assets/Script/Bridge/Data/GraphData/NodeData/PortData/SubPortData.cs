@@ -10,45 +10,45 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class SubPortData : BasePortData
     {
-        [SerializeReference] private BasePortData m_SubPortData;
+        [SerializeReference] private BasePortData m_AsSubPortData;
 
-        [SerializeField] private int m_SubNodeID;
+        [SerializeField] private int m_AsSubNodeID;
 
-        [SerializeField] private int m_SubPortID;
+        [SerializeField] private int m_AsSubPortID;
 
-        public BasePortData GetSubPortData()
+        public BasePortData GetAsSubPortData()
         {
-            return m_SubPortData;
+            return m_AsSubPortData;
         }
 
-        public int GetSubNodeID()
+        public int GetAsSubNodeID()
         {
-            return m_SubNodeID;
+            return m_AsSubNodeID;
         }
 
-        public int GetSubPortID()
+        public int GetAsSubPortID()
         {
-            return m_SubPortID;
+            return m_AsSubPortID;
         }
 
         public override int GetPortID()
         {
-            return m_SubPortData.GetPortID();
+            return m_AsSubPortData.GetPortID();
         }
 
         public override bool HasSubPortData()
         {
-            return m_SubPortData.HasSubPortData();
+            return m_AsSubPortData.HasSubPortData();
         }
 
         public override int GetPortConnectionsDataCount()
         {
-            return m_SubPortData.GetPortConnectionsDataCount();
+            return m_AsSubPortData.GetPortConnectionsDataCount();
         }
 
         public override PortConnectionData PortConnectionDataOfIndex(int index)
         {
-            return m_SubPortData.PortConnectionDataOfIndex(index);
+            return m_AsSubPortData.PortConnectionDataOfIndex(index);
         }
 
         public override BasePort CreateRuntimeInstance()
@@ -56,56 +56,56 @@ namespace YBFramework.Bridge.Data
             throw new NotImplementedException();
         }
 #if UNITY_EDITOR
-        public SubPortData(BasePortData subPortData, int subNodeID, int subPortID)
+        public SubPortData(BasePortData asSubPortData, int asSubNodeID, int asSubPortID)
         {
-            m_SubPortData = subPortData;
-            m_SubNodeID = subNodeID;
-            m_SubPortID = subPortID;
+            m_AsSubPortData = asSubPortData;
+            m_AsSubNodeID = asSubNodeID;
+            m_AsSubPortID = asSubPortID;
         }
 
         public override BaseNodeData GetNodeData()
         {
-            return m_SubPortData.GetNodeData();
+            return m_AsSubPortData.GetNodeData();
         }
 
         public override void SetPortID(int portID)
         {
-            m_SubPortData.SetPortID(portID);
+            m_AsSubPortData.SetPortID(portID);
         }
 
         public override void SetHasSubPortData(bool hasSubPortData)
         {
-            m_SubPortData.SetHasSubPortData(hasSubPortData);
+            m_AsSubPortData.SetHasSubPortData(hasSubPortData);
         }
 
         public override void SetNodeData(BaseNodeData nodeData)
         {
-            m_SubPortData.SetNodeData(nodeData);
+            m_AsSubPortData.SetNodeData(nodeData);
         }
 
         public override string GetPortName()
         {
-            return m_SubPortData.GetPortName();
+            return m_AsSubPortData.GetPortName();
         }
 
         public override Direction GetDirection()
         {
-            return m_SubPortData.GetDirection();
+            return m_AsSubPortData.GetDirection();
         }
 
         public override Port.Capacity GetCapacity()
         {
-            return m_SubPortData.GetCapacity();
+            return m_AsSubPortData.GetCapacity();
         }
 
         public override Color GetPortColor()
         {
-            return m_SubPortData.GetPortColor();
+            return m_AsSubPortData.GetPortColor();
         }
 
         public override void SetPortName(string portName)
         {
-            m_SubPortData.SetPortName(portName);
+            m_AsSubPortData.SetPortName(portName);
         }
 
         public override void SetDirection(Direction direction)
@@ -120,62 +120,61 @@ namespace YBFramework.Bridge.Data
 
         public override void SetPortColor(Color portColor)
         {
-            m_SubPortData.SetPortColor(portColor);
+            m_AsSubPortData.SetPortColor(portColor);
         }
 
         public override void InitializeSerializedData()
         {
-            //这里不需要调用子端口的初始化，这个节点被创建出来时，子节点字段还没有被赋值，赋值后，子节点字段自己也调用了初始化
         }
 
         public override BasePortData CreateSubPortData()
         {
-            return new SubPortData(m_SubPortData.CreateSubPortData(), GetNodeData().GetNodeID(), GetPortID());
+            return new SubPortData(m_AsSubPortData.CreateSubPortData(), GetNodeData().GetNodeID(), GetPortID());
         }
 
         public override void RevertNonSerializedData(BasePortData subSourcePortData)
         {
             SubPortData subPortData = (SubPortData)subSourcePortData;
-            m_SubPortData.RevertNonSerializedData(subPortData);
+            m_AsSubPortData.RevertNonSerializedData(subPortData);
         }
 
         public override int GetOtherPortConnectionsDataCount()
         {
-            return m_SubPortData.GetOtherPortConnectionsDataCount();
+            return m_AsSubPortData.GetOtherPortConnectionsDataCount();
         }
 
         public override PortConnectionData OtherPortConnectDataOfIndex(int index)
         {
-            return m_SubPortData.OtherPortConnectDataOfIndex(index);
+            return m_AsSubPortData.OtherPortConnectDataOfIndex(index);
         }
 
         public override bool CanConnect(BasePortData other)
         {
             while (other is SubPortData subPortData)
             {
-                other = subPortData.m_SubPortData;
+                other = subPortData.m_AsSubPortData;
             }
-            return m_SubPortData.CanConnect(other);
+            return m_AsSubPortData.CanConnect(other);
         }
 
         public override void Connect(BasePortData other)
         {
-            m_SubPortData.Connect(other);
+            m_AsSubPortData.Connect(other);
         }
 
         public override void Disconnect(BasePortData other)
         {
-            m_SubPortData.Disconnect(other);
+            m_AsSubPortData.Disconnect(other);
         }
 
         public override void BeConnected(BasePortData other)
         {
-            m_SubPortData.BeConnected(other);
+            m_AsSubPortData.BeConnected(other);
         }
 
         public override void BeDisconnected(BasePortData other)
         {
-            m_SubPortData.BeDisconnected(other);
+            m_AsSubPortData.BeDisconnected(other);
         }
 #endif
     }

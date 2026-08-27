@@ -4,7 +4,7 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Bridge.Editor
 {
-    public static class SubPortDataBridgeConnectionChangeData
+    public static class ExposePortDataConnectionChangeData
     {
         public sealed class SubGraphConnectionChangeData
         {
@@ -12,12 +12,12 @@ namespace YBFramework.Bridge.Editor
             {
                 private static readonly Stack<ConnectionChangeData> s_ConnectionChangeDataPool = new();
 
-                public static ConnectionChangeData Allocate(SubPortDataBridge portData, int subNodeID, int subPortID, bool isConnect)
+                public static ConnectionChangeData Allocate(ExposePortData exposePortData, int toExposeNodeID, int toExposePortID, bool isConnect)
                 {
                     ConnectionChangeData connectionChangeData = s_ConnectionChangeDataPool.Count > 0 ? s_ConnectionChangeDataPool.Pop() : new ConnectionChangeData();
-                    connectionChangeData.PortData = portData;
-                    connectionChangeData.SubNodeID = subNodeID;
-                    connectionChangeData.SubPortID = subPortID;
+                    connectionChangeData.ExposePortData = exposePortData;
+                    connectionChangeData.ToExposeNodeID = toExposeNodeID;
+                    connectionChangeData.ToExposePortID = toExposePortID;
                     connectionChangeData.IsConnect = isConnect;
                     return connectionChangeData;
                 }
@@ -27,11 +27,11 @@ namespace YBFramework.Bridge.Editor
                     s_ConnectionChangeDataPool.Push(connectionChangeData);
                 }
 
-                public SubPortDataBridge PortData;
+                public ExposePortData ExposePortData;
 
-                public int SubNodeID;
+                public int ToExposeNodeID;
 
-                public int SubPortID;
+                public int ToExposePortID;
 
                 public bool IsConnect;
             }
@@ -64,12 +64,12 @@ namespace YBFramework.Bridge.Editor
                 return m_ConnectionsChangeData;
             }
 
-            public void TryAddConnectionChangeData(SubPortDataBridge portData, int subNodeID, int subPortID, bool isConnect)
+            public void TryAddConnectionChangeData(ExposePortData exposePortData, int toExposeNodeID, int toExposePortID, bool isConnect)
             {
                 for (int i = 0; i < m_ConnectionsChangeData.Count; i++)
                 {
                     ConnectionChangeData connectionChangeData = m_ConnectionsChangeData[i];
-                    if (connectionChangeData.PortData == portData && connectionChangeData.SubNodeID == subNodeID && connectionChangeData.SubPortID == subPortID)
+                    if (connectionChangeData.ExposePortData == exposePortData && connectionChangeData.ToExposeNodeID == toExposeNodeID && connectionChangeData.ToExposePortID == toExposePortID)
                     {
                         if (connectionChangeData.IsConnect != isConnect)
                         {
@@ -79,7 +79,7 @@ namespace YBFramework.Bridge.Editor
                         return;
                     }
                 }
-                m_ConnectionsChangeData.Add(ConnectionChangeData.Allocate(portData, subNodeID, subPortID, isConnect));
+                m_ConnectionsChangeData.Add(ConnectionChangeData.Allocate(exposePortData, toExposeNodeID, toExposePortID, isConnect));
             }
 
             public int GetConnectionChangeDataCount()
@@ -99,7 +99,7 @@ namespace YBFramework.Bridge.Editor
             return s_SubGraphConnectionsChangeData;
         }
 
-        public static void AddConnectionChangeData(GraphAsset graphAsset, SubPortDataBridge portData, int subNodeID, int subPortID, bool isConnect)
+        public static void AddConnectionChangeData(GraphAsset graphAsset, ExposePortData exposePortData, int toExposeNodeID, int toExposePortID, bool isConnect)
         {
             int index = -1;
             for (int i = 0; i < s_SubGraphConnectionsChangeData.Count; i++)
@@ -117,7 +117,7 @@ namespace YBFramework.Bridge.Editor
                 index = s_SubGraphConnectionsChangeData.Count;
                 if (s_SubGraphConnectionsChangeData.Count == 0)
                 {
-                    GraphAssetSaveProcessRegister.RegisterProcess("Sub port data save process");
+                    GraphAssetSaveProcessRegister.RegisterProcess("Expose port data save process");
                 }
                 s_SubGraphConnectionsChangeData.Add(subGraphConnectionChangeData);
             }
@@ -125,13 +125,13 @@ namespace YBFramework.Bridge.Editor
             {
                 subGraphConnectionChangeData = s_SubGraphConnectionsChangeData[index];
             }
-            subGraphConnectionChangeData.TryAddConnectionChangeData(portData, subNodeID, subPortID, isConnect);
+            subGraphConnectionChangeData.TryAddConnectionChangeData(exposePortData, toExposeNodeID, toExposePortID, isConnect);
             if (subGraphConnectionChangeData.GetConnectionChangeDataCount() == 0)
             {
                 s_SubGraphConnectionsChangeData.RemoveAt(index);
                 if (s_SubGraphConnectionsChangeData.Count == 0)
                 {
-                    GraphAssetSaveProcessRegister.UnregisterProcess("Sub port data save process");
+                    GraphAssetSaveProcessRegister.UnregisterProcess("Expose port data save process");
                 }
             }
         }

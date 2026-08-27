@@ -8,15 +8,15 @@ using YBFramework.GameLogic.Graph;
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
-    public sealed class SubPortDataBridge : BasePortData
+    public sealed class ExposePortData : BasePortData
     {
-        public string SubPortDisplayName;
+        public string ExposePortDisplayName;
 
         [SerializeField] private int m_PortID;
 
         [SerializeField] private PortConnectionData m_PortConnectionData;
 
-        private BasePortData m_SubPortData;
+        private BasePortData m_ToExposePortData;
 
         private BaseNodeData m_NodeData;
 
@@ -26,19 +26,19 @@ namespace YBFramework.Bridge.Data
 
         private Color m_PortColor;
 
-        public PortConnectionData GetSubPortAddress()
+        public PortConnectionData GetToExposePortAddress()
         {
             return m_PortConnectionData;
         }
 
-        public BasePortData GetSubPortData()
+        public BasePortData GetToExposePortData()
         {
-            return m_SubPortData;
+            return m_ToExposePortData;
         }
 
-        public void SetSubPortData(BasePortData subPortData)
+        public void SetToExposePortData(BasePortData toExposePortData)
         {
-            m_SubPortData = subPortData;
+            m_ToExposePortData = toExposePortData;
         }
 
         public override int GetPortID()
@@ -63,7 +63,7 @@ namespace YBFramework.Bridge.Data
 
         public override BasePort CreateRuntimeInstance()
         {
-            Debug.Log($"{nameof(SubPortDataBridge)} is attempt to create a runtime instance,and this log is editor only");
+            Debug.Log($"{nameof(ExposePortData)} is attempt to create a runtime instance,and this log is editor only");
             return null;
         }
 
@@ -79,7 +79,7 @@ namespace YBFramework.Bridge.Data
 
         public override void SetHasSubPortData(bool hasSubPortData)
         {
-            Debug.LogError($"{nameof(SubPortDataBridge)} is not allowed to have sub port");
+            Debug.LogError($"{nameof(ExposePortData)} is not allowed to have sub port");
         }
 
         public override void SetNodeData(BaseNodeData nodeData)
@@ -119,7 +119,7 @@ namespace YBFramework.Bridge.Data
 
         public override void SetCapacity(Port.Capacity capacity)
         {
-            Debug.LogWarning($"{nameof(SubPortDataBridge)} is useless to set a capacity:{capacity},because it is always {Port.Capacity.Single}");
+            Debug.LogWarning($"{nameof(ExposePortData)} is useless to set a capacity:{capacity},because it is always {Port.Capacity.Single}");
         }
 
         public override void SetPortColor(Color portColor)
@@ -133,7 +133,7 @@ namespace YBFramework.Bridge.Data
 
         public override BasePortData CreateSubPortData()
         {
-            throw new InvalidOperationException($"{nameof(SubPortDataBridge)} cannot create sub port");
+            throw new InvalidOperationException($"{nameof(ExposePortData)} cannot create sub port");
         }
 
         public override int GetOtherPortConnectionsDataCount()
@@ -148,31 +148,31 @@ namespace YBFramework.Bridge.Data
 
         public override bool CanConnect(BasePortData other)
         {
-            return base.CanConnect(other) && other is not SubPortDataBridge;
+            return base.CanConnect(other) && other is not ExposePortData;
         }
 
         public override void Connect(BasePortData other)
         {
-            m_SubPortData = other;
-            int subNodeID = other.GetNodeData().GetNodeID();
-            int subPortID = other.GetPortID();
-            m_PortConnectionData.NodeID = subNodeID;
-            m_PortConnectionData.PortID = subPortID;
-            SubPortDataBridgeConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, subNodeID, subPortID, true);
+            m_ToExposePortData = other;
+            int toExposeNodeID = other.GetNodeData().GetNodeID();
+            int toExposePortID = other.GetPortID();
+            m_PortConnectionData.NodeID = toExposeNodeID;
+            m_PortConnectionData.PortID = toExposePortID;
+            ExposePortDataConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, toExposeNodeID, toExposePortID, true);
             other.BeConnected(this);
             other.SetHasSubPortData(true);
         }
 
         public override void Disconnect(BasePortData other)
         {
-            int subNodeID = other.GetNodeData().GetNodeID();
-            int subPortID = other.GetPortID();
-            if (m_PortConnectionData.NodeID == subNodeID && m_PortConnectionData.PortID == subPortID)
+            int toExposeNodeID = other.GetNodeData().GetNodeID();
+            int toExposePortID = other.GetPortID();
+            if (m_PortConnectionData.NodeID == toExposeNodeID && m_PortConnectionData.PortID == toExposePortID)
             {
-                m_SubPortData = null;
+                m_ToExposePortData = null;
                 m_PortConnectionData.NodeID = 0;
                 m_PortConnectionData.PortID = 0;
-                SubPortDataBridgeConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, subNodeID, subPortID, false);
+                ExposePortDataConnectionChangeData.AddConnectionChangeData(GetNodeData().GetGraphAsset(), this, toExposeNodeID, toExposePortID, false);
                 other.BeDisconnected(this);
                 other.SetHasSubPortData(false);
             }

@@ -5,10 +5,10 @@ using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
-    [RuntimeToEditor(typeof(SubPortDataBridge))]
+    [RuntimeToEditor(typeof(ExposePortData))]
     public sealed class SubPortBridgePresenter : BasePortPresenter
     {
-        private SubPortDataBridge m_PortData;
+        private ExposePortData m_PortData;
 
         private PortView m_PortView;
 
@@ -17,31 +17,31 @@ namespace YBFramework.Editor.Graph
         private void OnProxyNameChange(ChangeEvent<string> evt)
         {
             //TODO:需要支持Undo
-            m_PortData.SubPortDisplayName = evt.newValue;
+            m_PortData.ExposePortDisplayName = evt.newValue;
         }
 
         private void OnConnect(Port other)
         {
             PortView otherPortView = (PortView)other;
             //TODO:需要支持Undo
-            m_PortData.SubPortDisplayName = otherPortView.BindPortData.GetPortName();
+            m_PortData.ExposePortDisplayName = otherPortView.BindPortData.GetPortName();
         }
 
         private void OnDisconnect(Port other)
         {
             //TODO:需要支持Undo
-            m_PortData.SubPortDisplayName = null;
+            m_PortData.ExposePortDisplayName = null;
         }
 
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
-            m_PortData = (SubPortDataBridge)portData;
+            m_PortData = (ExposePortData)portData;
             m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             VisualElement portContentView = new();
             portContentView.Add(m_PortView);
             TextField proxyNameField = new()
             {
-                value = m_PortData.SubPortDisplayName
+                value = m_PortData.ExposePortDisplayName
             };
             proxyNameField.RegisterValueChangedCallback(OnProxyNameChange);
             m_PortView.RegisterOnConnectCallback(OnConnect);

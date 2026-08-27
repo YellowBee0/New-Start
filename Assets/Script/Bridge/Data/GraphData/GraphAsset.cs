@@ -35,7 +35,7 @@ namespace YBFramework.Bridge.Data
 
         private bool m_IsInitializedReference;
 
-        public void InitializeBackReference()
+        public void InitializeReference()
         {
             if (!m_IsInitializedReference)
             {

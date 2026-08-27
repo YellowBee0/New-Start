@@ -14,7 +14,7 @@ namespace YBFramework.Editor.Graph
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
             m_PortData = (SubPortData)portData;
-            BasePortData subPortData = m_PortData.GetSubPortData();
+            BasePortData subPortData = m_PortData.GetAsSubPortData();
             m_InternalPortPresenter = AllocatePortPresenter(subPortData.GetType());
             if (m_InternalPortPresenter != null)
             {
