@@ -3,7 +3,7 @@ using System.Reflection;
 using Script.Common;
 using UnityEditor;
 using YBFramework.Bridge.Editor;
-using YBFramework.Bridge.NewData;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
@@ -28,7 +28,7 @@ namespace YBFramework.Editor.Graph
 
         static unsafe GraphAssetSaveProcessor()
         {
-            MethodInfo[] methodInfos = typeof(GraphDataSaveProcessor).GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo[] methodInfos = typeof(GraphAssetSaveProcessor).GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
             for (int i = 0; i < methodInfos.Length; i++)
             {
                 MethodInfo methodInfo = methodInfos[i];

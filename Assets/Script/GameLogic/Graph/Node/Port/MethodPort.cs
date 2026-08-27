@@ -12,7 +12,7 @@ namespace YBFramework.GameLogic.Graph
 
         public void InitializeFromData(MethodPortData data)
         {
-            m_PortID = data.PortID;
+            m_PortID = data.GetPortID();
             m_MethodInfo = data.GetMethodInfo();
         }
 

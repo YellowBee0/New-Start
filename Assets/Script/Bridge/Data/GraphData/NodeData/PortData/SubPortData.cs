@@ -5,7 +5,7 @@ using YBFramework.GameLogic.Graph;
 using UnityEditor.Experimental.GraphView;
 #endif
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class SubPortData : BasePortData

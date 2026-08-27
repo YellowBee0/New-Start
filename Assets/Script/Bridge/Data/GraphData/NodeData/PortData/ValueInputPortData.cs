@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 #endif
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class ValueInputPortData<TValue> : BasePortData
@@ -62,7 +62,7 @@ namespace YBFramework.Bridge.NewData
         {
             return m_Value;
         }
-        
+
         public override BaseNodeData GetNodeData()
         {
             return m_NodeData;

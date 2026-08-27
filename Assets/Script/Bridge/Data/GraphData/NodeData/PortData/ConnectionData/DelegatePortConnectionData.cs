@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class DelegatePortConnectionData : PortConnectionData

@@ -5,7 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class MethodPortData : BasePortData
@@ -15,6 +15,11 @@ namespace YBFramework.Bridge.NewData
         [SerializeField] private int m_PortID;
 
         [SerializeField] private bool m_HasSubPortData;
+
+        public MethodInfo GetMethodInfo()
+        {
+            return m_MethodInfo;
+        }
 
         public void SetMethodInfo(MethodInfo methodInfo)
         {

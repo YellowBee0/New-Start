@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEditor;
 using YBFramework.Bridge.Data;
-using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph
 {
@@ -45,12 +44,14 @@ namespace YBFramework.Editor.Graph
         {
             m_NodeData = nodeData;
             m_NodeView = new NodeView(nodeData);
-            foreach (BasePortData portData in (IValueIterator<BasePortData>)nodeData)
+            int portDataCount = nodeData.GetPortsDataCount();
+            for (int i = 0; i < portDataCount; i++)
             {
+                BasePortData portData = nodeData.PortDataOfIndex(i);
                 BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(portData.GetType());
                 if (portPresenter != null)
                 {
-                    portPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFiledName()));
+                    portPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFieldName()));
                     AddPortPresenter(portPresenter);
                 }
             }

@@ -11,9 +11,17 @@ namespace YBFramework.Editor.Graph
     {
         private PropertyField m_ValueField;
 
+        private BasePortData m_PortData;
+
+        private PortView m_PortView;
+
+        private VisualElement m_PortContentView;
+
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
-            base.Initialize(portData, portSerializedProperty);
+            m_PortData = portData;
+            m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
+            m_PortContentView = m_PortView;
             SerializedProperty valueProperty = portSerializedProperty.FindPropertyRelative("Value");
             if (valueProperty != null)
             {
@@ -27,6 +35,21 @@ namespace YBFramework.Editor.Graph
                 portContentView.Add(m_ValueField);
                 m_PortContentView = portContentView;
             }
+        }
+
+        public override BasePortData GetPortData()
+        {
+            return m_PortData;
+        }
+
+        public override PortView GetPortView()
+        {
+            return m_PortView;
+        }
+
+        public override VisualElement GetPortContentView()
+        {
+            return m_PortContentView;
         }
 
         public override void OnRelease()

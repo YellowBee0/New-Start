@@ -7,7 +7,7 @@ using YBFramework.Bridge.Data;
 namespace YBFramework.Editor.Graph
 {
     //TODO:基类改成abstract，然后用一个CommonPortPresenter实现现在的内容，不在保存BasePortData、PortView和PortContentView字段，而是使用三个抽象函数，具体实现子类去做
-    public class BasePortPresenter
+    public abstract class BasePortPresenter
     {
         private static readonly Dictionary<Type, Stack<BasePortPresenter>> s_PortPresenters = new();
 
@@ -35,33 +35,13 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        protected BasePortData m_PortData;
+        public abstract void Initialize(BasePortData portData, SerializedProperty portSerializedProperty);
 
-        protected PortView m_PortView;
+        public abstract BasePortData GetPortData();
 
-        protected VisualElement m_PortContentView;
+        public abstract PortView GetPortView();
 
-        public virtual void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
-        {
-            m_PortData = portData;
-            m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
-            m_PortContentView = m_PortView;
-        }
-
-        public BasePortData GetPortData()
-        {
-            return m_PortData;
-        }
-
-        public PortView GetPortView()
-        {
-            return m_PortView;
-        }
-
-        public VisualElement GetPortContentView()
-        {
-            return m_PortContentView;
-        }
+        public abstract VisualElement GetPortContentView();
 
         public virtual void OnRelease()
         {

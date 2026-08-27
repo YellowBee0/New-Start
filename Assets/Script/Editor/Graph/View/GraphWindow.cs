@@ -11,6 +11,7 @@ namespace YBFramework.Editor.Graph
     public sealed class GraphWindow : EditorWindow
     {
         #region single instance
+
         private static GraphWindow s_Instance;
 
         [MenuItem("Window/Graph")]
@@ -30,10 +31,11 @@ namespace YBFramework.Editor.Graph
         {
             return s_Instance;
         }
+
         #endregion
 
         private static readonly List<string> s_GraphAssetPaths = new();
-        
+
         private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
 
         private readonly List<string> m_FilteredGraphAssetNames = new();

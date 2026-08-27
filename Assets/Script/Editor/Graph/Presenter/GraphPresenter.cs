@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.Bridge.Data;
-using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph.Presenter
 {
@@ -52,7 +51,7 @@ namespace YBFramework.Editor.Graph.Presenter
                 BaseNodePresenter nodePresenter = BaseNodePresenter.AllocateNodePresenter(nodeData.GetType());
                 if (nodePresenter != null)
                 {
-                    nodeData.Initialize();
+                    nodeData.InitializePortData();
                     nodePresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
                     AddNodePresenter(nodePresenter);
                 }
@@ -68,18 +67,21 @@ namespace YBFramework.Editor.Graph.Presenter
                 for (int j = 0; j < fromPortPresenters.Count; j++)
                 {
                     BasePortPresenter fromPortPresenter = fromPortPresenters[j];
-                    foreach (PortConnectionData portConnectionData in (IValueIterator<PortConnectionData>)fromPortPresenter.GetPortData())
+                    BasePortData fromPortData = fromPortPresenter.GetPortData();
+                    int portConnectionDataCount = fromPortData.GetPortConnectionsDataCount();
+                    for (int k = 0; k < portConnectionDataCount; k++)
                     {
-                        for (int k = 0; k < m_NodePresenters.Count; k++)
+                        PortConnectionData portConnectionData = fromPortData.PortConnectionDataOfIndex(k);
+                        for (int l = 0; l < m_NodePresenters.Count; l++)
                         {
-                            BaseNodePresenter toNodePresenter = m_NodePresenters[k];
-                            if (toNodePresenter.GetNodeData().NodeID == portConnectionData.NodeID)
+                            BaseNodePresenter toNodePresenter = m_NodePresenters[l];
+                            if (toNodePresenter.GetNodeData().GetNodeID() == portConnectionData.NodeID)
                             {
                                 IReadOnlyList<BasePortPresenter> toPortPresenters = toNodePresenter.GetPortPresenters();
-                                for (int l = 0; l < toPortPresenters.Count; l++)
+                                for (int m = 0; m < toPortPresenters.Count; m++)
                                 {
-                                    BasePortPresenter toPortPresenter = toPortPresenters[l];
-                                    if (toPortPresenter.GetPortData().PortID == portConnectionData.PortID)
+                                    BasePortPresenter toPortPresenter = toPortPresenters[m];
+                                    if (toPortPresenter.GetPortData().GetPortID() == portConnectionData.PortID)
                                     {
                                         Edge edge = fromPortPresenter.GetPortView().ConnectTo(toPortPresenter.GetPortView());
                                         m_GraphView.AddElement(edge);

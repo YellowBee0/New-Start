@@ -1,6 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using YBFramework.Bridge.NewData;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.Bridge.Editor
 {
@@ -63,7 +63,7 @@ namespace YBFramework.Bridge.Editor
             {
                 return m_ConnectionsChangeData;
             }
-            
+
             public void TryAddConnectionChangeData(SubPortDataBridge portData, int subNodeID, int subPortID, bool isConnect)
             {
                 for (int i = 0; i < m_ConnectionsChangeData.Count; i++)
@@ -98,10 +98,9 @@ namespace YBFramework.Bridge.Editor
         {
             return s_SubGraphConnectionsChangeData;
         }
-        
+
         public static void AddConnectionChangeData(GraphAsset graphAsset, SubPortDataBridge portData, int subNodeID, int subPortID, bool isConnect)
         {
-
             int index = -1;
             for (int i = 0; i < s_SubGraphConnectionsChangeData.Count; i++)
             {

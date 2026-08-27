@@ -19,7 +19,7 @@ namespace YBFramework.Editor.Graph
         public NodeView(BaseNodeData nodeData)
         {
             BindNodeData = nodeData;
-            title = nodeData.Name;
+            title = nodeData.NodeName;
             SetPosition(new Rect(nodeData.Position, Vector2.one));
         }
 
@@ -58,7 +58,7 @@ namespace YBFramework.Editor.Graph
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {
-                if (m_PortViews[i].BindPortData.PortID == portID)
+                if (m_PortViews[i].BindPortData.GetPortID() == portID)
                 {
                     return m_PortViews[i];
                 }

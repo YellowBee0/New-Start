@@ -4,11 +4,15 @@ using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using System.Buffers;
+using YBFramework.Bridge.Editor;
 #endif
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
+#if UNITY_EDITOR
+    [NodeMenu("子图节点", GraphType.Everything)]
+#endif
     public sealed class SubNodeData : BaseNodeData
     {
         [SerializeField] private GraphAsset m_SubGraphAsset;

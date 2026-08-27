@@ -1,4 +1,5 @@
-﻿using YBFramework.Common;
+﻿using System;
+using YBFramework.Common;
 
 namespace YBFramework.GameLogic.Graph
 {
@@ -24,9 +25,10 @@ namespace YBFramework.GameLogic.Graph
         }
 
         public abstract bool Iterator(int index, out BasePort current);
+
         public ValueEnumerator<BasePort> GetEnumerator()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public abstract void OnStart();

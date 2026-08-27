@@ -5,7 +5,7 @@ using UnityEngine;
 using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     public sealed class SubPortDataBridge : BasePortData
@@ -30,7 +30,7 @@ namespace YBFramework.Bridge.NewData
         {
             return m_PortConnectionData;
         }
-        
+
         public BasePortData GetSubPortData()
         {
             return m_SubPortData;

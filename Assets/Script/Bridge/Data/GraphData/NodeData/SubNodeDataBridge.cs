@@ -6,17 +6,19 @@ using UnityEngine;
 using YBFramework.Bridge.Editor;
 using YBFramework.GameLogic.Graph;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     [Serializable]
     [NodeMenu("暴露端口给子图节点", GraphType.Everything)]
     [NodeExistCountLimit(2)]
     public sealed class SubNodeDataBridge : BaseNodeData
     {
+        private const string PORT_NAME = "暴露端口{0}";
+
         [SerializeField] private List<SubPortDataBridge> m_SubPortDataBridges = new();
 
         public bool IsInputPortValid;
-        
+
         public IReadOnlyList<SubPortDataBridge> GetSubPortDataBridges()
         {
             return m_SubPortDataBridges;
@@ -31,7 +33,35 @@ namespace YBFramework.Bridge.NewData
         {
             m_SubPortDataBridges.Remove(subPortDataBridge);
         }
-        
+
+        public void InitializeSubPortDataBridgePortView(SubPortDataBridge subPortDataBridge)
+        {
+            for (int i = 0; i < m_SubPortDataBridges.Count; i++)
+            {
+                if (m_SubPortDataBridges[i] == subPortDataBridge)
+                {
+                    Initialize(subPortDataBridge, i);
+                    break;
+                }
+            }
+        }
+
+        public void RefreshSubPortDataBridgePortName()
+        {
+            for (int i = 0; i < m_SubPortDataBridges.Count; i++)
+            {
+                m_SubPortDataBridges[i].SetPortName(string.Format(PORT_NAME, i));
+            }
+        }
+
+        private void Initialize(SubPortDataBridge subPortDataBridge, int index)
+        {
+            subPortDataBridge.SetFieldName($"{nameof(m_SubPortDataBridges)}.Array.data[{index}]");
+            subPortDataBridge.SetPortName(string.Format(PORT_NAME, index));
+            subPortDataBridge.SetDirection(IsInputPortValid ? Direction.Output : Direction.Input);
+            subPortDataBridge.SetPortColor(Color.green);
+        }
+
         public override int GetPortsDataCount()
         {
             return m_SubPortDataBridges.Count;
@@ -62,10 +92,7 @@ namespace YBFramework.Bridge.NewData
             for (int i = 0; i < m_SubPortDataBridges.Count; i++)
             {
                 SubPortDataBridge subPortDataBridge = m_SubPortDataBridges[i];
-                subPortDataBridge.SetFieldName($"{nameof(m_SubPortDataBridges)}.Array.data[{i}]");
-                subPortDataBridge.SetPortName($"暴露端口{i}");
-                subPortDataBridge.SetDirection(IsInputPortValid ? Direction.Output : Direction.Input);
-                subPortDataBridge.SetPortColor(Color.green);
+                Initialize(subPortDataBridge, i);
                 PortConnectionData subPortAddress = subPortDataBridge.GetSubPortAddress();
                 if (subPortAddress.NodeID > 0 && subPortAddress.PortID > 0)
                 {

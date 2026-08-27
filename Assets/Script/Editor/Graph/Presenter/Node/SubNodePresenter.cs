@@ -8,19 +8,19 @@ using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
 {
-    [RuntimeToEditor(typeof(ProxyNodeData))]
-    public sealed class ProxyNodePresenter : BaseNodePresenter
+    [RuntimeToEditor(typeof(SubNodeData))]
+    public sealed class SubNodePresenter : BaseNodePresenter
     {
         private ObjectField m_ProxyGraphAssetField;
 
         public override void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
             base.Initialize(nodeData, nodeSerializedProperty);
-            ProxyNodeData proxyNodeData = (ProxyNodeData)nodeData;
+            SubNodeData proxyNodeData = (SubNodeData)nodeData;
             m_ProxyGraphAssetField = new ObjectField
             {
                 allowSceneObjects = false,
-                value = proxyNodeData.GetProxyGraphAsset(),
+                value = proxyNodeData.GetSubGraphAsset(),
                 objectType = typeof(GraphAsset)
             };
             m_ProxyGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
@@ -29,14 +29,14 @@ namespace YBFramework.Editor.Graph
 
         private void OnProxyGraphAssetChanged(ChangeEvent<Object> evt)
         {
-            ProxyNodeData proxyNodeData = (ProxyNodeData)m_NodeData;
+            SubNodeData proxyNodeData = (SubNodeData)m_NodeData;
             if (evt.newValue is GraphAsset proxyGraphAsset)
             {
                 if ((proxyNodeData.GetGraphAsset().GetGraphType() & proxyGraphAsset.GetGraphType()) == proxyGraphAsset.GetGraphType())
                 {
                     //TODO:需要支持Undo
                     //修改数据
-                    proxyNodeData.SetProxyGraphAsset(proxyGraphAsset);
+                    proxyNodeData.SetSubGraphAsset(proxyGraphAsset);
                     //修改视图
                     //通过GraphWindow获取打开的GraphView可能和当前修改的Port的GraphView不是同一个
                     GraphPresenter graphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
@@ -59,7 +59,7 @@ namespace YBFramework.Editor.Graph
                         if (portPresenter != null)
                         {
                             SerializedProperty nodeSerializedProperty = graphPresenter.GetNodeSerializedProperty(m_NodeData);
-                            portPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFiledName()));
+                            portPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFieldName()));
                             AddPortPresenter(portPresenter);
                         }
                     }
@@ -72,7 +72,7 @@ namespace YBFramework.Editor.Graph
             {
                 Debug.LogError($"{evt.newValue} is not type of GraphAsset");
             }
-            m_ProxyGraphAssetField.SetValueWithoutNotify(proxyNodeData.GetProxyGraphAsset());
+            m_ProxyGraphAssetField.SetValueWithoutNotify(proxyNodeData.GetSubGraphAsset());
         }
     }
 }

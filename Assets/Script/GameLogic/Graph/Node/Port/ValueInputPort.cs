@@ -9,8 +9,8 @@ namespace YBFramework.GameLogic.Graph
 
         public void InitializeFromData(ValueInputPortData<TValue> data)
         {
-            m_PortID = data.PortID;
-            m_Value = data.Value;
+            m_PortID = data.GetPortID();
+            m_Value = data.GetValue();
         }
 
         public TValue Invoke()
@@ -27,7 +27,7 @@ namespace YBFramework.GameLogic.Graph
         {
             if (dataToMerge is ValueInputPortData<TValue> valueInputPortDataToMerge)
             {
-                m_Value = valueInputPortDataToMerge.Value;
+                m_Value = valueInputPortDataToMerge.GetValue();
             }
         }
     }

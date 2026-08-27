@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     public sealed class GraphSliceData
     {
@@ -20,7 +20,7 @@ namespace YBFramework.Bridge.NewData
         {
             return m_NodesSliceData.TryAdd(nodeData, nodeSliceData);
         }
-        
+
         public bool RemoveNodeSliceData(BaseNodeData nodeData)
         {
             return m_NodesSliceData.Remove(nodeData);

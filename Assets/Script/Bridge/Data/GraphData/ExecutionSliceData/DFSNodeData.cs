@@ -1,4 +1,4 @@
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     public readonly struct DFSNodeData
     {

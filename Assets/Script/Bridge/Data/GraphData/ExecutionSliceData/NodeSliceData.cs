@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace YBFramework.Bridge.NewData
+namespace YBFramework.Bridge.Data
 {
     public class NodeSliceData
     {

@@ -5,8 +5,8 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using YBFramework.Bridge.Data;
 using YBFramework.Bridge.Editor;
+using YBFramework.Bridge.Data;
 using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
@@ -14,6 +14,7 @@ namespace YBFramework.Editor.Graph
     public sealed class NodeSearchEntry : ScriptableObject, ISearchWindowProvider
     {
         #region Node search tree initialize
+
         private sealed class NodeMenuBranch : NodeMenuOption
         {
             private readonly List<NodeMenuOption> m_Options = new();
@@ -196,7 +197,9 @@ namespace YBFramework.Editor.Graph
             }
             return hasAddToResult;
         }
+
         #endregion
+
         private List<SearchTreeEntry> m_SearchTreeEntries;
 
         public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
@@ -233,7 +236,7 @@ namespace YBFramework.Editor.Graph
                             openedGraphPresenter.GetGraphAsset().AddNodeData(nodeData);
                             //创建节点时初始话节点名和位置
                             //存在持久化数据
-                            nodeData.Name = SearchTreeEntry.name;
+                            nodeData.NodeName = SearchTreeEntry.name;
                             nodeData.Position = graphView.contentViewContainer.WorldToLocal(worldPos);
                             //更新SO，保证能够拿到SerializedProperty
                             openedGraphPresenter.UpdateSO();

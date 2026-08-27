@@ -74,7 +74,7 @@ namespace YBFramework.Editor.Graph
         {
             for (int i = 0; i < m_NodeViews.Count; i++)
             {
-                if (m_NodeViews[i].BindNodeData.NodeID == nodeID)
+                if (m_NodeViews[i].BindNodeData.GetNodeID() == nodeID)
                 {
                     return m_NodeViews[i];
                 }

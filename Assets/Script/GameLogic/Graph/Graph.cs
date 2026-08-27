@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using YBFramework.Bridge.Data;
-using YBFramework.Common;
 
 namespace YBFramework.GameLogic.Graph
 {
@@ -13,7 +12,7 @@ namespace YBFramework.GameLogic.Graph
 
         public void InitializeFromGraphAsset(GraphAsset graphAsset)
         {
-            IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodesData();
+            /*IReadOnlyList<BaseNodeData> nodeData = graphAsset.GetNodesData();
             for (int i = 0; i < nodeData.Count; i++)
             {
                 BaseNode node = nodeData[i].CreateRuntimeInstance();
@@ -44,7 +43,7 @@ namespace YBFramework.GameLogic.Graph
                         }
                     }
                 }
-            }
+            }*/
         }
 
         public BaseNode GetNode(int nodeID)

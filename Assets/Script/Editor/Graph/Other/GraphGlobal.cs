@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
-using YBFramework.Bridge.NewData;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
