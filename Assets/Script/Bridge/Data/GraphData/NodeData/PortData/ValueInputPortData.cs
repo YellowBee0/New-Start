@@ -139,6 +139,11 @@ namespace YBFramework.Bridge.Data
             return portData;
         }
 
+        public override void RevertNonSerializedData(BasePortData subSourcePortData)
+        {
+            SetPortColor(subSourcePortData.GetPortColor());
+        }
+
         public override int GetOtherPortConnectionsDataCount()
         {
             return m_OtherPortConnectionsData.Count;

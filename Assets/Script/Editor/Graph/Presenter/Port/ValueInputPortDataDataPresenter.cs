@@ -7,7 +7,7 @@ using YBFramework.Bridge.Data;
 namespace YBFramework.Editor.Graph
 {
     [RuntimeToEditor(typeof(ValueInputPortData<>))]
-    public sealed class ValueInputPortPresenter : BasePortPresenter
+    public sealed class ValueInputPortDataDataPresenter : BasePortDataPresenter
     {
         private PropertyField m_ValueField;
 
@@ -30,7 +30,7 @@ namespace YBFramework.Editor.Graph
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
             m_PortData = portData;
-            m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
+            m_PortView = new PortView(this, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             m_PortContentView = m_PortView;
             SerializedProperty valueProperty = portSerializedProperty.FindPropertyRelative("m_Value");
             if (valueProperty != null)

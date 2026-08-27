@@ -5,7 +5,7 @@ using YBFramework.Bridge.Data;
 namespace YBFramework.Editor.Graph
 {
     [RuntimeToEditor(typeof(BasePortData))]
-    public sealed class CommonPortPresenter : BasePortPresenter
+    public sealed class CommonPortDataPresenter : BasePortDataPresenter
     {
         private BasePortData m_PortData;
 
@@ -16,7 +16,7 @@ namespace YBFramework.Editor.Graph
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
             m_PortData = portData;
-            m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
+            m_PortView = new PortView(this, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             m_PortContentView = m_PortView;
         }
 

@@ -58,7 +58,7 @@ namespace YBFramework.Editor.Graph
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {
-                if (m_PortViews[i].BindPortData.GetPortID() == portID)
+                if (m_PortViews[i].BindPortDataDataPresenter.GetPortData().GetPortID() == portID)
                 {
                     return m_PortViews[i];
                 }

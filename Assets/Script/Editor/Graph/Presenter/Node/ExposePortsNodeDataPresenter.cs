@@ -8,7 +8,7 @@ using YBFramework.Editor.Graph.Presenter;
 namespace YBFramework.Editor.Graph
 {
     [RuntimeToEditor(typeof(ExposePortsNodeData))]
-    public sealed class ExposePortsNodeDataDataPresenter : BaseNodeDataPresenter
+    public sealed class ExposePortsNodeDataPresenter : BaseNodeDataPresenter
     {
         private Toggle m_DirectionToggle;
 
@@ -54,11 +54,11 @@ namespace YBFramework.Editor.Graph
             exposePortsNodeData.InitializeExposePortDataView(exposePortData);
             m_NodeSerializedProperty.serializedObject.Update();
             //创建端口视图
-            BasePortPresenter portPresenter = BasePortPresenter.AllocatePortPresenter(typeof(ExposePortData));
-            if (portPresenter != null)
+            BasePortDataPresenter portDataPresenter = BasePortDataPresenter.AllocatePortPresenter(typeof(ExposePortData));
+            if (portDataPresenter != null)
             {
-                portPresenter.Initialize(exposePortData, m_NodeSerializedProperty.FindPropertyRelative(exposePortData.GetFieldName()));
-                AddPortPresenter(portPresenter);
+                portDataPresenter.Initialize(exposePortData, m_NodeSerializedProperty.FindPropertyRelative(exposePortData.GetFieldName()));
+                AddPortPresenter(portDataPresenter);
             }
             //刷新Node视图
             m_NodeView.RefreshPortContainerDisplay();
@@ -99,7 +99,7 @@ namespace YBFramework.Editor.Graph
             {
                 CustomGraphView.DisconnectAll(graphPresenter.GetGraphView(), m_PortPresenters[i].GetPortView());
                 m_NodeView.RemovePortContentView(m_PortPresenters[i].GetPortContentView(), m_PortPresenters[i].GetPortData().GetDirection());
-                BasePortPresenter.ReleasePortPresenter(m_PortPresenters[i]);
+                BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
             }
             m_PortPresenters.Clear();
         }

@@ -135,7 +135,8 @@ namespace YBFramework.Bridge.Data
 
         public override BasePortData CreateSubPortData()
         {
-            return new SubPortData(m_AsSubPortData.CreateSubPortData(), GetNodeData().GetNodeID(), GetPortID());
+            //子端口创建的不是自己的SubPortData实例，而是内部实际的端口类型
+            return m_AsSubPortData.CreateSubPortData();
         }
 
         public override void RevertNonSerializedData(BasePortData subSourcePortData)

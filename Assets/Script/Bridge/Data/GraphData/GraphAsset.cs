@@ -6,6 +6,7 @@ using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Bridge.Data
 {
+    //TODO:这个CreateAssetMenu需要删除，创建GraphAsset都是在编辑器中选择，而不是通过这个创建，然后给出一个初始化函数，需要new m_NodesData这个集合
     [CreateAssetMenu(menuName = "Data/GraphAsset", fileName = "NewGraphAsset")]
     public sealed class GraphAsset : ScriptableObject
     {
@@ -39,6 +40,7 @@ namespace YBFramework.Bridge.Data
         {
             if (!m_IsInitializedReference)
             {
+                m_NodesData ??= new List<BaseNodeData>();
                 for (int i = 0; i < m_NodesData.Count; i++)
                 {
                     BaseNodeData nodeData = m_NodesData[i];

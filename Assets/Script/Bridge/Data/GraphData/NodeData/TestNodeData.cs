@@ -46,10 +46,10 @@ namespace YBFramework.Bridge.Data
         public override void InitializeSerializedData()
         {
             m_InvokePortData = new ActionPortData();
-            m_InvokePortData.SetPortID(0);
+            m_InvokePortData.SetPortID(1);
             m_InvokePortData.InitializeSerializedData();
             m_IntInputPort = new ValueInputPortData<int>();
-            m_IntInputPort.SetPortID(1);
+            m_IntInputPort.SetPortID(2);
             m_IntInputPort.InitializeSerializedData();
         }
 

@@ -188,7 +188,6 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
-                    graphAsset.InitializeReference();
                     graphPresenter = GraphPresenter.AllocateGraphPresenter();
                     graphPresenter.Initialize(graphAsset);
                     m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);

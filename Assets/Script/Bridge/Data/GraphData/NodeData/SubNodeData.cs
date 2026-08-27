@@ -167,40 +167,75 @@ namespace YBFramework.Bridge.Data
             return null;
         }
 
-        public void SetSubGraphAsset(GraphAsset subGraphAsset)
+        private static bool CheckCircleReference(GraphAsset targetGraphAsset, GraphAsset CheckGraphAsset)
+        {
+            if (targetGraphAsset == null || CheckGraphAsset == null)
+            {
+                return false;
+            }
+            if (targetGraphAsset == CheckGraphAsset)
+            {
+                return true;
+            }
+            IReadOnlyList<BaseNodeData> nodesData = CheckGraphAsset.GetNodesData();
+            for (int i = 0; i < nodesData.Count; i++)
+            {
+                BaseNodeData nodeData = nodesData[i];
+                if (nodeData is SubNodeData subNodeData)
+                {
+                    if (CheckCircleReference(targetGraphAsset, subNodeData.m_SubGraphAsset))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool TrySetSubGraphAsset(GraphAsset subGraphAsset)
         {
             if (m_SubGraphAsset != subGraphAsset)
             {
-                for (int i = 0; i < m_SubPortsData.Count; i++)
+                if (!CheckCircleReference(m_GraphAsset, subGraphAsset))
                 {
-                    m_SubPortsData[i].DisconnectAll();
-                }
-                m_SubPortsData.Clear();
-                //确保蓝图引用初始化
-                subGraphAsset.InitializeReference();
-                ExposePortsNodeData[] exposePortsNodesData = InitializeExposePortsData(subGraphAsset);
-                for (int i = 0; i < exposePortsNodesData.Length; i++)
-                {
-                    ExposePortsNodeData exposePortsNodeData = exposePortsNodesData[i];
-                    if (exposePortsNodeData != null)
+                    for (int i = 0; i < m_SubPortsData.Count; i++)
                     {
-                        IReadOnlyList<ExposePortData> exposePortsData = exposePortsNodeData.GetExposePortsData();
-                        for (int j = 0; j < exposePortsData.Count; j++)
+                        m_SubPortsData[i].DisconnectAll();
+                    }
+                    m_SubPortsData.Clear();
+                    //确保蓝图引用初始化
+                    if (subGraphAsset != null)
+                    {
+                        subGraphAsset.InitializeReference();
+                        ExposePortsNodeData[] exposePortsNodesData = InitializeExposePortsData(subGraphAsset);
+                        for (int i = 0; i < exposePortsNodesData.Length; i++)
                         {
-                            ExposePortData exposePortData = exposePortsData[j];
-                            BasePortData asSubPortData = exposePortData.GetToExposePortData();
-                            if (asSubPortData != null)
+                            ExposePortsNodeData exposePortsNodeData = exposePortsNodesData[i];
+                            if (exposePortsNodeData != null)
                             {
-                                SubPortData subPortData = new(asSubPortData.CreateSubPortData(), exposePortData.GetToExposePortAddress().NodeID, exposePortData.GetToExposePortAddress().PortID);
-                                subPortData.SetPortID(++m_SourcePortID);
-                                subPortData.SetNodeData(this);
-                                m_SubPortsData.Add(subPortData);
+                                IReadOnlyList<ExposePortData> exposePortsData = exposePortsNodeData.GetExposePortsData();
+                                for (int j = 0; j < exposePortsData.Count; j++)
+                                {
+                                    ExposePortData exposePortData = exposePortsData[j];
+                                    BasePortData asSubPortData = exposePortData.GetToExposePortData();
+                                    if (asSubPortData != null)
+                                    {
+                                        SubPortData subPortData = new(asSubPortData.CreateSubPortData(), exposePortData.GetToExposePortAddress().NodeID, exposePortData.GetToExposePortAddress().PortID);
+                                        subPortData.SetPortID(++m_SourcePortID);
+                                        subPortData.SetNodeData(this);
+                                        m_SubPortsData.Add(subPortData);
+                                    }
+                                }
                             }
                         }
+                        ArrayPool<ExposePortsNodeData>.Shared.Return(exposePortsNodesData);
                     }
+                    m_SubGraphAsset = subGraphAsset;
+                    return true;
                 }
-                ArrayPool<ExposePortsNodeData>.Shared.Return(exposePortsNodesData);
+                Debug.LogError($"{subGraphAsset.name} makes a circle reference to {m_GraphAsset.name}");
             }
+            return false;
         }
 
         public void OnExposePortDataConnectionChanged(ExposePortData exposePortData, int asSubNodeID, int asSubPortID, bool isConnect)
@@ -222,7 +257,7 @@ namespace YBFramework.Bridge.Data
                 }
             }
         }
-        
+
         public void InitializeSubPortsData()
         {
             ExposePortsNodeData[] exposePortsData = InitializeExposePortsData(m_SubGraphAsset);

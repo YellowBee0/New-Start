@@ -2,26 +2,20 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
     public sealed class PortView : Port
     {
-        /// <summary>
-        /// PortView视图绑定的BasePortData。
-        /// 正常MVP架构是不允许数据Data和视图View之间有联系，但是为了用户操作视图时，能够快捷的获取到数据才这么做，不然只有去Presenter中一级一级查找非常耗时。
-        /// View中只能读取Data数据，不能写入。比如BasePortData的Connect、Disconnect就不能调用，只能在Presenter里调用
-        /// </summary>
-        public readonly BasePortData BindPortData;
+        public readonly BasePortDataPresenter BindPortDataDataPresenter;
 
         private Action<Port> m_OnConnect;
 
         private Action<Port> m_OnDisconnect;
 
-        public PortView(BasePortData portData, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
+        public PortView(BasePortDataPresenter bindPortDataDataPresenter, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
         {
-            BindPortData = portData;
+            BindPortDataDataPresenter = bindPortDataDataPresenter;
             portName = name;
             portColor = color;
             m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());

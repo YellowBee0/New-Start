@@ -8,17 +8,26 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class CustomGraphView : GraphView
     {
-        public static void Connect(GraphView graphView, Edge connection)
+        public static void Connect(GraphView graphView, PortView inputPortView, PortView outputPortView, Edge connection)
         {
-            connection.input.Connect(connection);
-            connection.output.Connect(connection);
+            inputPortView.BindPortDataDataPresenter.OnConnect(outputPortView.BindPortDataDataPresenter);
+            outputPortView.BindPortDataDataPresenter.OnConnect(inputPortView.BindPortDataDataPresenter);
+            inputPortView.Connect(connection);
+            outputPortView.Connect(connection);
             graphView.AddElement(connection);
         }
 
         public static void DisConnect(GraphView graphView, Edge connection)
         {
-            connection.input.Disconnect(connection);
-            connection.output.Disconnect(connection);
+            DisConnect(graphView, (PortView)connection.input, (PortView)connection.output, connection);
+        }
+
+        public static void DisConnect(GraphView graphView, PortView inputPortView, PortView outputPortView, Edge connection)
+        {
+            inputPortView.BindPortDataDataPresenter.OnDisconnect(outputPortView.BindPortDataDataPresenter);
+            outputPortView.BindPortDataDataPresenter.OnDisconnect(inputPortView.BindPortDataDataPresenter);
+            inputPortView.Disconnect(connection);
+            outputPortView.Disconnect(connection);
             graphView.RemoveElement(connection);
         }
 
