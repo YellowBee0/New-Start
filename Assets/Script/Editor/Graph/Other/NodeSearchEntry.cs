@@ -222,8 +222,8 @@ namespace YBFramework.Editor.Graph
                             return false;
                         }
                     }
-                    BaseNodePresenter nodePresenter = BaseNodePresenter.AllocateNodePresenter(nodeMetaData.nodeType);
-                    if (nodePresenter != null)
+                    BaseNodeDataPresenter nodeDataPresenter = BaseNodeDataPresenter.AllocateNodePresenter(nodeMetaData.nodeType);
+                    if (nodeDataPresenter != null)
                     {
                         if (Activator.CreateInstance(nodeMetaData.nodeType) is BaseNodeData nodeData)
                         {
@@ -241,8 +241,8 @@ namespace YBFramework.Editor.Graph
                             //更新SO，保证能够拿到SerializedProperty
                             openedGraphPresenter.UpdateSO();
                             //初始化节点视图
-                            nodePresenter.Initialize(nodeData, openedGraphPresenter.GetNodeSerializedProperty(nodeData));
-                            openedGraphPresenter.AddNodePresenter(nodePresenter);
+                            nodeDataPresenter.Initialize(nodeData, openedGraphPresenter.GetNodeSerializedProperty(nodeData));
+                            openedGraphPresenter.AddNodePresenter(nodeDataPresenter);
                             return true;
                         }
                     }

@@ -22,7 +22,7 @@ namespace YBFramework.Bridge.Editor
                     return connectionChangeData;
                 }
 
-                public static void Free(ConnectionChangeData connectionChangeData)
+                public static void Release(ConnectionChangeData connectionChangeData)
                 {
                     s_ConnectionChangeDataPool.Push(connectionChangeData);
                 }
@@ -45,11 +45,11 @@ namespace YBFramework.Bridge.Editor
                 return connectionChangeData;
             }
 
-            public static void Free(SubGraphConnectionChangeData connectionChangeData)
+            public static void Release(SubGraphConnectionChangeData connectionChangeData)
             {
                 for (int i = 0; i < connectionChangeData.m_ConnectionsChangeData.Count; i++)
                 {
-                    ConnectionChangeData.Free(connectionChangeData.m_ConnectionsChangeData[i]);
+                    ConnectionChangeData.Release(connectionChangeData.m_ConnectionsChangeData[i]);
                 }
                 connectionChangeData.m_ConnectionsChangeData.Clear();
                 s_Pool.Push(connectionChangeData);
@@ -73,7 +73,7 @@ namespace YBFramework.Bridge.Editor
                     {
                         if (connectionChangeData.IsConnect != isConnect)
                         {
-                            ConnectionChangeData.Free(connectionChangeData);
+                            ConnectionChangeData.Release(connectionChangeData);
                             m_ConnectionsChangeData.RemoveAt(i);
                         }
                         return;
@@ -140,7 +140,7 @@ namespace YBFramework.Bridge.Editor
         {
             for (int i = 0; i < s_SubGraphConnectionsChangeData.Count; i++)
             {
-                SubGraphConnectionChangeData.Free(s_SubGraphConnectionsChangeData[i]);
+                SubGraphConnectionChangeData.Release(s_SubGraphConnectionsChangeData[i]);
             }
             s_SubGraphConnectionsChangeData.Clear();
         }

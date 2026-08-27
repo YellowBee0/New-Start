@@ -77,7 +77,7 @@ namespace YBFramework.Bridge.Data
             {
                 subNodesData[i].CheckExecutionSliceEntry(subDFSGraphAsset);
             }
-            DFSGraphAsset.Free(subDFSGraphAsset);
+            DFSGraphAsset.Release(subDFSGraphAsset);
         }
 
         public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
@@ -113,7 +113,7 @@ namespace YBFramework.Bridge.Data
                         subDFSGraphAsset.SetParent(dfsGraphAsset);
                         //检查子蓝图中实际端口调用链，这一步会出现检查调用链需要返回到父蓝图，父蓝图又会
                         asSubNodeData.DFSExecutionFlow(subDFSGraphAsset, asSubPortData);
-                        DFSGraphAsset.Free(subDFSGraphAsset);
+                        DFSGraphAsset.Release(subDFSGraphAsset);
                     }
                 }
             }
@@ -176,6 +176,8 @@ namespace YBFramework.Bridge.Data
                     m_SubPortsData[i].DisconnectAll();
                 }
                 m_SubPortsData.Clear();
+                //确保蓝图引用初始化
+                subGraphAsset.InitializeReference();
                 ExposePortsNodeData[] exposePortsNodesData = InitializeExposePortsData(subGraphAsset);
                 for (int i = 0; i < exposePortsNodesData.Length; i++)
                 {
@@ -191,6 +193,7 @@ namespace YBFramework.Bridge.Data
                             {
                                 SubPortData subPortData = new(asSubPortData.CreateSubPortData(), exposePortData.GetToExposePortAddress().NodeID, exposePortData.GetToExposePortAddress().PortID);
                                 subPortData.SetPortID(++m_SourcePortID);
+                                subPortData.SetNodeData(this);
                                 m_SubPortsData.Add(subPortData);
                             }
                         }
@@ -206,6 +209,7 @@ namespace YBFramework.Bridge.Data
             {
                 SubPortData subPortData = new(exposePortData.GetToExposePortData().CreateSubPortData(), asSubNodeID, asSubPortID);
                 subPortData.SetPortID(++m_SourcePortID);
+                subPortData.SetNodeData(this);
                 m_SubPortsData.Add(subPortData);
             }
             else
@@ -218,8 +222,7 @@ namespace YBFramework.Bridge.Data
                 }
             }
         }
-
-        //TODO:在Presenter中设置了SubGraphAsset后调用
+        
         public void InitializeSubPortsData()
         {
             ExposePortsNodeData[] exposePortsData = InitializeExposePortsData(m_SubGraphAsset);

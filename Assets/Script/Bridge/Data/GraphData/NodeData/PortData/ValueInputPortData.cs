@@ -12,7 +12,7 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class ValueInputPortData<TValue> : BasePortData
     {
-        private TValue m_Value;
+        [SerializeField] private TValue m_Value;
 
         [SerializeField] private DelegatePortConnectionData m_DelegatePortConnectionData;
 

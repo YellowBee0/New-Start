@@ -19,15 +19,21 @@ namespace YBFramework.Bridge.Data
 
         [SerializeField] private int m_SourcePortID;
 
-        public bool IsInputPortValid;
+        [SerializeField] private bool m_IsInput;
 
         public IReadOnlyList<ExposePortData> GetExposePortsData()
         {
             return m_ExposePortsData;
         }
 
+        public bool GetIsInput()
+        {
+            return m_IsInput;
+        }
+
         public void AddExposePortData(ExposePortData exposePortData)
         {
+            exposePortData.SetNodeData(this);
             exposePortData.SetPortID(++m_SourcePortID);
             m_ExposePortsData.Add(exposePortData);
         }
@@ -35,6 +41,19 @@ namespace YBFramework.Bridge.Data
         public void RemoveExposePortData(ExposePortData exposePortData)
         {
             m_ExposePortsData.Remove(exposePortData);
+        }
+
+        public void ChangeDirection(bool isInput)
+        {
+            if (m_IsInput != isInput)
+            {
+                for (int i = 0; i < m_ExposePortsData.Count; i++)
+                {
+                    m_ExposePortsData[i].DisconnectAll();
+                }
+                m_ExposePortsData.Clear();
+                m_IsInput = isInput;
+            }
         }
 
         public void InitializeExposePortDataView(ExposePortData exposePortData)
@@ -61,7 +80,7 @@ namespace YBFramework.Bridge.Data
         {
             exposePortData.SetFieldName($"{nameof(m_ExposePortsData)}.Array.data[{index}]");
             exposePortData.SetPortName(string.Format(PORT_NAME, index));
-            exposePortData.SetDirection(IsInputPortValid ? Direction.Output : Direction.Input);
+            exposePortData.SetDirection(m_IsInput ? Direction.Output : Direction.Input);
             exposePortData.SetPortColor(Color.green);
         }
 

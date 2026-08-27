@@ -28,9 +28,9 @@ namespace YBFramework.Editor.Graph
 
         public static void ReleasePortPresenter(BasePortPresenter portPresenter)
         {
-            Type portPresenterType = portPresenter.GetType();
-            if (s_PortPresenters.TryGetValue(portPresenterType, out Stack<BasePortPresenter> portPresenters))
+            if (s_PortPresenters.TryGetValue(portPresenter.GetType(), out Stack<BasePortPresenter> portPresenters))
             {
+                portPresenter.OnRelease();
                 portPresenters.Push(portPresenter);
             }
         }
@@ -43,9 +43,8 @@ namespace YBFramework.Editor.Graph
 
         public abstract VisualElement GetPortContentView();
 
-        public virtual void OnRelease()
+        protected virtual void OnRelease()
         {
-            ReleasePortPresenter(this);
         }
     }
 }

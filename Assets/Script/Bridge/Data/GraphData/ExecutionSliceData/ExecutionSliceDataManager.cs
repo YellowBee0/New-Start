@@ -17,7 +17,7 @@ namespace YBFramework.Bridge.Data
                 {
                     nodesData[i].CheckExecutionSliceEntry(dfsGraphAsset);
                 }
-                DFSGraphAsset.Free(dfsGraphAsset);
+                DFSGraphAsset.Release(dfsGraphAsset);
                 m_GraphSliceData.Add(graphAsset, graphSliceData);
             }
             return graphSliceData;

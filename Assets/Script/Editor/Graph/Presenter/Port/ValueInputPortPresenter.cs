@@ -17,12 +17,22 @@ namespace YBFramework.Editor.Graph
 
         private VisualElement m_PortContentView;
 
+        private void OnConnectOther(Port other)
+        {
+            m_ValueField.enabledSelf = false;
+        }
+
+        private void OnDisconnectOther(Port other)
+        {
+            m_ValueField.enabledSelf = true;
+        }
+
         public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
         {
             m_PortData = portData;
             m_PortView = new PortView(portData, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             m_PortContentView = m_PortView;
-            SerializedProperty valueProperty = portSerializedProperty.FindPropertyRelative("Value");
+            SerializedProperty valueProperty = portSerializedProperty.FindPropertyRelative("m_Value");
             if (valueProperty != null)
             {
                 VisualElement portContentView = new();
@@ -52,21 +62,10 @@ namespace YBFramework.Editor.Graph
             return m_PortContentView;
         }
 
-        public override void OnRelease()
+        protected override void OnRelease()
         {
-            base.OnRelease();
             m_PortView.UnregisterOnConnectCallback(OnConnectOther);
             m_PortView.UnregisterOnDisconnectCallback(OnDisconnectOther);
-        }
-
-        private void OnConnectOther(Port other)
-        {
-            m_ValueField.enabledSelf = false;
-        }
-
-        private void OnDisconnectOther(Port other)
-        {
-            m_ValueField.enabledSelf = true;
         }
     }
 }

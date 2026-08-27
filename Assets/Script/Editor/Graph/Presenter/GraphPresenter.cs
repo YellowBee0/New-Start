@@ -17,6 +17,7 @@ namespace YBFramework.Editor.Graph.Presenter
 
         public static void ReleaseGraphPresenter(GraphPresenter graphPresenter)
         {
+            graphPresenter.OnRelease();
             s_GraphPresenters.Push(graphPresenter);
         }
 
@@ -30,7 +31,7 @@ namespace YBFramework.Editor.Graph.Presenter
 
         private CustomGraphView m_GraphView;
 
-        private readonly List<BaseNodePresenter> m_NodePresenters = new();
+        private readonly List<BaseNodeDataPresenter> m_NodePresenters = new();
 
         public void Initialize(GraphAsset graphAsset)
         {
@@ -48,11 +49,11 @@ namespace YBFramework.Editor.Graph.Presenter
             for (int i = 0; i < nodesData.Count; i++)
             {
                 BaseNodeData nodeData = nodesData[i];
-                BaseNodePresenter nodePresenter = BaseNodePresenter.AllocateNodePresenter(nodeData.GetType());
-                if (nodePresenter != null)
+                BaseNodeDataPresenter nodeDataPresenter = BaseNodeDataPresenter.AllocateNodePresenter(nodeData.GetType());
+                if (nodeDataPresenter != null)
                 {
-                    nodePresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
-                    AddNodePresenter(nodePresenter);
+                    nodeDataPresenter.Initialize(nodeData, m_NodeDataListProperty.GetArrayElementAtIndex(i));
+                    AddNodePresenter(nodeDataPresenter);
                 }
             }
 
@@ -61,8 +62,8 @@ namespace YBFramework.Editor.Graph.Presenter
             // 对此需要一个类或者集合用于保存这些意外删除的数据的连线，因为只能获取到连线数据，端口名、方向（运行时数据）都找不到了。
             for (int i = 0; i < m_NodePresenters.Count; i++)
             {
-                BaseNodePresenter fromNodePresenter = m_NodePresenters[i];
-                IReadOnlyList<BasePortPresenter> fromPortPresenters = fromNodePresenter.GetPortPresenters();
+                BaseNodeDataPresenter fromNodeDataPresenter = m_NodePresenters[i];
+                IReadOnlyList<BasePortPresenter> fromPortPresenters = fromNodeDataPresenter.GetPortPresenters();
                 for (int j = 0; j < fromPortPresenters.Count; j++)
                 {
                     BasePortPresenter fromPortPresenter = fromPortPresenters[j];
@@ -73,10 +74,10 @@ namespace YBFramework.Editor.Graph.Presenter
                         PortConnectionData portConnectionData = fromPortData.PortConnectionDataOfIndex(k);
                         for (int l = 0; l < m_NodePresenters.Count; l++)
                         {
-                            BaseNodePresenter toNodePresenter = m_NodePresenters[l];
-                            if (toNodePresenter.GetNodeData().GetNodeID() == portConnectionData.NodeID)
+                            BaseNodeDataPresenter toNodeDataPresenter = m_NodePresenters[l];
+                            if (toNodeDataPresenter.GetNodeData().GetNodeID() == portConnectionData.NodeID)
                             {
-                                IReadOnlyList<BasePortPresenter> toPortPresenters = toNodePresenter.GetPortPresenters();
+                                IReadOnlyList<BasePortPresenter> toPortPresenters = toNodeDataPresenter.GetPortPresenters();
                                 for (int m = 0; m < toPortPresenters.Count; m++)
                                 {
                                     BasePortPresenter toPortPresenter = toPortPresenters[m];
@@ -105,7 +106,7 @@ namespace YBFramework.Editor.Graph.Presenter
             return m_GraphView;
         }
 
-        public IReadOnlyList<BaseNodePresenter> GetNodePresenters()
+        public IReadOnlyList<BaseNodeDataPresenter> GetNodePresenters()
         {
             return m_NodePresenters;
         }
@@ -123,16 +124,16 @@ namespace YBFramework.Editor.Graph.Presenter
             return null;
         }
 
-        public void AddNodePresenter(BaseNodePresenter nodePresenter)
+        public void AddNodePresenter(BaseNodeDataPresenter nodeDataPresenter)
         {
-            m_GraphView.AddNodeView(nodePresenter.GetNodeView());
-            m_NodePresenters.Add(nodePresenter);
+            m_GraphView.AddNodeView(nodeDataPresenter.GetNodeView());
+            m_NodePresenters.Add(nodeDataPresenter);
         }
 
-        public void RemoveNodePresenter(BaseNodePresenter nodePresenter)
+        public void RemoveNodePresenter(BaseNodeDataPresenter nodeDataPresenter)
         {
-            m_GraphView.RemoveNodeView(nodePresenter.GetNodeView());
-            m_NodePresenters.Remove(nodePresenter);
+            m_GraphView.RemoveNodeView(nodeDataPresenter.GetNodeView());
+            m_NodePresenters.Remove(nodeDataPresenter);
         }
 
         public void UpdateSO()
@@ -141,12 +142,11 @@ namespace YBFramework.Editor.Graph.Presenter
         }
 
         //TODO:在外边调用，把OnRelease里的内容搬到外面去
-        public void OnRelease()
+        private void OnRelease()
         {
-            ReleaseGraphPresenter(this);
             for (int i = 0; i < m_NodePresenters.Count; i++)
             {
-                m_NodePresenters[i].OnRelease();
+                BaseNodeDataPresenter.ReleaseNodePresenter(m_NodePresenters[i]);
             }
         }
 

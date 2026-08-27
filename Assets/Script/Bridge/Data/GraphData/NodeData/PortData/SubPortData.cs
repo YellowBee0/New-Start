@@ -103,6 +103,12 @@ namespace YBFramework.Bridge.Data
             return m_AsSubPortData.GetPortColor();
         }
 
+        public override void SetFieldName(string fieldName)
+        {
+            base.SetFieldName(fieldName);
+            m_AsSubPortData.SetFieldName(nameof(m_AsSubPortData));
+        }
+
         public override void SetPortName(string portName)
         {
             m_AsSubPortData.SetPortName(portName);
@@ -134,8 +140,7 @@ namespace YBFramework.Bridge.Data
 
         public override void RevertNonSerializedData(BasePortData subSourcePortData)
         {
-            SubPortData subPortData = (SubPortData)subSourcePortData;
-            m_AsSubPortData.RevertNonSerializedData(subPortData);
+            m_AsSubPortData.RevertNonSerializedData(subSourcePortData);
         }
 
         public override int GetOtherPortConnectionsDataCount()

@@ -72,6 +72,11 @@ namespace YBFramework.Bridge.Data
             }
         }
 
+        public void OnDisable()
+        {
+            m_IsInitializePortData = false;
+        } 
+        
         public abstract void InitializeSerializedData();
 
         protected abstract void OnInitializePortData();

@@ -14,7 +14,7 @@ namespace YBFramework.Bridge.Data
             return dfsGraphAsset;
         }
 
-        public static void Free(DFSGraphAsset dfsGraphAsset)
+        public static void Release(DFSGraphAsset dfsGraphAsset)
         {
             dfsGraphAsset.m_GraphAsset = null;
             dfsGraphAsset.m_GraphSliceData = null;

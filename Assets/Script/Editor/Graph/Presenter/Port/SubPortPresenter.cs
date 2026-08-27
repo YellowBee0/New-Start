@@ -36,11 +36,5 @@ namespace YBFramework.Editor.Graph
         {
             return m_InternalPortPresenter.GetPortContentView();
         }
-
-        public override void OnRelease()
-        {
-            base.OnRelease();
-            ReleasePortPresenter(m_InternalPortPresenter);
-        }
     }
 }

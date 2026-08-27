@@ -162,7 +162,7 @@ namespace YBFramework.Bridge.Data
         public void DisconnectAll()
         {
             int count = GetPortConnectionsDataCount();
-            for (int i = count; i >= 0; i--)
+            for (int i = count - 1; i >= 0; i--)
             {
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
                 if (portConnectionData == null || portConnectionData.NodeID == 0 || portConnectionData.PortID == 0)
@@ -174,7 +174,7 @@ namespace YBFramework.Bridge.Data
                 Disconnect(portData);
             }
             count = GetOtherPortConnectionsDataCount();
-            for (int i = count; i >= 0; i--)
+            for (int i = count - 1; i >= 0; i--)
             {
                 PortConnectionData portConnectionData = OtherPortConnectDataOfIndex(i);
                 if (portConnectionData != null)

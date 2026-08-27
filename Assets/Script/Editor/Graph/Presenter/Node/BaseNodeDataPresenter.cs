@@ -6,31 +6,31 @@ using YBFramework.Bridge.Data;
 namespace YBFramework.Editor.Graph
 {
     [RuntimeToEditor(typeof(BaseNodeData))]
-    public class BaseNodePresenter
+    public class BaseNodeDataPresenter
     {
-        private static readonly Dictionary<Type, Stack<BaseNodePresenter>> s_NodePresenters = new();
+        private static readonly Dictionary<Type, Stack<BaseNodeDataPresenter>> s_NodePresenters = new();
 
-        public static BaseNodePresenter AllocateNodePresenter(Type nodeDataType)
+        public static BaseNodeDataPresenter AllocateNodePresenter(Type nodeDataType)
         {
             Type nodePresenterType = RuntimeToEditorMap.GetInstance().GetDrawerType(nodeDataType);
             if (nodePresenterType == null)
             {
                 return null;
             }
-            if (!s_NodePresenters.TryGetValue(nodePresenterType, out Stack<BaseNodePresenter> nodePresenters))
+            if (!s_NodePresenters.TryGetValue(nodePresenterType, out Stack<BaseNodeDataPresenter> nodePresenters))
             {
-                nodePresenters = new Stack<BaseNodePresenter>();
+                nodePresenters = new Stack<BaseNodeDataPresenter>();
                 s_NodePresenters.Add(nodePresenterType, nodePresenters);
             }
-            return nodePresenters.Count > 0 ? nodePresenters.Pop() : Activator.CreateInstance(nodePresenterType) as BaseNodePresenter;
+            return nodePresenters.Count > 0 ? nodePresenters.Pop() : Activator.CreateInstance(nodePresenterType) as BaseNodeDataPresenter;
         }
 
-        public static void ReleaseNodePresenter(BaseNodePresenter nodePresenter)
+        public static void ReleaseNodePresenter(BaseNodeDataPresenter nodeDataPresenter)
         {
-            Type nodePresenterType = nodePresenter.GetType();
-            if (s_NodePresenters.TryGetValue(nodePresenterType, out Stack<BaseNodePresenter> nodePresenters))
+            if (s_NodePresenters.TryGetValue(nodeDataPresenter.GetType(), out Stack<BaseNodeDataPresenter> nodePresenters))
             {
-                nodePresenters.Push(nodePresenter);
+                nodeDataPresenter.OnRelease();
+                nodePresenters.Push(nodeDataPresenter);
             }
         }
 
@@ -44,7 +44,7 @@ namespace YBFramework.Editor.Graph
         {
             m_NodeData = nodeData;
             m_NodeView = new NodeView(nodeData);
-            nodeData.InitializeSerializedData();
+            nodeData.InitializePortData();
             int portDataCount = nodeData.GetPortsDataCount();
             for (int i = 0; i < portDataCount; i++)
             {
@@ -88,12 +88,11 @@ namespace YBFramework.Editor.Graph
             m_PortPresenters.Add(portPresenter);
         }
 
-        public void OnRelease()
+        private void OnRelease()
         {
-            ReleaseNodePresenter(this);
             for (int i = 0; i < m_PortPresenters.Count; i++)
             {
-                m_PortPresenters[i].OnRelease();
+                BasePortPresenter.ReleasePortPresenter(m_PortPresenters[i]);
             }
             m_PortPresenters.Clear();
         }

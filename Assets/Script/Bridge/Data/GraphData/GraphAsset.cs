@@ -95,6 +95,15 @@ namespace YBFramework.Bridge.Data
         {
             m_NodesData.Remove(nodeData);
         }
+
+        private void OnDisable()
+        {
+            m_IsInitializedReference = false;
+            for (int i = 0; i < m_NodesData.Count; i++)
+            {
+                m_NodesData[i].OnDisable();
+            }
+        }
 #endif
     }
 }
