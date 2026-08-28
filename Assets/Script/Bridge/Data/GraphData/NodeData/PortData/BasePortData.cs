@@ -179,7 +179,7 @@ namespace YBFramework.Bridge.Data
                 PortConnectionData portConnectionData = OtherPortConnectDataOfIndex(i);
                 if (portConnectionData != null)
                 {
-                    BaseNodeData nodeData = GetNodeData().GetGraphAsset().FindNodeData(portConnectionData.PortID);
+                    BaseNodeData nodeData = GetNodeData().GetGraphAsset().FindNodeData(portConnectionData.NodeID);
                     BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
                     portData.Disconnect(this);
                 }

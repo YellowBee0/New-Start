@@ -125,13 +125,14 @@ namespace YBFramework.Bridge.Data
                         if (toExposePortData != null)
                         {
                             //确保子蓝图中的子节点初始化
-                            toExposeNodeData.InitializeSerializedData();
+                            toExposeNodeData.InitializePortData();
                         }
                         exposePortData.SetToExposePortData(toExposePortData);
                     }
                     if (exposePortData.GetToExposePortData() == null)
                     {
-                        Debug.LogError($"Port id:{exposePortData.GetPortID()} in node id:{GetNodeID()} connected port id:{exposePortAddress.PortID} in node id:{exposePortAddress.NodeID} isn't exist");
+                        Debug.LogError(
+                            $"Expose port id:{exposePortData.GetPortID()} in node id:{GetNodeID()} saved port id:{exposePortAddress.PortID} in node id:{exposePortAddress.NodeID} isn't exist");
                     }
                 }
             }

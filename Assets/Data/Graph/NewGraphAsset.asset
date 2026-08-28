@@ -13,21 +13,21 @@ MonoBehaviour:
   m_Name: NewGraphAsset
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
   m_NodesData:
-  - rid: 6754395112754905202
-  - rid: 6754395112754905203
-  - rid: 6754395112754905204
-  - rid: 6754395112754905218
+  - rid: 7924257905441505388
+  - rid: 7924257905441505389
+  - rid: 7924257905441505390
+  - rid: 7924257905441505402
   GraphType: -1
-  SourceNodeID: 6
+  SourceNodeID: 4
   references:
     version: 2
     RefIds:
-    - rid: 6754395112754905202
+    - rid: 7924257905441505388
       type: {class: TestNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
         m_NodeID: 1
         NodeName: "\u6D4B\u8BD5(Everything)"
-        Position: {x: 225.59998, y: 172.80003}
+        Position: {x: 375.84903, y: 225.50943}
         m_InvokePortData:
           m_PortConnectionsData: []
           m_PortID: 1
@@ -36,55 +36,7 @@ MonoBehaviour:
           - NodeID: 3
             PortID: 1
         m_IntInputPort:
-          m_Value: 0
-          m_DelegatePortConnectionData:
-            NodeID: 0
-            PortID: 0
-            IsExplicitCast: 0
-          m_PortID: 2
-          m_HasSubPortData: 0
-          m_OtherPortConnectionsData: []
-    - rid: 6754395112754905203
-      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
-      data:
-        m_NodeID: 2
-        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
-        Position: {x: -71.2, y: 172.79999}
-        m_ExposePortsData:
-        - ExposePortDisplayName: "int\u8F93\u5165"
-          m_PortID: 1
-          m_PortConnectionData:
-            NodeID: 6
-            PortID: 2
-        m_SourcePortID: 1
-        m_IsInput: 1
-    - rid: 6754395112754905204
-      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
-      data:
-        m_NodeID: 3
-        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
-        Position: {x: 456, y: 172.79999}
-        m_ExposePortsData:
-        - ExposePortDisplayName: "\u8C03\u7528\u8F93\u51FA"
-          m_PortID: 1
-          m_PortConnectionData:
-            NodeID: 1
-            PortID: 1
-        m_SourcePortID: 1
-        m_IsInput: 0
-    - rid: 6754395112754905218
-      type: {class: TestNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
-      data:
-        m_NodeID: 6
-        NodeName: "\u6D4B\u8BD5(Everything)"
-        Position: {x: 225.60002, y: 332}
-        m_InvokePortData:
-          m_PortConnectionsData: []
-          m_PortID: 1
-          m_HasSubPortData: 0
-          m_OtherPortConnectionsData: []
-        m_IntInputPort:
-          m_Value: 0
+          m_Value: 47
           m_DelegatePortConnectionData:
             NodeID: 0
             PortID: 0
@@ -94,3 +46,51 @@ MonoBehaviour:
           m_OtherPortConnectionsData:
           - NodeID: 2
             PortID: 1
+    - rid: 7924257905441505389
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 2
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 68.83017, y: 232.75473}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 1
+            PortID: 2
+        m_SourcePortID: 1
+        m_IsInput: 1
+    - rid: 7924257905441505390
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 3
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 598.64136, y: 232.75473}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 1
+            PortID: 1
+        m_SourcePortID: 1
+        m_IsInput: 0
+    - rid: 7924257905441505402
+      type: {class: TestNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 4
+        NodeName: "\u6D4B\u8BD5(Everything)"
+        Position: {x: 386.717, y: 384.90567}
+        m_InvokePortData:
+          m_PortConnectionsData: []
+          m_PortID: 1
+          m_HasSubPortData: 0
+          m_OtherPortConnectionsData: []
+        m_IntInputPort:
+          m_Value: 0
+          m_DelegatePortConnectionData:
+            NodeID: 0
+            PortID: 0
+            IsExplicitCast: 0
+          m_PortID: 2
+          m_HasSubPortData: 0
+          m_OtherPortConnectionsData: []

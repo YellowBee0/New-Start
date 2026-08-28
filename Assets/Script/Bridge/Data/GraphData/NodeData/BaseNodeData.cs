@@ -46,7 +46,7 @@ namespace YBFramework.Bridge.Data
 
         protected GraphAsset m_GraphAsset;
 
-        private bool m_IsInitializePortData;
+        protected bool m_IsInitializePortData;
 
         public GraphAsset GetGraphAsset()
         {
@@ -72,11 +72,11 @@ namespace YBFramework.Bridge.Data
             }
         }
 
-        public void OnDisable()
+        public void ResetInitializeState()
         {
             m_IsInitializePortData = false;
-        } 
-        
+        }
+
         public abstract void InitializeSerializedData();
 
         protected abstract void OnInitializePortData();

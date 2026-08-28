@@ -34,24 +34,13 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        public abstract void Initialize(BasePortData portData, SerializedProperty portSerializedProperty);
+        protected BaseNodeDataPresenter m_NodeDataPresenter;
 
-        /// <summary>
-        /// 在连接两个端口时调用。原本存在连接，打开蓝图重建连接不会调用这个函数
-        /// </summary>
-        /// <param name="other">连接的其他port data presenter</param>
-        public virtual void OnConnect(BasePortDataPresenter other)
+        public virtual void Initialize(BaseNodeDataPresenter nodeDataPresenter, BasePortData portData, SerializedProperty portSerializedProperty)
         {
+            m_NodeDataPresenter = nodeDataPresenter;
         }
 
-        /// <summary>
-        /// 在断开两个端口连接时调用。
-        /// </summary>
-        /// <param name="other">断开连接的其他port data presenter</param>
-        public virtual void OnDisconnect(BasePortDataPresenter other)
-        {
-        }
-        
         public abstract BasePortData GetPortData();
 
         public abstract PortView GetPortView();

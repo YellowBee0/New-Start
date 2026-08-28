@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
 {
@@ -14,10 +13,10 @@ namespace YBFramework.Editor.Graph
 
         private SerializedProperty m_NodeSerializedProperty;
 
-        public override void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
+        public override void Initialize(GraphAssetPresenter graphAssetPresenter, BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
             m_NodeSerializedProperty = nodeSerializedProperty;
-            base.Initialize(nodeData, nodeSerializedProperty);
+            base.Initialize(graphAssetPresenter, nodeData, nodeSerializedProperty);
             VisualElement buttonContainer = new()
             {
                 style =
@@ -40,7 +39,7 @@ namespace YBFramework.Editor.Graph
             {
                 value = exposePortsNodeData.GetIsInput()
             };
-            m_DirectionToggle.RegisterValueChangedCallback(OnIsProxyInputChanged);
+            m_DirectionToggle.RegisterValueChangedCallback(OnDirectionChanged);
             m_NodeView.contentContainer.Add(m_DirectionToggle);
             m_NodeView.contentContainer.Add(buttonContainer);
         }
@@ -57,8 +56,8 @@ namespace YBFramework.Editor.Graph
             BasePortDataPresenter portDataPresenter = BasePortDataPresenter.AllocatePortPresenter(typeof(ExposePortData));
             if (portDataPresenter != null)
             {
-                portDataPresenter.Initialize(exposePortData, m_NodeSerializedProperty.FindPropertyRelative(exposePortData.GetFieldName()));
-                AddPortPresenter(portDataPresenter);
+                portDataPresenter.Initialize(this, exposePortData, m_NodeSerializedProperty.FindPropertyRelative(exposePortData.GetFieldName()));
+                AddPortDataPresenter(portDataPresenter);
             }
             //刷新Node视图
             m_NodeView.RefreshPortContainerDisplay();
@@ -77,7 +76,7 @@ namespace YBFramework.Editor.Graph
             */
         }
 
-        private void OnIsProxyInputChanged(ChangeEvent<bool> evt)
+        private void OnDirectionChanged(ChangeEvent<bool> evt)
         {
             ExposePortsNodeData exposePortsNodeData = (ExposePortsNodeData)m_NodeData;
             IReadOnlyList<BaseNodeData> nodesData = exposePortsNodeData.GetGraphAsset().GetNodesData();
@@ -94,11 +93,9 @@ namespace YBFramework.Editor.Graph
                 }
             }
             exposePortsNodeData.ChangeDirection(evt.newValue);
-            GraphPresenter graphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
+            m_NodeView.ClearPortContentViews();
             for (int i = 0; i < m_PortPresenters.Count; i++)
             {
-                CustomGraphView.DisconnectAll(graphPresenter.GetGraphView(), m_PortPresenters[i].GetPortView());
-                m_NodeView.RemovePortContentView(m_PortPresenters[i].GetPortContentView(), m_PortPresenters[i].GetPortData().GetDirection());
                 BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
             }
             m_PortPresenters.Clear();

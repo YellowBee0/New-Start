@@ -87,6 +87,12 @@ namespace YBFramework.Editor.Graph
                                     subNodeData.OnExposePortDataConnectionChanged(connectionChangeData.ExposePortData, connectionChangeData.ToExposeNodeID, connectionChangeData.ToExposePortID,
                                         connectionChangeData.IsConnect);
                                 }
+                                //判断被修改数据的蓝图是否创建过视图，如果存在创建的视图就销毁，下一次查看时创建新的
+                                GraphWindow instance = GraphWindow.GetInstance();
+                                if (instance != null)
+                                {
+                                    instance.DestroyGraphView(AssetDatabase.GetAssetPath(graphAsset));
+                                }
                                 EditorUtility.SetDirty(graphAsset);
                             }
                         }

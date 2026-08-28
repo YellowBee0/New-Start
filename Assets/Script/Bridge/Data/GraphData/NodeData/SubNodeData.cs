@@ -206,7 +206,6 @@ namespace YBFramework.Bridge.Data
                     //确保蓝图引用初始化
                     if (subGraphAsset != null)
                     {
-                        subGraphAsset.InitializeReference();
                         ExposePortsNodeData[] exposePortsNodesData = InitializeExposePortsData(subGraphAsset);
                         for (int i = 0; i < exposePortsNodesData.Length; i++)
                         {
@@ -220,7 +219,8 @@ namespace YBFramework.Bridge.Data
                                     BasePortData asSubPortData = exposePortData.GetToExposePortData();
                                     if (asSubPortData != null)
                                     {
-                                        SubPortData subPortData = new(asSubPortData.CreateSubPortData(), exposePortData.GetToExposePortAddress().NodeID, exposePortData.GetToExposePortAddress().PortID);
+                                        SubPortData subPortData = new(asSubPortData.CreateSubPortData(), exposePortData.GetToExposePortAddress().NodeID,
+                                            exposePortData.GetToExposePortAddress().PortID);
                                         subPortData.SetPortID(++m_SourcePortID);
                                         subPortData.SetNodeData(this);
                                         m_SubPortsData.Add(subPortData);
@@ -264,20 +264,26 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < m_SubPortsData.Count; i++)
             {
                 SubPortData subPortData = m_SubPortsData[i];
-                subPortData.SetFieldName($"{nameof(m_SubPortsData)}.Array.data[{i}]");
                 ExposePortData exposePortData = FindExposePortData(exposePortsData, subPortData.GetAsSubNodeID(), subPortData.GetAsSubPortID());
-                if (exposePortData != null)
-                {
-                    subPortData.SetPortName(exposePortData.ExposePortDisplayName);
-                    subPortData.RevertNonSerializedData(exposePortData.GetToExposePortData());
-                }
-                else
-                {
-                    Debug.LogError(
-                        $"{nameof(SubNodeData)} node id:{m_NodeID} port id:{subPortData.GetPortID()} has saved a missing port data,address:node id:{subPortData.GetAsSubNodeID()} port id:{subPortData.GetAsSubPortID()}");
-                }
+                InitializeSubPortsData(subPortData, exposePortData, i);
             }
             ArrayPool<ExposePortsNodeData>.Shared.Return(exposePortsData);
+        }
+
+        private void InitializeSubPortsData(SubPortData subPortData, ExposePortData exposePortData, int index)
+        {
+            subPortData.SetFieldName($"{nameof(m_SubPortsData)}.Array.data[{index}]");
+            if (exposePortData != null)
+            {
+                BasePortData toExposePortData = exposePortData.GetToExposePortData();
+                subPortData.SetPortName(string.IsNullOrEmpty(exposePortData.ExposePortDisplayName) ? toExposePortData.GetPortName() : exposePortData.ExposePortDisplayName);
+                subPortData.RevertNonSerializedData(toExposePortData);
+            }
+            else
+            {
+                Debug.LogError(
+                    $"{nameof(SubNodeData)} node id:{m_NodeID} port id:{subPortData.GetPortID()} has saved a missing port data,address:node id:{subPortData.GetAsSubNodeID()} port id:{subPortData.GetAsSubPortID()}");
+            }
         }
 
         public override void InitializeSerializedData()

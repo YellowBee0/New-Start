@@ -7,15 +7,15 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class PortView : Port
     {
-        public readonly BasePortDataPresenter BindPortDataDataPresenter;
+        public readonly BasePortDataPresenter PortDataDataPresenter;
 
         private Action<Port> m_OnConnect;
 
         private Action<Port> m_OnDisconnect;
 
-        public PortView(BasePortDataPresenter bindPortDataDataPresenter, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
+        public PortView(BasePortDataPresenter portDataDataPresenter, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
         {
-            BindPortDataDataPresenter = bindPortDataDataPresenter;
+            PortDataDataPresenter = portDataDataPresenter;
             portName = name;
             portColor = color;
             m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());

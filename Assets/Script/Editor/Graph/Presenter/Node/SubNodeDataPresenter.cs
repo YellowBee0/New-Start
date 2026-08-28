@@ -3,7 +3,6 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Editor.Graph.Presenter;
 
 namespace YBFramework.Editor.Graph
 {
@@ -12,9 +11,9 @@ namespace YBFramework.Editor.Graph
     {
         private ObjectField m_SubGraphAssetField;
 
-        public override void Initialize(BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
+        public override void Initialize(GraphAssetPresenter graphAssetPresenter, BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
-            base.Initialize(nodeData, nodeSerializedProperty);
+            base.Initialize(graphAssetPresenter, nodeData, nodeSerializedProperty);
             SubNodeData subNodeData = (SubNodeData)nodeData;
             m_SubGraphAssetField = new ObjectField
             {
@@ -22,11 +21,11 @@ namespace YBFramework.Editor.Graph
                 value = subNodeData.GetSubGraphAsset(),
                 objectType = typeof(GraphAsset)
             };
-            m_SubGraphAssetField.RegisterValueChangedCallback(OnProxyGraphAssetChanged);
+            m_SubGraphAssetField.RegisterValueChangedCallback(OnSubGraphAssetChanged);
             m_NodeView.contentContainer.Add(m_SubGraphAssetField);
         }
 
-        private void OnProxyGraphAssetChanged(ChangeEvent<Object> evt)
+        private void OnSubGraphAssetChanged(ChangeEvent<Object> evt)
         {
             SubNodeData subNodeData = (SubNodeData)m_NodeData;
             GraphAsset subGraphAsset = evt.newValue as GraphAsset;
@@ -40,21 +39,18 @@ namespace YBFramework.Editor.Graph
             //修改数据
             if (subNodeData.TrySetSubGraphAsset(subGraphAsset))
             {
-                //修改视图
+                //初始化视图数据
                 subNodeData.InitializeSubPortsData();
-                //通过GraphWindow获取打开的GraphView可能和当前修改的Port的GraphView不是同一个
-                GraphPresenter graphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
+                //清空原有端口视图
+                m_NodeView.ClearPortContentViews();
+                //清空原有Presenter并释放
                 for (int i = 0; i < m_PortPresenters.Count; i++)
                 {
-                    BasePortDataPresenter portDataPresenter = m_PortPresenters[i];
-                    CustomGraphView graphView = graphPresenter.GetGraphView();
-                    CustomGraphView.DisconnectAll(graphView, portDataPresenter.GetPortView());
-                    m_NodeView.RemovePortContentView(portDataPresenter.GetPortContentView(), portDataPresenter.GetPortData().GetDirection());
-                    BasePortDataPresenter.ReleasePortPresenter(portDataPresenter);
+                    BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
                 }
                 m_PortPresenters.Clear();
                 //创建端口时先更新数据
-                graphPresenter.UpdateSO();
+                m_GraphAssetPresenter.UpdateSO();
                 //重新调用一次创建内部端口
                 int portDataCount = m_NodeData.GetPortsDataCount();
                 for (int i = 0; i < portDataCount; i++)
@@ -63,9 +59,9 @@ namespace YBFramework.Editor.Graph
                     BasePortDataPresenter portDataPresenter = BasePortDataPresenter.AllocatePortPresenter(portData.GetType());
                     if (portDataPresenter != null)
                     {
-                        SerializedProperty nodeSerializedProperty = graphPresenter.GetNodeSerializedProperty(m_NodeData);
-                        portDataPresenter.Initialize(portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFieldName()));
-                        AddPortPresenter(portDataPresenter);
+                        SerializedProperty nodeSerializedProperty = m_GraphAssetPresenter.GetNodeSerializedProperty(m_NodeData);
+                        portDataPresenter.Initialize(this, portData, nodeSerializedProperty.FindPropertyRelative(portData.GetFieldName()));
+                        AddPortDataPresenter(portDataPresenter);
                     }
                 }
                 m_NodeView.RefreshPortContainerDisplay();

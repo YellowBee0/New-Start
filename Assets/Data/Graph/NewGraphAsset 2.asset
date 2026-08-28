@@ -13,32 +13,32 @@ MonoBehaviour:
   m_Name: NewGraphAsset 2
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
   m_NodesData:
-  - rid: 6754395112754905211
-  - rid: 6754395112754905215
-  - rid: 6754395112754905216
+  - rid: 7924257905441505397
+  - rid: 7924257905441505400
+  - rid: 7924257905441505401
   GraphType: -1
-  SourceNodeID: 4
+  SourceNodeID: 3
   references:
     version: 2
     RefIds:
-    - rid: 6754395112754905211
+    - rid: 7924257905441505397
       type: {class: SubNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
         m_NodeID: 1
         NodeName: "\u5B50\u56FE\u8282\u70B9(Everything)"
-        Position: {x: 280, y: 199.2}
-        m_SubGraphAsset: {fileID: 11400000, guid: 1f62ca2204d8fd54592817fd372fee80, type: 2}
+        Position: {x: 363.16983, y: 216.45282}
+        m_SubGraphAsset: {fileID: 11400000, guid: 46c7414ba596fe341a8d1f1dff331e4f, type: 2}
         m_SubPortsData:
         - m_AsSubPortData:
-            rid: 6754395112754905212
-          m_AsSubNodeID: 1
+            rid: 7924257905441505398
+          m_AsSubNodeID: 4
           m_AsSubPortID: 1
         - m_AsSubPortData:
-            rid: 6754395112754905213
-          m_AsSubNodeID: 1
+            rid: 7924257905441505399
+          m_AsSubNodeID: 4
           m_AsSubPortID: 2
         m_SourcePortID: 2
-    - rid: 6754395112754905212
+    - rid: 7924257905441505398
       type: {class: 'ValueInputPortData`1[[System.Int32, mscorlib]]', ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
         m_Value: 0
@@ -49,9 +49,9 @@ MonoBehaviour:
         m_PortID: 1
         m_HasSubPortData: 1
         m_OtherPortConnectionsData:
-        - NodeID: 4
+        - NodeID: 2
           PortID: 1
-    - rid: 6754395112754905213
+    - rid: 7924257905441505399
       type: {class: ActionPortData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
         m_PortConnectionsData: []
@@ -60,31 +60,31 @@ MonoBehaviour:
         m_OtherPortConnectionsData:
         - NodeID: 3
           PortID: 1
-    - rid: 6754395112754905215
+    - rid: 7924257905441505400
       type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
-        m_NodeID: 3
+        m_NodeID: 2
         NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
-        Position: {x: 571.2001, y: 199.20001}
+        Position: {x: 86.03772, y: 204.67926}
         m_ExposePortsData:
-        - ExposePortDisplayName: "\u8C03\u7528\u8F93\u51FA"
-          m_PortID: 1
-          m_PortConnectionData:
-            NodeID: 1
-            PortID: 2
-        m_SourcePortID: 1
-        m_IsInput: 0
-    - rid: 6754395112754905216
-      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
-      data:
-        m_NodeID: 4
-        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
-        Position: {x: -1.6000366, y: 199.20006}
-        m_ExposePortsData:
-        - ExposePortDisplayName: "int\u8F93\u5165"
+        - ExposePortDisplayName: 
           m_PortID: 1
           m_PortConnectionData:
             NodeID: 1
             PortID: 1
         m_SourcePortID: 1
         m_IsInput: 1
+    - rid: 7924257905441505401
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 3
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 677.43384, y: 192.90567}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 1
+            PortID: 2
+        m_SourcePortID: 1
+        m_IsInput: 0

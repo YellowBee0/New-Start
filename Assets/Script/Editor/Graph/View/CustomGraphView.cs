@@ -8,37 +8,6 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class CustomGraphView : GraphView
     {
-        public static void Connect(GraphView graphView, PortView inputPortView, PortView outputPortView, Edge connection)
-        {
-            inputPortView.BindPortDataDataPresenter.OnConnect(outputPortView.BindPortDataDataPresenter);
-            outputPortView.BindPortDataDataPresenter.OnConnect(inputPortView.BindPortDataDataPresenter);
-            inputPortView.Connect(connection);
-            outputPortView.Connect(connection);
-            graphView.AddElement(connection);
-        }
-
-        public static void DisConnect(GraphView graphView, Edge connection)
-        {
-            DisConnect(graphView, (PortView)connection.input, (PortView)connection.output, connection);
-        }
-
-        public static void DisConnect(GraphView graphView, PortView inputPortView, PortView outputPortView, Edge connection)
-        {
-            inputPortView.BindPortDataDataPresenter.OnDisconnect(outputPortView.BindPortDataDataPresenter);
-            outputPortView.BindPortDataDataPresenter.OnDisconnect(inputPortView.BindPortDataDataPresenter);
-            inputPortView.Disconnect(connection);
-            outputPortView.Disconnect(connection);
-            graphView.RemoveElement(connection);
-        }
-
-        public static void DisconnectAll(GraphView graphView, Port port)
-        {
-            foreach (Edge connection in port.connections)
-            {
-                DisConnect(graphView, connection);
-            }
-        }
-
         /// <summary>
         /// CustomGraphView视图绑定的GraphAsset Data。
         /// 正常MVP架构是不允许数据Data和视图View之间有联系，但是为了用户操作视图时，能够快捷的获取到数据才这么做，不然只有去Presenter中一级一级查找非常耗时。
@@ -75,6 +44,7 @@ namespace YBFramework.Editor.Graph
         {
             if (m_NodeViews.Remove(nodeView))
             {
+                nodeView.ClearPortContentViews();
                 RemoveElement(nodeView);
             }
         }
@@ -83,7 +53,7 @@ namespace YBFramework.Editor.Graph
         {
             for (int i = 0; i < m_NodeViews.Count; i++)
             {
-                if (m_NodeViews[i].BindNodeData.GetNodeID() == nodeID)
+                if (m_NodeViews[i].NodeDataPresenter.GetNodeData().GetNodeID() == nodeID)
                 {
                     return m_NodeViews[i];
                 }

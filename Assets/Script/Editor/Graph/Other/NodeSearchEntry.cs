@@ -5,9 +5,8 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using YBFramework.Bridge.Editor;
 using YBFramework.Bridge.Data;
-using YBFramework.Editor.Graph.Presenter;
+using YBFramework.Bridge.Editor;
 
 namespace YBFramework.Editor.Graph
 {
@@ -209,15 +208,15 @@ namespace YBFramework.Editor.Graph
 
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
-            GraphPresenter openedGraphPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
-            if (openedGraphPresenter != null)
+            GraphAssetPresenter openedGraphAssetPresenter = GraphWindow.GetInstance().GetOpenedPresenter();
+            if (openedGraphAssetPresenter != null)
             {
                 (Type nodeType, IEnumerable<NodeCreateLimitAttribute> createLimits) nodeMetaData = GetSelectNodeMetaData(SearchTreeEntry.name);
                 if (nodeMetaData.nodeType != null)
                 {
                     foreach (NodeCreateLimitAttribute nodeCreateLimitAttribute in nodeMetaData.createLimits)
                     {
-                        if (!nodeCreateLimitAttribute.CanCreate(openedGraphPresenter.GetGraphAsset(), nodeMetaData.nodeType))
+                        if (!nodeCreateLimitAttribute.CanCreate(openedGraphAssetPresenter.GetGraphAsset(), nodeMetaData.nodeType))
                         {
                             return false;
                         }
@@ -228,21 +227,21 @@ namespace YBFramework.Editor.Graph
                         if (Activator.CreateInstance(nodeMetaData.nodeType) is BaseNodeData nodeData)
                         {
                             //TODO:需要支持Undo
-                            CustomGraphView graphView = openedGraphPresenter.GetGraphView();
+                            CustomGraphView graphView = openedGraphAssetPresenter.GetGraphView();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
                             //添加数据
                             //存在持久化数据
-                            openedGraphPresenter.GetGraphAsset().AddNodeData(nodeData);
+                            openedGraphAssetPresenter.GetGraphAsset().AddNodeData(nodeData);
                             //创建节点时初始话节点名和位置
                             //存在持久化数据
                             nodeData.NodeName = SearchTreeEntry.name;
                             nodeData.Position = graphView.contentViewContainer.WorldToLocal(worldPos);
                             //更新SO，保证能够拿到SerializedProperty
-                            openedGraphPresenter.UpdateSO();
+                            openedGraphAssetPresenter.UpdateSO();
                             //初始化节点视图
-                            nodeDataPresenter.Initialize(nodeData, openedGraphPresenter.GetNodeSerializedProperty(nodeData));
-                            openedGraphPresenter.AddNodePresenter(nodeDataPresenter);
+                            nodeDataPresenter.Initialize(openedGraphAssetPresenter, nodeData, openedGraphAssetPresenter.GetNodeSerializedProperty(nodeData));
+                            openedGraphAssetPresenter.AddNodeDataPresenter(nodeDataPresenter);
                             return true;
                         }
                     }

@@ -12,6 +12,8 @@ namespace YBFramework.Editor.Graph
 
         private static readonly List<string> s_AllGraphAssetPaths = new();
 
+        private static readonly List<string> s_AllGraphAssetNames = new();
+
         private static readonly List<GraphAsset> s_AllGraphAssets = new();
 
         public static void AddGraphAssetPath(string graphAssetPath)
@@ -24,19 +26,35 @@ namespace YBFramework.Editor.Graph
             s_AllGraphAssetPaths.Remove(graphAssetPath);
         }
 
-        public static IReadOnlyList<string> GetAllGraphAssetPaths()
+        private static void InitializeGraphAssetPath()
         {
             if (!s_HasInitializedPath)
             {
                 string[] guids = AssetDatabase.FindAssets($"t:{nameof(GraphAsset)}");
                 for (int i = 0; i < guids.Length; i++)
                 {
-                    s_AllGraphAssetPaths.Add(AssetDatabase.GUIDToAssetPath(guids[i]));
+                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                    string graphAssetName = path[(path.LastIndexOf('/') + 1)..].Split('.')[0];
+                    s_AllGraphAssetPaths.Add(path);
+                    s_AllGraphAssetNames.Add(graphAssetName);
                 }
                 s_HasInitializedPath = true;
             }
+        }
+
+        public static IReadOnlyList<string> GetAllGraphAssetPaths()
+        {
+            InitializeGraphAssetPath();
             return s_AllGraphAssetPaths;
         }
+
+        public static IReadOnlyList<string> GetAllGraphAssetNames()
+        {
+            InitializeGraphAssetPath();
+            return s_AllGraphAssetNames;
+        }
+
+
 
         public static void AddGraphAsset(GraphAsset graphAsset)
         {

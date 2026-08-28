@@ -9,14 +9,15 @@ namespace YBFramework.Editor.Graph
     {
         private BasePortDataPresenter m_AsSubPortDataDataPresenter;
 
-        public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
+        public override void Initialize(BaseNodeDataPresenter nodeDataPresenter, BasePortData portData, SerializedProperty portSerializedProperty)
         {
+            base.Initialize(nodeDataPresenter, portData, portSerializedProperty);
             SubPortData subPortData = (SubPortData)portData;
             BasePortData asSubPortData = subPortData.GetAsSubPortData();
             m_AsSubPortDataDataPresenter = AllocatePortPresenter(asSubPortData.GetType());
             if (m_AsSubPortDataDataPresenter != null)
             {
-                m_AsSubPortDataDataPresenter.Initialize(asSubPortData, portSerializedProperty.FindPropertyRelative(asSubPortData.GetFieldName()));
+                m_AsSubPortDataDataPresenter.Initialize(nodeDataPresenter, asSubPortData, portSerializedProperty.FindPropertyRelative(asSubPortData.GetFieldName()));
             }
         }
 

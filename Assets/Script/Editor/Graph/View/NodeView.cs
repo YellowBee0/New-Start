@@ -2,32 +2,35 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
     public sealed class NodeView : Node
     {
-        /// <summary>
-        /// NodeView视图绑定的BaseNodeData。
-        /// 正常MVP架构是不允许数据Data和视图View之间有联系，但是为了用户操作视图时，能够快捷的获取到数据才这么做，不然只有去Presenter中一级一级查找非常耗时。
-        /// </summary>
-        public readonly BaseNodeData BindNodeData;
+        private static readonly List<Edge> s_RemoveEdgesCache = new();
+
+        public readonly BaseNodeDataPresenter NodeDataPresenter;
 
         private readonly List<PortView> m_PortViews = new();
 
-        public NodeView(BaseNodeData nodeData)
+        public NodeView(BaseNodeDataPresenter nodeDataPresenter)
         {
-            BindNodeData = nodeData;
-            title = nodeData.NodeName;
-            SetPosition(new Rect(nodeData.Position, Vector2.one));
+            NodeDataPresenter = nodeDataPresenter;
+            title = nodeDataPresenter.GetNodeData().NodeName;
+            SetPosition(new Rect(nodeDataPresenter.GetNodeData().Position, Vector2.one));
         }
 
-        public void AddPortContentView(VisualElement portContentView, Direction direction)
+        /// <summary>
+        /// 在节点视图中添加一个端口视图，portContentView视图包含portView视图。
+        /// 这里分开写是为了避免想要获取PortView还需要去portContentView查找一次。
+        /// </summary>
+        /// <param name="portContentView">端口完整视图</param>
+        /// <param name="portView">单个portView视图，仅用于GraphView的GetCompatiblePorts函数使用（获取可连接端口）</param>
+        public void AddPortContentView(VisualElement portContentView, PortView portView)
         {
             portContentView.style.borderBottomColor = Color.black;
             portContentView.style.borderBottomWidth = .2f;
-            if (direction == Direction.Input)
+            if (portView.direction == Direction.Input)
             {
                 inputContainer.Add(portContentView);
             }
@@ -35,11 +38,19 @@ namespace YBFramework.Editor.Graph
             {
                 outputContainer.Add(portContentView);
             }
+            m_PortViews.Add(portView);
         }
 
-        public void RemovePortContentView(VisualElement portContentView, Direction direction)
+        /// <summary>
+        /// 在节点视图中移除一个端口视图，portContentView视图包含portView视图。
+        /// 这里分开写是为了避免想要获取PortView还需要去portContentView查找一次。
+        /// </summary>
+        /// <param name="portContentView">端口完整视图</param>
+        /// <param name="portView">单个portView视图，仅用于GraphView的GetCompatiblePorts函数使用（获取可连接端口）</param>
+        public void RemovePortContentView(VisualElement portContentView, PortView portView)
         {
-            if (direction == Direction.Input)
+            CustomGraphView graphView = NodeDataPresenter.GetGraphAssetPresenter().GetGraphView();
+            if (portView.direction == Direction.Input)
             {
                 inputContainer.Remove(portContentView);
             }
@@ -47,6 +58,36 @@ namespace YBFramework.Editor.Graph
             {
                 outputContainer.Remove(portContentView);
             }
+            s_RemoveEdgesCache.Clear();
+            s_RemoveEdgesCache.AddRange(portView.connections);
+            foreach (Edge connection in s_RemoveEdgesCache)
+            {
+                connection.input.Disconnect(connection);
+                connection.output.Disconnect(connection);
+                graphView.RemoveElement(connection);
+            }
+            m_PortViews.Remove(portView);
+        }
+
+        public void ClearPortContentViews()
+        {
+            IReadOnlyList<BasePortDataPresenter> portDataPresenters = NodeDataPresenter.GetPortPresenters();
+            CustomGraphView graphView = NodeDataPresenter.GetGraphAssetPresenter().GetGraphView();
+            for (int i = 0; i < portDataPresenters.Count; i++)
+            {
+                PortView portView = portDataPresenters[i].GetPortView();
+                s_RemoveEdgesCache.Clear();
+                s_RemoveEdgesCache.AddRange(portView.connections);
+                foreach (Edge connection in s_RemoveEdgesCache)
+                {
+                    connection.input.Disconnect(connection);
+                    connection.output.Disconnect(connection);
+                    graphView.RemoveElement(connection);
+                }
+            }
+            m_PortViews.Clear();
+            inputContainer.Clear();
+            outputContainer.Clear();
         }
 
         public IReadOnlyList<PortView> GetPortViews()
@@ -58,29 +99,13 @@ namespace YBFramework.Editor.Graph
         {
             for (int i = 0; i < m_PortViews.Count; i++)
             {
-                if (m_PortViews[i].BindPortDataDataPresenter.GetPortData().GetPortID() == portID)
+                if (m_PortViews[i].PortDataDataPresenter.GetPortData().GetPortID() == portID)
                 {
                     return m_PortViews[i];
                 }
             }
             return null;
         }
-
-        //TODO:暂时处理
-        public void AddPortView(PortView portView)
-        {
-            m_PortViews.Add(portView);
-        }
-
-        public void RemovePortView(PortView portView)
-        {
-            m_PortViews.Remove(portView);
-        }
-
-        public void ClearPortView()
-        {
-        }
-        //
 
         public void RefreshPortContainerDisplay()
         {

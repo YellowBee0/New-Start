@@ -13,8 +13,9 @@ namespace YBFramework.Editor.Graph
 
         private VisualElement m_PortContentView;
 
-        public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
+        public override void Initialize(BaseNodeDataPresenter nodeDataPresenter, BasePortData portData, SerializedProperty portSerializedProperty)
         {
+            base.Initialize(nodeDataPresenter, portData, portSerializedProperty);
             m_PortData = portData;
             m_PortView = new PortView(this, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             m_PortContentView = m_PortView;

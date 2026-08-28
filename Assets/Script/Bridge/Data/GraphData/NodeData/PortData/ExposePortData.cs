@@ -129,6 +129,7 @@ namespace YBFramework.Bridge.Data
 
         public override void InitializeSerializedData()
         {
+            m_PortConnectionData = new PortConnectionData();
         }
 
         public override BasePortData CreateSubPortData()

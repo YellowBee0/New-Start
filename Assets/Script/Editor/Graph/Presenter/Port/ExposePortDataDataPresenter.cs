@@ -21,8 +21,9 @@ namespace YBFramework.Editor.Graph
             m_PortData.ExposePortDisplayName = evt.newValue;
         }
 
-        public override void Initialize(BasePortData portData, SerializedProperty portSerializedProperty)
+        public override void Initialize(BaseNodeDataPresenter nodeDataPresenter, BasePortData portData, SerializedProperty portSerializedProperty)
         {
+            base.Initialize(nodeDataPresenter, portData, portSerializedProperty);
             m_PortData = (ExposePortData)portData;
             m_PortView = new PortView(this, portData.GetPortName(), portData.GetDirection(), portData.GetCapacity(), portData.GetPortColor());
             VisualElement portContentView = new();
@@ -34,20 +35,6 @@ namespace YBFramework.Editor.Graph
             m_DisplayNameTextField.RegisterValueChangedCallback(OnDisplayNameChange);
             portContentView.Add(m_DisplayNameTextField);
             m_PortContentView = portContentView;
-        }
-
-        public override void OnConnect(BasePortDataPresenter other)
-        {
-            //TODO:需要支持Undo
-            string displayName = other.GetPortData().GetPortName();
-            m_DisplayNameTextField.SetValueWithoutNotify(displayName);
-            m_PortData.ExposePortDisplayName = displayName;
-        }
-
-        public override void OnDisconnect(BasePortDataPresenter other)
-        {
-            m_DisplayNameTextField.SetValueWithoutNotify(null);
-            m_PortData.ExposePortDisplayName = null;
         }
 
         public override BasePortData GetPortData()

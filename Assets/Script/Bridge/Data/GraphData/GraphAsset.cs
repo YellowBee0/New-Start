@@ -34,28 +34,6 @@ namespace YBFramework.Bridge.Data
 
         public int SourceNodeID;
 
-        private bool m_IsInitializedReference;
-
-        public void InitializeReference()
-        {
-            if (!m_IsInitializedReference)
-            {
-                m_NodesData ??= new List<BaseNodeData>();
-                for (int i = 0; i < m_NodesData.Count; i++)
-                {
-                    BaseNodeData nodeData = m_NodesData[i];
-                    nodeData.SetGraphAsset(this);
-                    int portDataCount = nodeData.GetPortsDataCount();
-                    for (int j = 0; j < portDataCount; j++)
-                    {
-                        BasePortData portData = nodeData.PortDataOfIndex(j);
-                        portData.SetNodeData(nodeData);
-                    }
-                }
-            }
-            m_IsInitializedReference = true;
-        }
-
         /// <summary>
         /// 编辑器中添加一个节点数据，在蓝图编辑器中添加一个节点数据步骤：
         /// 1、调用GraphAsset的AddNodeData，持久化数据
@@ -95,16 +73,34 @@ namespace YBFramework.Bridge.Data
         /// <param name="nodeData">移除的节点数据</param>
         public void RemoveNodeData(BaseNodeData nodeData)
         {
+            int portDataCount = nodeData.GetPortsDataCount();
+            for (int i = 0; i < portDataCount; i++)
+            {
+                nodeData.PortDataOfIndex(i).DisconnectAll();
+            }
             m_NodesData.Remove(nodeData);
         }
 
-        private void OnDisable()
+        public void ResetInitializeState()
         {
-            m_IsInitializedReference = false;
+            m_NodesData ??= new List<BaseNodeData>();
             for (int i = 0; i < m_NodesData.Count; i++)
             {
-                m_NodesData[i].OnDisable();
+                BaseNodeData nodeData = m_NodesData[i];
+                nodeData.SetGraphAsset(this);
+                nodeData.ResetInitializeState();
+                int portDataCount = nodeData.GetPortsDataCount();
+                for (int j = 0; j < portDataCount; j++)
+                {
+                    BasePortData portData = nodeData.PortDataOfIndex(j);
+                    portData.SetNodeData(nodeData);
+                }
             }
+        }
+
+        private void OnEnable()
+        {
+            ResetInitializeState();
         }
 #endif
     }

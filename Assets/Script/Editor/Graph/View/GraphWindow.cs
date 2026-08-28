@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Editor.Graph.Presenter;
+using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph
 {
@@ -34,29 +34,38 @@ namespace YBFramework.Editor.Graph
 
         #endregion
 
-        private static readonly List<string> s_GraphAssetPaths = new();
-
-        private readonly Dictionary<string, GraphPresenter> m_LoadGraphPresenters = new();
+        private readonly Dictionary<string, GraphAssetPresenter> m_LoadedGraphAssetPresenters = new();
 
         private readonly List<string> m_FilteredGraphAssetNames = new();
-
-        private readonly List<string> m_GraphAssetNames = new();
-
-        private readonly List<string> m_GraphAssetPaths = new();
 
         [NonSerialized] private string m_FilterGraphAssetNameStr;
 
         [NonSerialized] private string m_OpenedGraphAssetPath;
 
-        private GraphPresenter m_OpenedPresenter;
+        private GraphAssetPresenter m_OpenedAssetPresenter;
 
         private ListView m_ListView;
 
         private VisualElement m_GraphContainer;
 
-        public GraphPresenter GetOpenedPresenter()
+        public GraphAssetPresenter GetOpenedPresenter()
         {
-            return m_OpenedPresenter;
+            return m_OpenedAssetPresenter;
+        }
+
+        public void DestroyGraphView(string graphAssetPath)
+        {
+            if (m_OpenedGraphAssetPath == graphAssetPath)
+            {
+                if (m_OpenedAssetPresenter != null)
+                {
+                    ChangeMainGraphView(null);
+                }
+            }
+            if (m_LoadedGraphAssetPresenters.Remove(graphAssetPath, out GraphAssetPresenter destroyTarget))
+            {
+                GraphAssetPresenter.ReleaseGraphAssetPresenter(destroyTarget);
+            }
         }
 
         private void CreateGUI()
@@ -73,15 +82,11 @@ namespace YBFramework.Editor.Graph
             //1、初始化节点筛选窗口
             NodeSearchEntry.InitializeNodeSearchTree();
 
-            //2、加载所有蓝图资源路径，用于边栏搜索框选择和显示。这一步需要先于步骤3，因为m_FilterGraphAssetNameStr可能不为null
-            string[] guids = AssetDatabase.FindAssets($"t:{nameof(GraphAsset)}");
-            for (int i = 0; i < guids.Length; i++)
+            //2、加载所有蓝图资源名，用于边栏搜索框选择和显示。这一步需要先于步骤3，因为m_FilterGraphAssetNameStr可能不为null
+            IReadOnlyList<string> allGraphAssetNames = GraphGlobal.GetAllGraphAssetNames();
+            for (int i = 0; i < allGraphAssetNames.Count; i++)
             {
-                string graphPath = AssetDatabase.GUIDToAssetPath(guids[i]);
-                m_GraphAssetPaths.Add(graphPath);
-                string graphAssetName = graphPath[(graphPath.LastIndexOf('/') + 1)..].Split('.')[0];
-                m_GraphAssetNames.Add(graphAssetName);
-                m_FilteredGraphAssetNames.Add(graphAssetName);
+                m_FilteredGraphAssetNames.Add(allGraphAssetNames[i]);
             }
 
             //3、创建边栏搜索框和蓝图主视图容器
@@ -123,15 +128,16 @@ namespace YBFramework.Editor.Graph
             {
                 m_FilterGraphAssetNameStr = evt.newValue;
                 m_FilteredGraphAssetNames.Clear();
+                IReadOnlyList<string> allGraphAssetNames = GraphGlobal.GetAllGraphAssetNames();
                 if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr))
                 {
-                    m_FilteredGraphAssetNames.AddRange(m_GraphAssetNames);
+                    m_FilteredGraphAssetNames.AddRange(allGraphAssetNames);
                 }
                 else
                 {
-                    for (int i = 0; i < m_GraphAssetNames.Count; i++)
+                    for (int i = 0; i < allGraphAssetNames.Count; i++)
                     {
-                        string graphAssetName = m_GraphAssetNames[i];
+                        string graphAssetName = allGraphAssetNames[i];
                         if (graphAssetName.Contains(m_FilterGraphAssetNameStr, StringComparison.OrdinalIgnoreCase))
                         {
                             m_FilteredGraphAssetNames.Add(graphAssetName);
@@ -172,7 +178,7 @@ namespace YBFramework.Editor.Graph
             {
                 string graphName = m_FilteredGraphAssetNames[index];
                 label.text = graphName;
-                label.userData = m_GraphAssetPaths[m_GraphAssetNames.IndexOf(graphName)];
+                label.userData = CustomArrayUtility.FindOtherListValueAtSelfIndexOfKey(GraphGlobal.GetAllGraphAssetNames(), GraphGlobal.GetAllGraphAssetPaths(), graphName);
             }
         }
 
@@ -180,7 +186,8 @@ namespace YBFramework.Editor.Graph
         {
             if (m_OpenedGraphAssetPath != graphAssetPath)
             {
-                if (!m_LoadGraphPresenters.TryGetValue(graphAssetPath, out GraphPresenter graphPresenter))
+                GraphAssetPresenter graphPresenter = null;
+                if (!string.IsNullOrEmpty(graphAssetPath) && !m_LoadedGraphAssetPresenters.TryGetValue(graphAssetPath, out graphPresenter))
                 {
                     GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
                     if (graphAsset == null)
@@ -188,18 +195,19 @@ namespace YBFramework.Editor.Graph
                         Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
                         return;
                     }
-                    graphPresenter = GraphPresenter.AllocateGraphPresenter();
+                    graphPresenter = GraphAssetPresenter.AllocateGraphAssetPresenter();
                     graphPresenter.Initialize(graphAsset);
-                    m_LoadGraphPresenters.Add(graphAssetPath, graphPresenter);
+                    m_LoadedGraphAssetPresenters.Add(graphAssetPath, graphPresenter);
                 }
-                m_OpenedPresenter?.GetGraphView().RemoveFromHierarchy();
-                CustomGraphView graphView = graphPresenter.GetGraphView();
-                m_GraphContainer.Add(graphView);
+                m_OpenedAssetPresenter?.GetGraphView().RemoveFromHierarchy();
+                if (graphPresenter != null)
+                {
+                    CustomGraphView graphView = graphPresenter.GetGraphView();
+                    m_GraphContainer.Add(graphView);
+                }
                 m_OpenedGraphAssetPath = graphAssetPath;
-                m_OpenedPresenter = graphPresenter;
+                m_OpenedAssetPresenter = graphPresenter;
             }
         }
-
-        //TODO:销毁GraphView视图。需要销毁的内容：GraphView
     }
 }
