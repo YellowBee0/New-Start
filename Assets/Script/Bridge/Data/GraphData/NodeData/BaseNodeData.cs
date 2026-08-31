@@ -72,7 +72,7 @@ namespace YBFramework.Bridge.Data
             }
         }
 
-        public void ResetInitializeState()
+        public void SetDirtyToReinitialize()
         {
             m_IsInitializePortData = false;
         }

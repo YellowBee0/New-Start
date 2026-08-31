@@ -12,7 +12,7 @@ namespace YBFramework.Editor.Graph
         public void OnDrop(GraphView graphView, Edge edge)
         {
             CustomGraphView customGraphView = (CustomGraphView)graphView;
-            customGraphView.OnEdgeConnect?.Invoke(edge);
+            customGraphView.OnEdgeConnect(edge);
         }
     }
 }

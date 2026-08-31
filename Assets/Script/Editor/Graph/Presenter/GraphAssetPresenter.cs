@@ -33,18 +33,31 @@ namespace YBFramework.Editor.Graph
 
         private readonly List<BaseNodeDataPresenter> m_NodePresenters = new();
 
+        private void OnRelease()
+        {
+            for (int i = 0; i < m_NodePresenters.Count; i++)
+            {
+                BaseNodeDataPresenter.ReleaseNodePresenter(m_NodePresenters[i]);
+            }
+            m_NodePresenters.Clear();
+        }
+
+        private void ShowNodeSearchView(NodeCreationContext context)
+        {
+            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_NodeSearchEntry);
+        }
+
         public void Initialize(GraphAsset graphAsset)
         {
             m_GraphAsset = graphAsset;
             m_SO = new SerializedObject(graphAsset);
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
             m_NodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GraphType);
-            m_GraphView = new CustomGraphView(graphAsset)
+            m_GraphView = new CustomGraphView(this)
             {
                 nodeCreationRequest = ShowNodeSearchView
             };
             m_GraphView.graphViewChanged += OnGraphViewChanged;
-            m_GraphView.OnEdgeConnect += OnEdgeConnect;
             IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
             for (int i = 0; i < nodesData.Count; i++)
             {
@@ -126,14 +139,18 @@ namespace YBFramework.Editor.Graph
 
         public void AddNodeDataPresenter(BaseNodeDataPresenter nodeDataPresenter)
         {
-            m_GraphView.AddNodeView(nodeDataPresenter.GetNodeView());
             m_NodePresenters.Add(nodeDataPresenter);
+            m_GraphView.AddElement(nodeDataPresenter.GetNodeView());
         }
 
         public void RemoveNodeDataPresenter(BaseNodeDataPresenter nodeDataPresenter)
         {
-            m_GraphView.RemoveNodeView(nodeDataPresenter.GetNodeView());
-            m_NodePresenters.Remove(nodeDataPresenter);
+            if (m_NodePresenters.Remove(nodeDataPresenter))
+            {
+                nodeDataPresenter.ClearPortDataPresenter();
+                m_GraphView.RemoveElement(nodeDataPresenter.GetNodeView());
+                BaseNodeDataPresenter.ReleaseNodePresenter(nodeDataPresenter);
+            }
         }
 
         public void UpdateSO()
@@ -141,17 +158,7 @@ namespace YBFramework.Editor.Graph
             m_SO.Update();
         }
 
-        //TODO:在外边调用，把OnRelease里的内容搬到外面去
-        private void OnRelease()
-        {
-            m_GraphAsset.ResetInitializeState();
-            for (int i = 0; i < m_NodePresenters.Count; i++)
-            {
-                BaseNodeDataPresenter.ReleaseNodePresenter(m_NodePresenters[i]);
-            }
-        }
-
-        private GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
+        public GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
         {
             //TODO:需要支持Undo
             if (changeValue.elementsToRemove != null)
@@ -161,8 +168,7 @@ namespace YBFramework.Editor.Graph
                     switch (changeValue.elementsToRemove[i])
                     {
                         case NodeView nodeView:
-                            m_GraphAsset.RemoveNodeData(nodeView.NodeDataPresenter.GetNodeData());
-                            m_GraphView.RemoveNodeView(nodeView);
+                            RemoveNodeDataPresenter(nodeView.NodeDataPresenter);
                             break;
                         case Edge edge:
                         {
@@ -194,12 +200,7 @@ namespace YBFramework.Editor.Graph
             return changeValue;
         }
 
-        private void ShowNodeSearchView(NodeCreationContext context)
-        {
-            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_NodeSearchEntry);
-        }
-
-        private void OnEdgeConnect(Edge edge)
+        public void OnEdgeConnect(Edge edge)
         {
             PortView inputPortView = (PortView)edge.input;
             PortView outputPortView = (PortView)edge.output;

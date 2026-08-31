@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
@@ -8,6 +9,8 @@ namespace YBFramework.Editor.Graph
     [RuntimeToEditor(typeof(BaseNodeData))]
     public class BaseNodeDataPresenter
     {
+        private static readonly List<Edge> s_RemoveEdgesCache = new();
+
         private static readonly Dictionary<Type, Stack<BaseNodeDataPresenter>> s_NodePresenters = new();
 
         public static BaseNodeDataPresenter AllocateNodePresenter(Type nodeDataType)
@@ -40,7 +43,7 @@ namespace YBFramework.Editor.Graph
 
         protected GraphAssetPresenter m_GraphAssetPresenter;
 
-        protected readonly List<BasePortDataPresenter> m_PortPresenters = new();
+        protected readonly List<BasePortDataPresenter> m_PortDataPresenters = new();
 
         public virtual void Initialize(GraphAssetPresenter graphAssetPresenter, BaseNodeData nodeData, SerializedProperty nodeSerializedProperty)
         {
@@ -79,28 +82,49 @@ namespace YBFramework.Editor.Graph
 
         public IReadOnlyList<BasePortDataPresenter> GetPortPresenters()
         {
-            return m_PortPresenters;
+            return m_PortDataPresenters;
         }
 
         public void AddPortDataPresenter(BasePortDataPresenter portDataPresenter)
         {
-            m_NodeView.AddPortContentView(portDataPresenter.GetPortContentView(), portDataPresenter.GetPortView());
-            m_PortPresenters.Add(portDataPresenter);
+            m_NodeView.AddPortContentView(portDataPresenter.GetPortContentView(), portDataPresenter.GetPortView().direction);
+            m_PortDataPresenters.Add(portDataPresenter);
         }
 
         public void RemovePortDataPresenter(BasePortDataPresenter portDataPresenter)
         {
-            m_NodeView.RemovePortContentView(portDataPresenter.GetPortContentView(), portDataPresenter.GetPortView());
-            m_PortPresenters.Remove(portDataPresenter);
+            if (m_PortDataPresenters.Remove(portDataPresenter))
+            {
+                PortView portView = portDataPresenter.GetPortView();
+                m_NodeView.RemovePortContentView(portDataPresenter.GetPortContentView(), portView.direction);
+                s_RemoveEdgesCache.Clear();
+                s_RemoveEdgesCache.AddRange(portView.connections);
+                foreach (Edge connection in s_RemoveEdgesCache)
+                {
+                    connection.input.Disconnect(connection);
+                    connection.output.Disconnect(connection);
+                    m_GraphAssetPresenter.GetGraphView().RemoveElement(connection);
+                }
+                portDataPresenter.GetPortData().DisconnectAll();
+                BasePortDataPresenter.ReleasePortPresenter(portDataPresenter);
+            }
+        }
+
+        public void ClearPortDataPresenter()
+        {
+            for (int i = m_PortDataPresenters.Count - 1; i >= 0; i--)
+            {
+                RemovePortDataPresenter(m_PortDataPresenters[i]);
+            }
         }
 
         private void OnRelease()
         {
-            for (int i = 0; i < m_PortPresenters.Count; i++)
+            for (int i = 0; i < m_PortDataPresenters.Count; i++)
             {
-                BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
+                BasePortDataPresenter.ReleasePortPresenter(m_PortDataPresenters[i]);
             }
-            m_PortPresenters.Clear();
+            m_PortDataPresenters.Clear();
         }
     }
 }

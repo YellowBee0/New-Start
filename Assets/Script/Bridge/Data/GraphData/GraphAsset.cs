@@ -81,14 +81,14 @@ namespace YBFramework.Bridge.Data
             m_NodesData.Remove(nodeData);
         }
 
-        public void ResetInitializeState()
+        public void SetDirtyToReinitialize()
         {
             m_NodesData ??= new List<BaseNodeData>();
             for (int i = 0; i < m_NodesData.Count; i++)
             {
                 BaseNodeData nodeData = m_NodesData[i];
                 nodeData.SetGraphAsset(this);
-                nodeData.ResetInitializeState();
+                nodeData.SetDirtyToReinitialize();
                 int portDataCount = nodeData.GetPortsDataCount();
                 for (int j = 0; j < portDataCount; j++)
                 {
@@ -100,7 +100,7 @@ namespace YBFramework.Bridge.Data
 
         private void OnEnable()
         {
-            ResetInitializeState();
+            SetDirtyToReinitialize();
         }
 #endif
     }

@@ -4,11 +4,11 @@ using UnityEngine.UIElements;
 
 namespace YBFramework.Editor.Graph
 {
-    public sealed class NodeView : Node
+    public sealed class NewNodeView : Node
     {
         public readonly BaseNodeDataPresenter NodeDataPresenter;
 
-        public NodeView(BaseNodeDataPresenter nodeDataPresenter)
+        public NewNodeView(BaseNodeDataPresenter nodeDataPresenter)
         {
             NodeDataPresenter = nodeDataPresenter;
             title = nodeDataPresenter.GetNodeData().NodeName;

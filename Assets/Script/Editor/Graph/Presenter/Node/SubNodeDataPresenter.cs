@@ -41,14 +41,8 @@ namespace YBFramework.Editor.Graph
             {
                 //初始化视图数据
                 subNodeData.InitializeSubPortsData();
-                //清空原有端口视图
-                m_NodeView.ClearPortContentViews();
-                //清空原有Presenter并释放
-                for (int i = 0; i < m_PortPresenters.Count; i++)
-                {
-                    BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
-                }
-                m_PortPresenters.Clear();
+                //清空所有port data presenter
+                ClearPortDataPresenter();
                 //创建端口时先更新数据
                 m_GraphAssetPresenter.UpdateSO();
                 //重新调用一次创建内部端口

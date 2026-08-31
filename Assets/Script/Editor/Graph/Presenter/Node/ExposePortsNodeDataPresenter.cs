@@ -93,12 +93,7 @@ namespace YBFramework.Editor.Graph
                 }
             }
             exposePortsNodeData.ChangeDirection(evt.newValue);
-            m_NodeView.ClearPortContentViews();
-            for (int i = 0; i < m_PortPresenters.Count; i++)
-            {
-                BasePortDataPresenter.ReleasePortPresenter(m_PortPresenters[i]);
-            }
-            m_PortPresenters.Clear();
+            ClearPortDataPresenter();
         }
     }
 }

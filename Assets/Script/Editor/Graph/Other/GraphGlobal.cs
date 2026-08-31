@@ -6,76 +6,69 @@ namespace YBFramework.Editor.Graph
 {
     public static class GraphGlobal
     {
-        private static bool s_HasInitializedPath;
-
-        private static bool s_HasInitializedAsset;
-
-        private static readonly List<string> s_AllGraphAssetPaths = new();
-
-        private static readonly List<string> s_AllGraphAssetNames = new();
+        private static int s_LoadedGraphAssetPathVersion = -1;
 
         private static readonly List<GraphAsset> s_AllGraphAssets = new();
 
         public static void AddGraphAssetPath(string graphAssetPath)
         {
-            s_AllGraphAssetPaths.Add(graphAssetPath);
+            GraphAssetSaveProcessor.MarkGraphAssetPathsDirty();
         }
 
         public static void RemoveGraphAssetPath(string graphAssetPath)
         {
-            s_AllGraphAssetPaths.Remove(graphAssetPath);
-        }
-
-        private static void InitializeGraphAssetPath()
-        {
-            if (!s_HasInitializedPath)
-            {
-                string[] guids = AssetDatabase.FindAssets($"t:{nameof(GraphAsset)}");
-                for (int i = 0; i < guids.Length; i++)
-                {
-                    string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                    string graphAssetName = path[(path.LastIndexOf('/') + 1)..].Split('.')[0];
-                    s_AllGraphAssetPaths.Add(path);
-                    s_AllGraphAssetNames.Add(graphAssetName);
-                }
-                s_HasInitializedPath = true;
-            }
+            GraphAssetSaveProcessor.MarkGraphAssetPathsDirty();
         }
 
         public static IReadOnlyList<string> GetAllGraphAssetPaths()
         {
-            InitializeGraphAssetPath();
-            return s_AllGraphAssetPaths;
+            return GraphAssetSaveProcessor.GetAllGraphAssetPaths();
         }
 
         public static IReadOnlyList<string> GetAllGraphAssetNames()
         {
-            InitializeGraphAssetPath();
-            return s_AllGraphAssetNames;
+            return GraphAssetSaveProcessor.GetAllGraphAssetNames();
         }
 
 
 
         public static void AddGraphAsset(GraphAsset graphAsset)
         {
-            s_AllGraphAssets.Add(graphAsset);
+            if (graphAsset == null)
+            {
+                return;
+            }
+            GetAllGraphAssets();
+            if (!s_AllGraphAssets.Contains(graphAsset))
+            {
+                s_AllGraphAssets.Add(graphAsset);
+            }
         }
 
         public static void RemoveGraphAsset(GraphAsset graphAsset)
         {
+            GetAllGraphAssets();
             s_AllGraphAssets.Remove(graphAsset);
         }
 
         public static IReadOnlyList<GraphAsset> GetAllGraphAssets()
         {
-            if (!s_HasInitializedAsset)
+            IReadOnlyList<string> allGraphAssetPaths = GraphAssetSaveProcessor.GetAllGraphAssetPaths();
+            int graphAssetPathVersion = GraphAssetSaveProcessor.GetGraphAssetPathVersion();
+            if (s_LoadedGraphAssetPathVersion != graphAssetPathVersion)
             {
-                IReadOnlyList<string> allGraphAssetPaths = GetAllGraphAssetPaths();
+                List<GraphAsset> loadedGraphAssets = new(allGraphAssetPaths.Count);
                 for (int i = 0; i < allGraphAssetPaths.Count; i++)
                 {
-                    s_AllGraphAssets.Add(AssetDatabase.LoadAssetAtPath<GraphAsset>(allGraphAssetPaths[i]));
+                    GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(allGraphAssetPaths[i]);
+                    if (graphAsset != null)
+                    {
+                        loadedGraphAssets.Add(graphAsset);
+                    }
                 }
-                s_HasInitializedAsset = true;
+                s_AllGraphAssets.Clear();
+                s_AllGraphAssets.AddRange(loadedGraphAssets);
+                s_LoadedGraphAssetPathVersion = graphAssetPathVersion;
             }
             return s_AllGraphAssets;
         }

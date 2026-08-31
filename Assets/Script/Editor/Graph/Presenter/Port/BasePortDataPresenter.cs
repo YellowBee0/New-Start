@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
 
@@ -46,6 +47,14 @@ namespace YBFramework.Editor.Graph
         public abstract PortView GetPortView();
 
         public abstract VisualElement GetPortContentView();
+
+        public virtual void OnPortViewConnect(Edge edge)
+        {
+        }
+
+        public virtual void OnPortViewDisconnect(Edge edge)
+        {
+        }
 
         protected virtual void OnRelease()
         {
