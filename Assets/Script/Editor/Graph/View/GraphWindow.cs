@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using YBFramework.Bridge.Data;
-using YBFramework.Common;
 
 namespace YBFramework.Editor.Graph
 {
@@ -37,6 +37,8 @@ namespace YBFramework.Editor.Graph
         private readonly Dictionary<string, GraphAssetPresenter> m_LoadedGraphAssetPresenters = new();
 
         private readonly List<string> m_FilteredGraphAssetNames = new();
+
+        private GraphAssetNameListener m_GraphAssetNameListener;
 
         [NonSerialized] private string m_FilterGraphAssetNameStr;
 
@@ -79,17 +81,16 @@ namespace YBFramework.Editor.Graph
                 s_Instance = this;
             }
             RuntimeToEditorMap.GetInstance().Initialize();
-            //1、初始化节点筛选窗口
             NodeSearchEntry.InitializeNodeSearchTree();
-
-            //2、加载所有蓝图资源名，用于边栏搜索框选择和显示。这一步需要先于步骤3，因为m_FilterGraphAssetNameStr可能不为null
-            IReadOnlyList<string> allGraphAssetNames = GraphGlobal.GetAllGraphAssetNames();
-            for (int i = 0; i < allGraphAssetNames.Count; i++)
+            if (m_GraphAssetNameListener == null)
             {
-                m_FilteredGraphAssetNames.Add(allGraphAssetNames[i]);
+                m_GraphAssetNameListener = new GraphAssetNameListener();
+                GraphAssetPostprocessor.AddGraphAssetChangeListener(m_GraphAssetNameListener);
+                m_GraphAssetNameListener.RegisterOnAddGraphAsset(OnAddGraphAsset);
+                m_GraphAssetNameListener.RegisterOnRemoveGraphAsset(OnRemoveGraphAsset);
+                m_FilteredGraphAssetNames.AddRange(m_GraphAssetNameListener.GetGraphAssetNames());
             }
-
-            //3、创建边栏搜索框和蓝图主视图容器
+            //创建边栏搜索框和蓝图主视图容器
             VisualElement graphAssetView = new()
             {
                 style =
@@ -122,22 +123,34 @@ namespace YBFramework.Editor.Graph
             rootVisualElement.Add(splitView);
         }
 
+        private void OnDestroy()
+        {
+            if (s_Instance == this)
+            {
+                s_Instance = null;
+            }
+            GraphAssetPostprocessor.RemoveGraphAssetChangeListener(m_GraphAssetNameListener);
+            m_GraphAssetNameListener.UnregisterOnAddGraphAsset(OnAddGraphAsset);
+            m_GraphAssetNameListener.UnregisterOnRemoveGraphAsset(OnRemoveGraphAsset);
+            m_GraphAssetNameListener = null;
+        }
+
         private void OnSearchGraphAssetNameStrChanged(ChangeEvent<string> evt)
         {
             if (m_FilterGraphAssetNameStr != evt.newValue)
             {
                 m_FilterGraphAssetNameStr = evt.newValue;
                 m_FilteredGraphAssetNames.Clear();
-                IReadOnlyList<string> allGraphAssetNames = GraphGlobal.GetAllGraphAssetNames();
+                IReadOnlyList<string> graphAssetNames = m_GraphAssetNameListener.GetGraphAssetNames();
                 if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr))
                 {
-                    m_FilteredGraphAssetNames.AddRange(allGraphAssetNames);
+                    m_FilteredGraphAssetNames.AddRange(graphAssetNames);
                 }
                 else
                 {
-                    for (int i = 0; i < allGraphAssetNames.Count; i++)
+                    for (int i = 0; i < graphAssetNames.Count; i++)
                     {
-                        string graphAssetName = allGraphAssetNames[i];
+                        string graphAssetName = graphAssetNames[i];
                         if (graphAssetName.Contains(m_FilterGraphAssetNameStr, StringComparison.OrdinalIgnoreCase))
                         {
                             m_FilteredGraphAssetNames.Add(graphAssetName);
@@ -146,6 +159,26 @@ namespace YBFramework.Editor.Graph
                 }
                 m_ListView.RefreshItems();
             }
+        }
+
+        private void OnAddGraphAsset(string graphAssetPath)
+        {
+            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+            if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr) || m_FilterGraphAssetNameStr.Contains(graphAssetName, StringComparison.OrdinalIgnoreCase))
+            {
+                m_FilteredGraphAssetNames.Add(graphAssetName);
+                m_ListView.RefreshItems();
+            }
+        }
+
+        private void OnRemoveGraphAsset(string graphAssetPath)
+        {
+            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+            if (m_FilteredGraphAssetNames.Remove(graphAssetName))
+            {
+                m_ListView.RefreshItems();
+            }
+            DestroyGraphView(graphAssetPath);
         }
 
         private VisualElement MakeItem()
@@ -178,7 +211,7 @@ namespace YBFramework.Editor.Graph
             {
                 string graphName = m_FilteredGraphAssetNames[index];
                 label.text = graphName;
-                label.userData = CustomArrayUtility.FindOtherListValueAtSelfIndexOfKey(GraphGlobal.GetAllGraphAssetNames(), GraphGlobal.GetAllGraphAssetPaths(), graphName);
+                label.userData = m_GraphAssetNameListener.FindGraphAssetPathByName(graphName);
             }
         }
 

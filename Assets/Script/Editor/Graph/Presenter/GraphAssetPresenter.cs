@@ -27,8 +27,6 @@ namespace YBFramework.Editor.Graph
 
         private SerializedProperty m_NodeDataListProperty;
 
-        private NodeSearchEntry m_NodeSearchEntry;
-
         private CustomGraphView m_GraphView;
 
         private readonly List<BaseNodeDataPresenter> m_NodePresenters = new();
@@ -44,7 +42,7 @@ namespace YBFramework.Editor.Graph
 
         private void ShowNodeSearchView(NodeCreationContext context)
         {
-            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), m_NodeSearchEntry);
+            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), NodeSearchEntry.GetSearchEntry(m_GraphAsset.GraphType));
         }
 
         public void Initialize(GraphAsset graphAsset)
@@ -52,7 +50,6 @@ namespace YBFramework.Editor.Graph
             m_GraphAsset = graphAsset;
             m_SO = new SerializedObject(graphAsset);
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
-            m_NodeSearchEntry = NodeSearchEntry.GetSearchEntry(graphAsset.GraphType);
             m_GraphView = new CustomGraphView(this)
             {
                 nodeCreationRequest = ShowNodeSearchView

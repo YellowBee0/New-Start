@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90024ad055184ac7b65f71a89e806400, type: 3}
-  m_Name: NewGraphAsset 2
+  m_Name: NewGraphAsset 3
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
   m_NodesData: []
   GraphType: -1

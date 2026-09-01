@@ -6,6 +6,8 @@ namespace YBFramework.Bridge.Data
     {
         private readonly HashSet<BasePortData> m_PortsSliceData = new();
 
+        private readonly HashSet<string> m_FilteredGraphAssetPaths = new();
+        
         public bool ContainsPortSliceData(BasePortData portData)
         {
             return m_PortsSliceData.Contains(portData);
@@ -21,6 +23,7 @@ namespace YBFramework.Bridge.Data
             return m_PortsSliceData.Remove(portData);
         }
 
+        //TODO:记得在while循环结束后调用Dispose()
         public HashSet<BasePortData>.Enumerator GetPortsSliceData()
         {
             return m_PortsSliceData.GetEnumerator();
