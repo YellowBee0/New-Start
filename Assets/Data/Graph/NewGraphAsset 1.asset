@@ -12,9 +12,62 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90024ad055184ac7b65f71a89e806400, type: 3}
   m_Name: NewGraphAsset 1
   m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
-  m_NodesData: []
+  m_NodesData:
+  - rid: 8128528965836472323
+  - rid: 8128528965836472326
+  - rid: 8128528965836472327
   GraphType: -1
-  SourceNodeID: 0
+  SourceNodeID: 3
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 8128528965836472323
+      type: {class: SubNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 1
+        NodeName: "\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 319.6981, y: 210.11322}
+        m_SubGraphAsset: {fileID: 11400000, guid: d542350b9b6363e4fb73f71a1d928fa7, type: 2}
+        m_SubPortsData:
+        - m_AsSubPortData:
+            rid: 8128528965836472325
+          m_AsSubNodeID: 1
+          m_AsSubPortID: 1
+        m_SourcePortID: 3
+    - rid: 8128528965836472325
+      type: {class: ActionPortData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_PortConnectionsData: []
+        m_PortID: 2
+        m_HasSubPortData: 1
+        m_OtherPortConnectionsData:
+        - NodeID: 3
+          PortID: 1
+    - rid: 8128528965836472326
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 2
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: -31.69809, y: 209.20755}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        m_SourcePortID: 1
+        m_IsInput: 1
+    - rid: 8128528965836472327
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 3
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 669.28296, y: 215.54718}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 1
+            PortID: 2
+        m_SourcePortID: 1
+        m_IsInput: 0

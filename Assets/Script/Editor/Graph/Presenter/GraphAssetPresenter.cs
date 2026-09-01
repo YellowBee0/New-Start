@@ -144,6 +144,7 @@ namespace YBFramework.Editor.Graph
         {
             if (m_NodePresenters.Remove(nodeDataPresenter))
             {
+                m_GraphAsset.RemoveNodeData(nodeDataPresenter.GetNodeData());
                 nodeDataPresenter.ClearPortDataPresenter();
                 m_GraphView.RemoveElement(nodeDataPresenter.GetNodeView());
                 BaseNodeDataPresenter.ReleaseNodePresenter(nodeDataPresenter);
