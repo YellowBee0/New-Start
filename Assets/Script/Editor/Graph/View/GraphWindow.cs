@@ -36,9 +36,13 @@ namespace YBFramework.Editor.Graph
 
         private readonly Dictionary<string, GraphAssetPresenter> m_LoadedGraphAssetPresenters = new();
 
+        private readonly List<string> m_GraphAssetPaths = new();
+
+        private readonly List<string> m_GraphAssetNames = new();
+
         private readonly List<string> m_FilteredGraphAssetNames = new();
 
-        private GraphAssetNameListener m_GraphAssetNameListener;
+        [NonSerialized] private bool m_HasInitializedGraphAssetName;
 
         [NonSerialized] private string m_FilterGraphAssetNameStr;
 
@@ -53,6 +57,130 @@ namespace YBFramework.Editor.Graph
         public GraphAssetPresenter GetOpenedPresenter()
         {
             return m_OpenedAssetPresenter;
+        }
+
+        private void OnSearchGraphAssetNameStrChanged(ChangeEvent<string> evt)
+        {
+            if (m_FilterGraphAssetNameStr != evt.newValue)
+            {
+                m_FilterGraphAssetNameStr = evt.newValue;
+                m_FilteredGraphAssetNames.Clear();
+                if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr))
+                {
+                    m_FilteredGraphAssetNames.AddRange(m_GraphAssetNames);
+                }
+                else
+                {
+                    for (int i = 0; i < m_GraphAssetNames.Count; i++)
+                    {
+                        string graphAssetName = m_GraphAssetNames[i];
+                        if (graphAssetName.Contains(m_FilterGraphAssetNameStr, StringComparison.OrdinalIgnoreCase))
+                        {
+                            m_FilteredGraphAssetNames.Add(graphAssetName);
+                        }
+                    }
+                }
+                m_ListView.RefreshItems();
+            }
+        }
+
+        private void OnAddGraphAsset(string graphAssetPath)
+        {
+            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+            m_GraphAssetPaths.Add(graphAssetPath);
+            m_GraphAssetNames.Add(graphAssetName);
+            if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr) || m_FilterGraphAssetNameStr.Contains(graphAssetName, StringComparison.OrdinalIgnoreCase))
+            {
+                m_FilteredGraphAssetNames.Add(graphAssetName);
+                m_ListView.RefreshItems();
+            }
+        }
+
+        private void OnRemoveGraphAsset(string graphAssetPath)
+        {
+            for (int i = 0; i < m_GraphAssetPaths.Count; i++)
+            {
+                if (m_GraphAssetPaths[i] == graphAssetPath)
+                {
+                    (m_GraphAssetPaths[i], m_GraphAssetPaths[^1]) = (m_GraphAssetPaths[^1], m_GraphAssetPaths[i]);
+                    (m_GraphAssetNames[i], m_GraphAssetNames[^1]) = (m_GraphAssetNames[^1], m_GraphAssetNames[i]);
+                    m_GraphAssetPaths.RemoveAt(m_GraphAssetPaths.Count - 1);
+                    m_GraphAssetNames.RemoveAt(m_GraphAssetNames.Count - 1);
+                    break;
+                }
+            }
+            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+            if (m_FilteredGraphAssetNames.Remove(graphAssetName))
+            {
+                m_ListView.RefreshItems();
+            }
+            DestroyGraphView(graphAssetPath);
+        }
+
+        #region List view
+
+        private VisualElement MakeItem()
+        {
+            Label label = new()
+            {
+                //设置内容超出父元素后的显示方式
+                style =
+                {
+                    overflow = Overflow.Hidden,
+                    whiteSpace = WhiteSpace.NoWrap,
+                    textOverflow = TextOverflow.Ellipsis
+                }
+            };
+            label.RegisterCallback<MouseDownEvent>(OnLabelClicked);
+            return label;
+        }
+
+        private void OnLabelClicked(MouseDownEvent evt)
+        {
+            if (evt.target is VisualElement target)
+            {
+                ChangeMainGraphView((string)target.userData);
+            }
+        }
+
+        private void BindItem(VisualElement item, int index)
+        {
+            if (item is Label label)
+            {
+                string graphName = m_FilteredGraphAssetNames[index];
+                label.text = graphName;
+                label.userData = m_GraphAssetPaths[m_GraphAssetNames.IndexOf(graphName)];
+            }
+        }
+
+        #endregion
+        
+        private void ChangeMainGraphView(string graphAssetPath)
+        {
+            if (m_OpenedGraphAssetPath != graphAssetPath)
+            {
+                GraphAssetPresenter graphPresenter = null;
+                if (!string.IsNullOrEmpty(graphAssetPath) && !m_LoadedGraphAssetPresenters.TryGetValue(graphAssetPath, out graphPresenter))
+                {
+                    GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
+                    if (graphAsset == null)
+                    {
+                        Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
+                        return;
+                    }
+                    graphPresenter = GraphAssetPresenter.AllocateGraphAssetPresenter();
+                    graphPresenter.Initialize(graphAsset);
+                    m_LoadedGraphAssetPresenters.Add(graphAssetPath, graphPresenter);
+                }
+                m_OpenedAssetPresenter?.GetGraphView().RemoveFromHierarchy();
+                if (graphPresenter != null)
+                {
+                    CustomGraphView graphView = graphPresenter.GetGraphView();
+                    m_GraphContainer.Add(graphView);
+                }
+                m_OpenedGraphAssetPath = graphAssetPath;
+                m_OpenedAssetPresenter = graphPresenter;
+            }
         }
 
         public void DestroyGraphView(string graphAssetPath)
@@ -82,13 +210,21 @@ namespace YBFramework.Editor.Graph
             }
             RuntimeToEditorMap.GetInstance().Initialize();
             NodeSearchEntry.InitializeNodeSearchTree();
-            if (m_GraphAssetNameListener == null)
+            if (!m_HasInitializedGraphAssetName)
             {
-                m_GraphAssetNameListener = new GraphAssetNameListener();
-                GraphAssetPostprocessor.AddGraphAssetChangeListener(m_GraphAssetNameListener);
-                m_GraphAssetNameListener.RegisterOnAddGraphAsset(OnAddGraphAsset);
-                m_GraphAssetNameListener.RegisterOnRemoveGraphAsset(OnRemoveGraphAsset);
-                m_FilteredGraphAssetNames.AddRange(m_GraphAssetNameListener.GetGraphAssetNames());
+                HashSet<string>.Enumerator allGraphAssetPaths = GraphAssetPostprocessor.GetAllGraphAssetPaths();
+                while (allGraphAssetPaths.MoveNext())
+                {
+                    string graphAssetPath = allGraphAssetPaths.Current;
+                    string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+                    m_GraphAssetPaths.Add(graphAssetPath);
+                    m_GraphAssetNames.Add(graphAssetName);
+                    m_FilteredGraphAssetNames.Add(graphAssetName);
+                }
+                allGraphAssetPaths.Dispose();
+                GraphAssetPostprocessor.OnAddGraphAsset += OnAddGraphAsset;
+                GraphAssetPostprocessor.OnRemoveGraphAsset += OnRemoveGraphAsset;
+                m_HasInitializedGraphAssetName = true;
             }
             //创建边栏搜索框和蓝图主视图容器
             VisualElement graphAssetView = new()
@@ -129,118 +265,9 @@ namespace YBFramework.Editor.Graph
             {
                 s_Instance = null;
             }
-            GraphAssetPostprocessor.RemoveGraphAssetChangeListener(m_GraphAssetNameListener);
-            m_GraphAssetNameListener.UnregisterOnAddGraphAsset(OnAddGraphAsset);
-            m_GraphAssetNameListener.UnregisterOnRemoveGraphAsset(OnRemoveGraphAsset);
-            m_GraphAssetNameListener = null;
-        }
-
-        private void OnSearchGraphAssetNameStrChanged(ChangeEvent<string> evt)
-        {
-            if (m_FilterGraphAssetNameStr != evt.newValue)
-            {
-                m_FilterGraphAssetNameStr = evt.newValue;
-                m_FilteredGraphAssetNames.Clear();
-                IReadOnlyList<string> graphAssetNames = m_GraphAssetNameListener.GetGraphAssetNames();
-                if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr))
-                {
-                    m_FilteredGraphAssetNames.AddRange(graphAssetNames);
-                }
-                else
-                {
-                    for (int i = 0; i < graphAssetNames.Count; i++)
-                    {
-                        string graphAssetName = graphAssetNames[i];
-                        if (graphAssetName.Contains(m_FilterGraphAssetNameStr, StringComparison.OrdinalIgnoreCase))
-                        {
-                            m_FilteredGraphAssetNames.Add(graphAssetName);
-                        }
-                    }
-                }
-                m_ListView.RefreshItems();
-            }
-        }
-
-        private void OnAddGraphAsset(string graphAssetPath)
-        {
-            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
-            if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr) || m_FilterGraphAssetNameStr.Contains(graphAssetName, StringComparison.OrdinalIgnoreCase))
-            {
-                m_FilteredGraphAssetNames.Add(graphAssetName);
-                m_ListView.RefreshItems();
-            }
-        }
-
-        private void OnRemoveGraphAsset(string graphAssetPath)
-        {
-            string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
-            if (m_FilteredGraphAssetNames.Remove(graphAssetName))
-            {
-                m_ListView.RefreshItems();
-            }
-            DestroyGraphView(graphAssetPath);
-        }
-
-        private VisualElement MakeItem()
-        {
-            Label label = new()
-            {
-                //设置内容超出父元素后的显示方式
-                style =
-                {
-                    overflow = Overflow.Hidden,
-                    whiteSpace = WhiteSpace.NoWrap,
-                    textOverflow = TextOverflow.Ellipsis
-                }
-            };
-            label.RegisterCallback<MouseDownEvent>(OnLabelClicked);
-            return label;
-        }
-
-        private void OnLabelClicked(MouseDownEvent evt)
-        {
-            if (evt.target is VisualElement target)
-            {
-                ChangeMainGraphView((string)target.userData);
-            }
-        }
-
-        private void BindItem(VisualElement item, int index)
-        {
-            if (item is Label label)
-            {
-                string graphName = m_FilteredGraphAssetNames[index];
-                label.text = graphName;
-                label.userData = m_GraphAssetNameListener.FindGraphAssetPathByName(graphName);
-            }
-        }
-
-        private void ChangeMainGraphView(string graphAssetPath)
-        {
-            if (m_OpenedGraphAssetPath != graphAssetPath)
-            {
-                GraphAssetPresenter graphPresenter = null;
-                if (!string.IsNullOrEmpty(graphAssetPath) && !m_LoadedGraphAssetPresenters.TryGetValue(graphAssetPath, out graphPresenter))
-                {
-                    GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
-                    if (graphAsset == null)
-                    {
-                        Debug.LogError($"Graph asset at path:{graphAssetPath} could not found");
-                        return;
-                    }
-                    graphPresenter = GraphAssetPresenter.AllocateGraphAssetPresenter();
-                    graphPresenter.Initialize(graphAsset);
-                    m_LoadedGraphAssetPresenters.Add(graphAssetPath, graphPresenter);
-                }
-                m_OpenedAssetPresenter?.GetGraphView().RemoveFromHierarchy();
-                if (graphPresenter != null)
-                {
-                    CustomGraphView graphView = graphPresenter.GetGraphView();
-                    m_GraphContainer.Add(graphView);
-                }
-                m_OpenedGraphAssetPath = graphAssetPath;
-                m_OpenedAssetPresenter = graphPresenter;
-            }
+            m_HasInitializedGraphAssetName = false;
+            GraphAssetPostprocessor.OnAddGraphAsset -= OnAddGraphAsset;
+            GraphAssetPostprocessor.OnRemoveGraphAsset -= OnRemoveGraphAsset;
         }
     }
 }

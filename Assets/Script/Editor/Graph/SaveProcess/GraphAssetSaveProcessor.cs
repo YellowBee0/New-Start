@@ -2,6 +2,7 @@
 using System.Reflection;
 using Script.Common;
 using UnityEditor;
+using UnityEngine;
 using YBFramework.Bridge.Data;
 using YBFramework.Bridge.Editor;
 
@@ -26,11 +27,12 @@ namespace YBFramework.Editor.Graph
 
         private static readonly Dictionary<string, Process> s_Processes;
 
-        private static GraphAssetListener s_GraphAssetListener;
+        private static readonly Dictionary<string, GraphAsset> s_GraphAssets;
 
         static unsafe GraphAssetSaveProcessor()
         {
             s_Processes = new Dictionary<string, Process>();
+            s_GraphAssets = new Dictionary<string, GraphAsset>();
             MethodInfo[] methodInfos = typeof(GraphAssetSaveProcessor).GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
             for (int i = 0; i < methodInfos.Length; i++)
             {
@@ -42,16 +44,43 @@ namespace YBFramework.Editor.Graph
                     s_Processes.Add(methodMark.MarkName, new Process(method));
                 }
             }
+            HashSet<string>.Enumerator allGraphAssetPaths = GraphAssetPostprocessor.GetAllGraphAssetPaths();
+            while (allGraphAssetPaths.MoveNext())
+            {
+                LoadGraphAsset(allGraphAssetPaths.Current);
+            }
+            allGraphAssetPaths.Dispose();
+            GraphAssetPostprocessor.OnAddGraphAsset += OnAddGraphAsset;
+            GraphAssetPostprocessor.OnRemoveGraphAsset += OnRemoveGraphAsset;
         }
 
-        private static GraphAssetListener GetGraphAssetListener()
+        private static void LoadGraphAsset(string graphAssetPath)
         {
-            if (s_GraphAssetListener == null)
+            GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
+            if (graphAsset != null)
             {
-                s_GraphAssetListener = new GraphAssetListener();
-                GraphAssetPostprocessor.AddGraphAssetChangeListener(s_GraphAssetListener);
+                s_GraphAssets.Add(graphAssetPath, graphAsset);
             }
-            return s_GraphAssetListener;
+            else
+            {
+                Debug.LogError($"Asset at path: {graphAssetPath} is not a {nameof(GraphAsset)} type");
+            }
+        }
+
+        private static void OnAddGraphAsset(string graphAssetPath)
+        {
+            LoadGraphAsset(graphAssetPath);
+        }
+
+        private static void OnRemoveGraphAsset(string graphAssetPath)
+        {
+            s_GraphAssets.Remove(graphAssetPath);
+        }
+
+        private static string[] OnWillSaveAssets(string[] paths)
+        {
+            EditorApplication.delayCall += DoProcess;
+            return paths;
         }
 
         private static void DoProcess()
@@ -75,7 +104,7 @@ namespace YBFramework.Editor.Graph
             for (int i = 0; i < subGraphConnectionsChangeData.Count; i++)
             {
                 ExposePortDataConnectionChangeData.SubGraphConnectionChangeData subGraphConnectionChangeData = subGraphConnectionsChangeData[i];
-                foreach (KeyValuePair<string, GraphAsset> kvp in GetGraphAssetListener())
+                foreach (KeyValuePair<string, GraphAsset> kvp in s_GraphAssets)
                 {
                     GraphAsset graphAsset = kvp.Value;
                     if (graphAsset != null)
@@ -108,12 +137,6 @@ namespace YBFramework.Editor.Graph
             }
             ExposePortDataConnectionChangeData.Clear();
             AssetDatabase.SaveAssets();
-        }
-
-        private static string[] OnWillSaveAssets(string[] paths)
-        {
-            EditorApplication.delayCall += DoProcess;
-            return paths;
         }
     }
 }

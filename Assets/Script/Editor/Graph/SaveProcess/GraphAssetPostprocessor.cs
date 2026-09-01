@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEditor;
 using YBFramework.Bridge.Data;
@@ -9,7 +10,9 @@ namespace YBFramework.Editor.Graph
     {
         private static readonly HashSet<string> s_AllGraphAssetPaths = new();
 
-        private static readonly List<IGraphAssetChangeListener> s_GraphAssetsChangeListeners = new();
+        public static Action<string> OnAddGraphAsset;
+
+        public static Action<string> OnRemoveGraphAsset;
 
         private static bool s_HasInitialized;
 
@@ -30,27 +33,11 @@ namespace YBFramework.Editor.Graph
             return s_AllGraphAssetPaths.GetEnumerator();
         }
 
-        public static void AddGraphAssetChangeListener(IGraphAssetChangeListener listener)
-        {
-            if (!s_GraphAssetsChangeListeners.Contains(listener))
-            {
-                s_GraphAssetsChangeListeners.Add(listener);
-            }
-        }
-
-        public static void RemoveGraphAssetChangeListener(IGraphAssetChangeListener listener)
-        {
-            s_GraphAssetsChangeListeners.Remove(listener);
-        }
-
         private static bool AddGraphAssetPath(string assetPath)
         {
             if (s_AllGraphAssetPaths.Add(assetPath))
             {
-                for (int i = 0; i < s_GraphAssetsChangeListeners.Count; i++)
-                {
-                    s_GraphAssetsChangeListeners[i].OnAddGraphAsset(assetPath);
-                }
+                OnAddGraphAsset?.Invoke(assetPath);
                 return true;
             }
             return false;
@@ -60,10 +47,7 @@ namespace YBFramework.Editor.Graph
         {
             if (s_AllGraphAssetPaths.Remove(assetPath))
             {
-                for (int i = 0; i < s_GraphAssetsChangeListeners.Count; i++)
-                {
-                    s_GraphAssetsChangeListeners[i].OnRemoveGraphAsset(assetPath);
-                }
+                OnRemoveGraphAsset?.Invoke(assetPath);
                 return true;
             }
             return false;
