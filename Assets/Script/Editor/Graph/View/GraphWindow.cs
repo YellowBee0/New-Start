@@ -261,6 +261,11 @@ namespace YBFramework.Editor.Graph
 
         private void OnDestroy()
         {
+            foreach (KeyValuePair<string,GraphAssetPresenter> kvp in m_LoadedGraphAssetPresenters)
+            {
+                GraphAssetPresenter.ReleaseGraphAssetPresenter(kvp.Value);
+            }
+            m_LoadedGraphAssetPresenters.Clear();
             if (s_Instance == this)
             {
                 s_Instance = null;

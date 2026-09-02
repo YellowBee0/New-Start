@@ -85,6 +85,18 @@ namespace YBFramework.Editor.Graph
             return m_PortDataPresenters;
         }
 
+        public BasePortDataPresenter FindPortDataPresenter(int portID)
+        {
+            for (int i = 0; i < m_PortDataPresenters.Count; i++)
+            {
+                if (m_PortDataPresenters[i].GetPortData().GetPortID() == portID)
+                {
+                    return m_PortDataPresenters[i];
+                }
+            }
+            return null;
+        }
+        
         public void AddPortDataPresenter(BasePortDataPresenter portDataPresenter)
         {
             m_NodeView.AddPortContentView(portDataPresenter.GetPortContentView(), portDataPresenter.GetPortView().direction);

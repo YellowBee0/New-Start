@@ -47,6 +47,17 @@ namespace YBFramework.Editor.Graph
 
         public void Initialize(GraphAsset graphAsset)
         {
+            Undo.undoRedoEvent += (in UndoRedoInfo info) =>
+            {
+                if (info.isRedo)
+                {
+                    m_PortConnectionUndoRedo.Redo();
+                }
+                else
+                {
+                    m_PortConnectionUndoRedo.Undo();
+                }
+            };
             m_GraphAsset = graphAsset;
             m_SO = new SerializedObject(graphAsset);
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
@@ -82,24 +93,13 @@ namespace YBFramework.Editor.Graph
                     for (int k = 0; k < portConnectionDataCount; k++)
                     {
                         PortConnectionData portConnectionData = fromPortData.PortConnectionDataOfIndex(k);
-                        for (int l = 0; l < m_NodePresenters.Count; l++)
+                        BaseNodeDataPresenter toNodeDataPresenter = FindNodeDataPresenter(portConnectionData.NodeID);
+                        if (toNodeDataPresenter != null)
                         {
-                            BaseNodeDataPresenter toNodeDataPresenter = m_NodePresenters[l];
-                            if (toNodeDataPresenter.GetNodeData().GetNodeID() == portConnectionData.NodeID)
-                            {
-                                IReadOnlyList<BasePortDataPresenter> toPortPresenters = toNodeDataPresenter.GetPortPresenters();
-                                for (int m = 0; m < toPortPresenters.Count; m++)
-                                {
-                                    BasePortDataPresenter toPortDataPresenter = toPortPresenters[m];
-                                    if (toPortDataPresenter.GetPortData().GetPortID() == portConnectionData.PortID)
-                                    {
-                                        Edge edge = fromPortDataPresenter.GetPortView().ConnectTo(toPortDataPresenter.GetPortView());
-                                        m_GraphView.AddElement(edge);
-                                        break;
-                                    }
-                                }
-                                break;
-                            }
+                            BasePortDataPresenter toPortDataPresenter = toNodeDataPresenter.FindPortDataPresenter(portConnectionData.PortID);
+                            Edge edge = fromPortDataPresenter.GetPortView().ConnectTo(toPortDataPresenter.GetPortView());
+                            m_GraphView.AddElement(edge);
+                            break;
                         }
                     }
                 }
@@ -129,6 +129,18 @@ namespace YBFramework.Editor.Graph
                 if (nodesData[i] == nodeData)
                 {
                     return m_NodeDataListProperty.GetArrayElementAtIndex(i);
+                }
+            }
+            return null;
+        }
+
+        public BaseNodeDataPresenter FindNodeDataPresenter(int nodeID)
+        {
+            for (int i = 0; i < m_NodePresenters.Count; i++)
+            {
+                if (m_NodePresenters[i].GetNodeData().GetNodeID() == nodeID)
+                {
+                    return m_NodePresenters[i];
                 }
             }
             return null;
@@ -198,6 +210,8 @@ namespace YBFramework.Editor.Graph
             return changeValue;
         }
 
+        private PortConnectionUndoRedo m_PortConnectionUndoRedo;
+        
         public void OnEdgeConnect(Edge edge)
         {
             PortView inputPortView = (PortView)edge.input;
@@ -251,6 +265,7 @@ namespace YBFramework.Editor.Graph
                 toRemoveOutputPortView.Disconnect(singleConnectionToRemove);
                 m_GraphView.RemoveElement(singleConnectionToRemove);
             }
+            Undo.RecordObject(m_GraphAsset, "Connect Ports");
             if (isInputCanConnectOutput)
             {
                 inputPortData.Connect(outputPortData);
@@ -262,6 +277,8 @@ namespace YBFramework.Editor.Graph
             inputPortView.Connect(edge);
             outputPortView.Connect(edge);
             m_GraphView.AddElement(edge);
+            m_PortConnectionUndoRedo = UndoRedo.Allocate<PortConnectionUndoRedo>(Undo.GetCurrentGroup());
+            m_PortConnectionUndoRedo.Initialize(this, inputPortView.PortDataDataPresenter, outputPortView.PortDataDataPresenter, edge);
             EditorUtility.SetDirty(m_GraphAsset);
         }
     }

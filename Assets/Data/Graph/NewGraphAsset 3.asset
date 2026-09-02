@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90024ad055184ac7b65f71a89e806400, type: 3}
+  m_Name: NewGraphAsset 3
+  m_EditorClassIdentifier: Assembly-CSharp::YBFramework.Bridge.Data.GraphAsset
+  m_NodesData:
+  - rid: 8128528965836472384
+  - rid: 8128528965836472385
+  GraphType: -1
+  SourceNodeID: 2
+  references:
+    version: 2
+    RefIds:
+    - rid: 8128528965836472384
+      type: {class: TestNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 1
+        NodeName: "\u6D4B\u8BD5(Everything)"
+        Position: {x: 489.96225, y: 175.69812}
+        m_InvokePortData:
+          m_PortConnectionsData: []
+          m_PortID: 1
+          m_HasSubPortData: 0
+          m_OtherPortConnectionsData: []
+        m_IntInputPort:
+          m_Value: 0
+          m_DelegatePortConnectionData:
+            NodeID: 0
+            PortID: 0
+            IsExplicitCast: 0
+          m_PortID: 2
+          m_HasSubPortData: 0
+          m_OtherPortConnectionsData: []
+    - rid: 8128528965836472385
+      type: {class: ExposePortsNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 2
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: 76.07547, y: 201.96228}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        m_SourcePortID: 1
+        m_IsInput: 1
