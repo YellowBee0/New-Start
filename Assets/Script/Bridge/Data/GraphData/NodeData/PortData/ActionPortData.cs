@@ -162,6 +162,7 @@ namespace YBFramework.Bridge.Data
                 PortID = other.GetPortID(),
                 IsExplicitCast = isExplicitCast
             });
+            other.BeConnected(this);
         }
 
         public override void Disconnect(BasePortData other)
@@ -172,6 +173,7 @@ namespace YBFramework.Bridge.Data
                 if (portConnectionData.NodeID == other.GetNodeData().GetNodeID() && portConnectionData.PortID == other.GetPortID())
                 {
                     m_PortConnectionsData.RemoveAt(i);
+                    other.BeDisconnected(this);
                     break;
                 }
             }

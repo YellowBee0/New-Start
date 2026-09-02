@@ -185,8 +185,8 @@ namespace YBFramework.Bridge.Data
             {
                 m_DelegatePortConnectionData.NodeID = 0;
                 m_DelegatePortConnectionData.PortID = 0;
+                other.BeDisconnected(this);
             }
-            other.BeConnected(this);
         }
 
         public override void BeConnected(BasePortData other)

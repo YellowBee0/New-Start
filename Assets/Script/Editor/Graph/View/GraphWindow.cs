@@ -89,7 +89,7 @@ namespace YBFramework.Editor.Graph
             string graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
             m_GraphAssetPaths.Add(graphAssetPath);
             m_GraphAssetNames.Add(graphAssetName);
-            if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr) || m_FilterGraphAssetNameStr.Contains(graphAssetName, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(m_FilterGraphAssetNameStr) || graphAssetName.Contains(m_FilterGraphAssetNameStr, StringComparison.OrdinalIgnoreCase))
             {
                 m_FilteredGraphAssetNames.Add(graphAssetName);
                 m_ListView.RefreshItems();
@@ -154,7 +154,7 @@ namespace YBFramework.Editor.Graph
         }
 
         #endregion
-        
+
         private void ChangeMainGraphView(string graphAssetPath)
         {
             if (m_OpenedGraphAssetPath != graphAssetPath)
@@ -261,7 +261,7 @@ namespace YBFramework.Editor.Graph
 
         private void OnDestroy()
         {
-            foreach (KeyValuePair<string,GraphAssetPresenter> kvp in m_LoadedGraphAssetPresenters)
+            foreach (KeyValuePair<string, GraphAssetPresenter> kvp in m_LoadedGraphAssetPresenters)
             {
                 GraphAssetPresenter.ReleaseGraphAssetPresenter(kvp.Value);
             }

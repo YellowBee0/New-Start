@@ -47,17 +47,6 @@ namespace YBFramework.Editor.Graph
 
         public void Initialize(GraphAsset graphAsset)
         {
-            Undo.undoRedoEvent += (in UndoRedoInfo info) =>
-            {
-                if (info.isRedo)
-                {
-                    m_PortConnectionUndoRedo.Redo();
-                }
-                else
-                {
-                    m_PortConnectionUndoRedo.Undo();
-                }
-            };
             m_GraphAsset = graphAsset;
             m_SO = new SerializedObject(graphAsset);
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
@@ -99,7 +88,6 @@ namespace YBFramework.Editor.Graph
                             BasePortDataPresenter toPortDataPresenter = toNodeDataPresenter.FindPortDataPresenter(portConnectionData.PortID);
                             Edge edge = fromPortDataPresenter.GetPortView().ConnectTo(toPortDataPresenter.GetPortView());
                             m_GraphView.AddElement(edge);
-                            break;
                         }
                     }
                 }
@@ -168,9 +156,10 @@ namespace YBFramework.Editor.Graph
             m_SO.Update();
         }
 
-        public GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
+        private GraphViewChange OnGraphViewChanged(GraphViewChange changeValue)
         {
             //TODO:需要支持Undo
+            //TODO:不要在这里调用GraphView的RemoveElement
             if (changeValue.elementsToRemove != null)
             {
                 for (int i = 0; i < changeValue.elementsToRemove.Count; i++)
@@ -209,8 +198,6 @@ namespace YBFramework.Editor.Graph
             EditorUtility.SetDirty(m_GraphAsset);
             return changeValue;
         }
-
-        private PortConnectionUndoRedo m_PortConnectionUndoRedo;
         
         public void OnEdgeConnect(Edge edge)
         {
@@ -228,6 +215,7 @@ namespace YBFramework.Editor.Graph
                 }
                 return;
             }
+            //TODO:输入输出单独处理自己的连线。
             Edge singleConnectionToRemove = null;
             if (inputPortView.capacity == Port.Capacity.Single)
             {
@@ -265,7 +253,6 @@ namespace YBFramework.Editor.Graph
                 toRemoveOutputPortView.Disconnect(singleConnectionToRemove);
                 m_GraphView.RemoveElement(singleConnectionToRemove);
             }
-            Undo.RecordObject(m_GraphAsset, "Connect Ports");
             if (isInputCanConnectOutput)
             {
                 inputPortData.Connect(outputPortData);
@@ -277,8 +264,6 @@ namespace YBFramework.Editor.Graph
             inputPortView.Connect(edge);
             outputPortView.Connect(edge);
             m_GraphView.AddElement(edge);
-            m_PortConnectionUndoRedo = UndoRedo.Allocate<PortConnectionUndoRedo>(Undo.GetCurrentGroup());
-            m_PortConnectionUndoRedo.Initialize(this, inputPortView.PortDataDataPresenter, outputPortView.PortDataDataPresenter, edge);
             EditorUtility.SetDirty(m_GraphAsset);
         }
     }

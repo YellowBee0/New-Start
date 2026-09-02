@@ -73,14 +73,12 @@ namespace YBFramework.Bridge.Data
         /// <param name="nodeData">移除的节点数据</param>
         public void RemoveNodeData(BaseNodeData nodeData)
         {
-            if (m_NodesData.Remove(nodeData))
+            int portDataCount = nodeData.GetPortsDataCount();
+            for (int i = 0; i < portDataCount; i++)
             {
-                int portDataCount = nodeData.GetPortsDataCount();
-                for (int i = 0; i < portDataCount; i++)
-                {
-                    nodeData.PortDataOfIndex(i).DisconnectAll();
-                }
+                nodeData.PortDataOfIndex(i).DisconnectAll();
             }
+            m_NodesData.Remove(nodeData);
         }
 
         public void SetDirtyToReinitialize()

@@ -21,7 +21,6 @@ namespace YBFramework.Editor.Graph
             grid.StretchToParentSize();
             Insert(0, grid);
             this.StretchToParentSize();
-            graphViewChanged += GraphAssetPresenter.OnGraphViewChanged;
         }
 
         public void OnEdgeConnect(Edge edge)
