@@ -1,0 +1,18 @@
+{
+  "name": "YBFramework.BlueprintV2.Editor",
+  "rootNamespace": "YBFramework.BlueprintV2.Editor",
+  "references": [
+    "YBFramework.BlueprintV2"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
