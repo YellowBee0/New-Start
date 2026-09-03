@@ -7,7 +7,7 @@ namespace YBFramework.Bridge.Data
         private readonly HashSet<BasePortData> m_PortsSliceData = new();
 
         private readonly HashSet<string> m_FilteredGraphAssetPaths = new();
-        
+
         public bool ContainsPortSliceData(BasePortData portData)
         {
             return m_PortsSliceData.Contains(portData);

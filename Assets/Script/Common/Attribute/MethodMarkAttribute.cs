@@ -1,7 +1,9 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Script.Common
 {
+    [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public sealed class MethodMarkAttribute : Attribute
     {

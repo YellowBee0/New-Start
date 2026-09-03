@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.GraphView;
+﻿using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,37 +7,106 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class PortView : Port
     {
-        public readonly BasePortDataPresenter PortDataDataPresenter;
-
-        public PortView(BasePortDataPresenter portDataDataPresenter, string name, Direction direction, Capacity capacity, Color color) : base(Orientation.Horizontal, direction, capacity, null)
-        {
-            PortDataDataPresenter = portDataDataPresenter;
-            portName = name;
-            portColor = color;
-            m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener());
-            this.AddManipulator(m_EdgeConnector);
-        }
+        private int m_PortID;
 
         /// <summary>
-        /// PortView视图上连接连线，如果数据也得修改，需要一起调用BindPortData的Connect函数
+        /// 只有缓存Drawer，不然每次视图上用户操作了，不能方便地获取到操作的数据
         /// </summary>
-        /// <param name="edge">连线</param>
+        private BasePortDrawer m_PortDrawer;
+
+        private PortView(Direction direction, Capacity capacity) : base(Orientation.Horizontal, direction, capacity, null)
+        {
+        }
+
+        public int GetPortID()
+        {
+            return m_PortID;
+        }
+
+        public BasePortDrawer GetPortDrawer()
+        {
+            return m_PortDrawer;
+        }
+
+        public void SetEdgeConnector(EdgeConnector<EdgeView> portEdgeConnector)
+        {
+            this.RemoveManipulator(m_EdgeConnector);
+            m_EdgeConnector = portEdgeConnector;
+            this.AddManipulator(portEdgeConnector);
+        }
+
+        public Edge FindConnection(PortView other)
+        {
+            Edge connection = null;
+            foreach (Edge edge in connections)
+            {
+                if (direction == Direction.Input)
+                {
+                    if (edge.output == other)
+                    {
+                        connection = edge;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (edge.input == other)
+                    {
+                        connection = edge;
+                        break;
+                    }
+                }
+            }
+            return connection;
+        }
+
+        private void OnRelease()
+        {
+            CustomGraphView.DisconnectAll(this, m_PortDrawer.GetNodeDrawer().GetGraphAssetDrawer().GetGraphView());
+        }
+
         public override void Connect(Edge edge)
         {
             base.Connect(edge);
-            PortDataDataPresenter.OnPortViewConnect(edge);
-            //不在这里持久化连线数据的原因：通过已经存在的连线数据恢复连线时也是调用这个函数，如果持久化数据会导致重复连接
+            m_PortDrawer.OnPortViewConnect(edge);
         }
 
-        /// <summary>
-        /// PortView视图上断开连线，如果数据也得修改，需要一起调用BindPortData的Disconnect函数
-        /// </summary>
-        /// <param name="edge">连线</param>
         public override void Disconnect(Edge edge)
         {
             base.Disconnect(edge);
-            PortDataDataPresenter.OnPortViewDisconnect(edge);
-            //不在这里持久化连线数据的原因：为了对齐连接函数
+            m_PortDrawer.OnPortViewDisconnect(edge);
         }
+
+        #region Pool
+
+        private static readonly Dictionary<(Direction, Capacity), Stack<PortView>> s_Pools = new();
+
+        public static PortView Allocate(Direction direction, Capacity capacity, int portID, BasePortDrawer portDrawer, string portViewName, Color color)
+        {
+            (Direction direction, Capacity capacity) key = (direction, capacity);
+            if (!s_Pools.TryGetValue(key, out Stack<PortView> pool))
+            {
+                pool = new Stack<PortView>();
+                s_Pools.Add(key, pool);
+            }
+            PortView portView = pool.Count > 0 ? pool.Pop() : new PortView(direction, capacity);
+            portView.m_PortID = portID;
+            portView.m_PortDrawer = portDrawer;
+            portView.portName = portViewName;
+            portView.portColor = color;
+            return portView;
+        }
+
+        public static void Release(PortView portView)
+        {
+            (Direction direction, Capacity capacity) key = (portView.direction, portView.capacity);
+            if (s_Pools.TryGetValue(key, out Stack<PortView> pool))
+            {
+                portView.OnRelease();
+                pool.Push(portView);
+            }
+        }
+
+        #endregion
     }
 }

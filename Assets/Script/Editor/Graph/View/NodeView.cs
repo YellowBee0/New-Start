@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.GraphView;
+﻿using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,20 +7,36 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class NodeView : Node
     {
-        public readonly BaseNodeDataPresenter NodeDataPresenter;
+        private int m_NodeID;
 
-        public NodeView(BaseNodeDataPresenter nodeDataPresenter)
+        /// <summary>
+        /// 只有缓存Drawer，不然每次视图上用户操作了，不能方便地获取到操作的数据
+        /// </summary>
+        private BaseNodeDrawer m_NodeDrawer;
+
+        private readonly List<PortView> m_PortViews = new();
+
+        public int GetNodeID()
         {
-            NodeDataPresenter = nodeDataPresenter;
-            title = nodeDataPresenter.GetNodeData().NodeName;
-            SetPosition(new Rect(nodeDataPresenter.GetNodeData().Position, Vector2.one));
+            return m_NodeID;
         }
 
-        public void AddPortContentView(VisualElement portContentView, Direction direction)
+        public BaseNodeDrawer GetNodeDrawer()
         {
+            return m_NodeDrawer;
+        }
+
+        public IReadOnlyList<PortView> GetPortViews()
+        {
+            return m_PortViews;
+        }
+
+        public void AddPortView(PortView portView)
+        {
+            VisualElement portContentView = portView.GetPortDrawer().GetPortContentView();
             portContentView.style.borderBottomColor = Color.black;
             portContentView.style.borderBottomWidth = .2f;
-            if (direction == Direction.Input)
+            if (portView.direction == Direction.Input)
             {
                 inputContainer.Add(portContentView);
             }
@@ -27,19 +44,37 @@ namespace YBFramework.Editor.Graph
             {
                 outputContainer.Add(portContentView);
             }
+            m_PortViews.Add(portView);
         }
 
-        public void RemovePortContentView(VisualElement portContentView, Direction direction)
+        public void RemovePortView(PortView portView)
         {
-            CustomGraphView graphView = NodeDataPresenter.GetGraphAssetPresenter().GetGraphView();
-            if (direction == Direction.Input)
+            if (m_PortViews.Remove(portView))
             {
-                inputContainer.Remove(portContentView);
+                VisualElement portContentView = portView.GetPortDrawer().GetPortContentView();
+                if (portView.direction == Direction.Input)
+                {
+                    inputContainer.Remove(portContentView);
+                }
+                else
+                {
+                    outputContainer.Remove(portContentView);
+                }
+                PortView.Release(portView);
             }
-            else
+        }
+
+        public PortView FindPortView(int portID)
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
             {
-                outputContainer.Remove(portContentView);
+                PortView portView = m_PortViews[i];
+                if (portView.GetPortID() == portID)
+                {
+                    return portView;
+                }
             }
+            return null;
         }
 
         public void RefreshPortContainerDisplay()
@@ -47,5 +82,40 @@ namespace YBFramework.Editor.Graph
             inputContainer.style.display = inputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
             outputContainer.style.display = outputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
         }
+
+        private void OnRelease()
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
+            {
+                PortView.Release(m_PortViews[i]);
+            }
+            inputContainer.Clear();
+            outputContainer.Clear();
+            contentContainer.Clear();
+            m_PortViews.Clear();
+        }
+
+        #region Pool
+
+        private static readonly Stack<NodeView> s_Pool = new();
+
+        public static NodeView Allocate(int nodeID, BaseNodeDrawer nodeDrawer, string nodeName, Vector2 position)
+        {
+            NodeView nodeView = s_Pool.Count > 0 ? s_Pool.Pop() : new NodeView();
+            nodeView.m_NodeID = nodeID;
+            nodeView.m_NodeDrawer = nodeDrawer;
+            nodeView.title = nodeName;
+            nodeView.SetPosition(new Rect(position, Vector2.zero));
+            nodeView.m_PortViews.Clear();
+            return nodeView;
+        }
+
+        public static void Release(NodeView nodeView)
+        {
+            nodeView.OnRelease();
+            s_Pool.Push(nodeView);
+        }
+
+        #endregion
     }
 }

@@ -1,0 +1,90 @@
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
+using YBFramework.Bridge.Data;
+
+namespace YBFramework.Editor.Graph
+{
+    [RuntimeToEditor(typeof(ValueInputPortData<>))]
+    public sealed class ValueInputPortDrawer : BasePortDrawer
+    {
+        private PropertyField m_ValueField;
+
+        private BasePortData m_ValueInputPortData;
+
+        private PortView m_PortView;
+
+        private VisualElement m_PortContentView;
+
+        public ValueInputPortDrawer()
+        {
+            m_ValueField = new PropertyField();
+            m_ValueField.styleSheets.Add(StyleSheetManager.LoadStylesheet("GraphViewLabel"));
+        }
+
+        public override void OnPortViewConnect(Edge edge)
+        {
+            m_ValueField.enabledSelf = false;
+        }
+
+        public override void OnPortViewDisconnect(Edge edge)
+        {
+            m_ValueField.enabledSelf = true;
+        }
+
+        public override BasePortData GetPortData()
+        {
+            return m_ValueInputPortData;
+        }
+
+        public override VisualElement GetPortContentView()
+        {
+            return m_PortContentView;
+        }
+
+        public override PortView GetPortView()
+        {
+            return m_PortView;
+        }
+
+        protected override PortView OnDrawPortView(BasePortData portData)
+        {
+            m_ValueInputPortData = portData;
+            m_PortView = PortView.Allocate(portData.GetDirection(), portData.GetCapacity(), portData.GetPortID(), this, portData.GetPortName(), portData.GetPortColor());
+            m_PortContentView = m_PortView;
+            SerializedProperty nodeDataListSP = GetNodeDrawer().GetGraphAssetDrawer().GetNodeDataListProperty();
+            IReadOnlyList<BaseNodeData> nodesData = GetNodeDrawer().GetGraphAssetDrawer().GetGraphAsset().GetNodesData();
+            for (int i = 0; i < nodesData.Count; i++)
+            {
+                if (nodesData[i] == portData.GetNodeData())
+                {
+                    SerializedProperty nodeDataSP = nodeDataListSP.GetArrayElementAtIndex(i);
+                    if (nodeDataSP != null)
+                    {
+                        SerializedProperty portDataSP = nodeDataSP.FindPropertyRelative(portData.GetFieldName());
+                        if (portDataSP != null)
+                        {
+                            SerializedProperty valueProperty = portDataSP.FindPropertyRelative("m_Value");
+                            if (valueProperty != null)
+                            {
+                                VisualElement portContentView = new();
+                                m_ValueField.BindProperty(valueProperty);
+                                portContentView.Add(m_PortContentView);
+                                portContentView.Add(m_ValueField);
+                                m_PortContentView = portContentView;
+                            }
+                        }
+                    }
+                }
+            }
+            return m_PortView;
+        }
+
+        public override void OnRelease()
+        {
+            m_PortContentView.Remove(m_ValueField);
+        }
+    }
+}

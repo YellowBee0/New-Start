@@ -54,6 +54,11 @@ namespace YBFramework.Editor.Graph
             GraphAssetPostprocessor.OnRemoveGraphAsset += OnRemoveGraphAsset;
         }
 
+        public static GraphAsset GetGraphAsset(string graphAssetPath)
+        {
+            return s_GraphAssets.GetValueOrDefault(graphAssetPath);
+        }
+
         private static void LoadGraphAsset(string graphAssetPath)
         {
             GraphAsset graphAsset = AssetDatabase.LoadAssetAtPath<GraphAsset>(graphAssetPath);
@@ -126,6 +131,7 @@ namespace YBFramework.Editor.Graph
                                 GraphWindow instance = GraphWindow.GetInstance();
                                 if (instance != null)
                                 {
+                                    //TODO:这里改为局部更新
                                     instance.DestroyGraphView(AssetDatabase.GetAssetPath(graphAsset));
                                     graphAsset.SetDirtyToReinitialize();
                                 }
