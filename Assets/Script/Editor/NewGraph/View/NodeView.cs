@@ -7,12 +7,19 @@ namespace YBFramework.Editor.NewGraph
 {
     public sealed class NodeView : Node
     {
+        private int m_NodeID;
+
         /// <summary>
         /// 只有缓存Drawer，不然每次视图上用户操作了，不能方便地获取到操作的数据
         /// </summary>
         private BaseNodeDrawer m_NodeDrawer;
 
         private readonly List<PortView> m_PortViews = new();
+
+        public int GetNodeID()
+        {
+            return m_NodeID;
+        }
 
         public BaseNodeDrawer GetNodeDrawer()
         {
@@ -71,19 +78,33 @@ namespace YBFramework.Editor.NewGraph
             m_PortViews.Clear();
         }
 
+        public PortView FindPortView(int portID)
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
+            {
+                PortView portView = m_PortViews[i];
+                if (portView.GetPortID() == portID)
+                {
+                    return portView;
+                }
+            }
+            return null;
+        }
+
         public void RefreshPortContainerDisplay()
         {
             inputContainer.style.display = inputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
             outputContainer.style.display = outputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
         }
-        
+
         #region Pool
 
         private static readonly Stack<NodeView> s_Pool = new();
 
-        public static NodeView Allocate(BaseNodeDrawer nodeDrawer, string nodeName, Vector2 position)
+        public static NodeView Allocate(int nodeID, BaseNodeDrawer nodeDrawer, string nodeName, Vector2 position)
         {
             NodeView nodeView = s_Pool.Count > 0 ? s_Pool.Pop() : new NodeView();
+            nodeView.m_NodeID = nodeID;
             nodeView.m_NodeDrawer = nodeDrawer;
             nodeView.title = nodeName;
             nodeView.SetPosition(new Rect(position, Vector2.zero));

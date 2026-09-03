@@ -32,6 +32,11 @@ namespace YBFramework.Editor.NewGraph
             return m_GraphAssetDrawer;
         }
 
+        public IReadOnlyList<NodeView> GetNodeViews()
+        {
+            return m_NodeViews;
+        }
+        
         public void AddNodeView(NodeView nodeView)
         {
             if (!m_NodeViews.Contains(nodeView))
@@ -51,6 +56,19 @@ namespace YBFramework.Editor.NewGraph
             }
         }
 
+        public NodeView FindNodeView(int nodeID)
+        {
+            for (int i = 0; i < m_NodeViews.Count; i++)
+            {
+                NodeView nodeView = m_NodeViews[i];
+                if (nodeView.GetNodeID() == nodeID)
+                {
+                    return nodeView;
+                }
+            }
+            return null;
+        }
+
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             Direction direction = startPort.direction;
@@ -68,6 +86,39 @@ namespace YBFramework.Editor.NewGraph
                 }
             }
             return m_CompatiblePorts;
+        }
+
+        public static void Connect(PortView fromPortView, PortView toPortView, GraphView graphView)
+        {
+            EdgeView edgeView = fromPortView.ConnectTo<EdgeView>(toPortView);
+            edgeView.SetConnectDirection(fromPortView, toPortView);
+            graphView.AddElement(edgeView);
+        }
+
+        public static void Connect(PortView fromPortView, PortView toPortView, EdgeView edgeView, GraphView graphView)
+        {
+            fromPortView.Connect(edgeView);
+            toPortView.Connect(edgeView);
+            edgeView.SetConnectDirection(fromPortView, toPortView);
+            graphView.AddElement(edgeView);
+        }
+
+        public static void Disconnect(PortView fromPortView, PortView toPortView, GraphView graphView)
+        {
+            Edge connection = fromPortView.FindConnection(toPortView);
+            if (connection != null)
+            {
+                fromPortView.Disconnect(connection);
+                toPortView.Disconnect(connection);
+                graphView.RemoveElement(connection);
+            }
+        }
+
+        public static void Disconnect(EdgeView edgeView, GraphView graphView)
+        {
+            edgeView.input.Disconnect(edgeView);
+            edgeView.output.Disconnect(edgeView);
+            graphView.RemoveElement(edgeView);
         }
         
         #region Pool

@@ -116,7 +116,7 @@ namespace YBFramework.Bridge.Data
                 ExposePortData exposePortData = m_ExposePortsData[i];
                 Initialize(exposePortData, i);
                 PortConnectionData exposePortAddress = exposePortData.GetToExposePortAddress();
-                if (exposePortAddress.NodeID > 0 && exposePortAddress.PortID > 0)
+                if (exposePortAddress.IsValid())
                 {
                     BaseNodeData toExposeNodeData = m_GraphAsset.FindNodeData(exposePortAddress.NodeID);
                     if (toExposeNodeData != null)

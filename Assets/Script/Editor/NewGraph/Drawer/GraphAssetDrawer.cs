@@ -13,7 +13,7 @@ namespace YBFramework.Editor.NewGraph
 
         private CustomGraphView m_GraphView;
 
-        private EdgeConnector<Edge> m_EdgeConnector;
+        private EdgeConnector<EdgeView> m_EdgeConnector;
 
         private SerializedObject m_SO;
 
@@ -35,7 +35,7 @@ namespace YBFramework.Editor.NewGraph
             return m_GraphView;
         }
 
-        public EdgeConnector<Edge> GetEdgeConnector()
+        public EdgeConnector<EdgeView> GetEdgeConnector()
         {
             return m_EdgeConnector;
         }
@@ -84,7 +84,7 @@ namespace YBFramework.Editor.NewGraph
         {
             m_GraphAsset = graphAsset;
             m_GraphView = new CustomGraphView();
-            m_EdgeConnector = new EdgeConnector<Edge>(new EdgeConnectorListener(this));
+            m_EdgeConnector = new EdgeConnector<EdgeView>(new EdgeConnectorListener(this));
             m_GraphView.graphViewChanged += OnGraphViewChanged;
             IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
             for (int i = 0; i < nodesData.Count; i++)
@@ -95,6 +95,43 @@ namespace YBFramework.Editor.NewGraph
                 {
                     m_GraphView.AddNodeView(nodeDrawer.DrawNodeView(this, nodeData));
                     AddNodeDrawer(nodeDrawer);
+                }
+            }
+
+            IReadOnlyList<NodeView> nodeViews = m_GraphView.GetNodeViews();
+            for (int i = 0; i < nodeViews.Count; i++)
+            {
+                RevertNodeViewConnections(nodeViews[i]);
+            }
+        }
+
+        public void RevertNodeViewConnections(NodeView nodeView)
+        {
+            IReadOnlyList<PortView> portViews = nodeView.GetPortViews();
+            for (int i = 0; i < portViews.Count; i++)
+            {
+                RevertPortViewConnections(portViews[i]);
+            }
+        }
+
+        public void RevertPortViewConnections(PortView portView)
+        {
+            BasePortData portData = portView.GetPortDrawer().GetPortData();
+            int portConnectionsDataCount = portData.GetPortConnectionsDataCount();
+            for (int i = 0; i < portConnectionsDataCount; i++)
+            {
+                PortConnectionData portConnectionData = portData.PortConnectionDataOfIndex(i);
+                if (portConnectionData.IsValid())
+                {
+                    NodeView toNodeView = m_GraphView.FindNodeView(portConnectionData.NodeID);
+                    if (toNodeView != null)
+                    {
+                        PortView toPortView = toNodeView.FindPortView(portConnectionData.PortID);
+                        if (toPortView != null)
+                        {
+                            CustomGraphView.Connect(portView, toPortView, m_GraphView);
+                        }
+                    }
                 }
             }
         }
@@ -132,14 +169,148 @@ namespace YBFramework.Editor.NewGraph
             }
         }
 
+        //这个函数上升到全局
+        public void ClearModifyGraphAsset()
+        {
+            if (m_IsModifyGraphAsset)
+            {
+                throw new InvalidOperationException("Cannot clear modify graph asset while modifying, please call ApplyModifyGraphAsset before calling ClearModifyGraphAsset.");
+            }
+            Undo.ClearAll();
+            UndoRedoBehaviourManager.Clear();
+        }
+
+        public void PushUndoRedoBehaviour(IUndoRedoBehaviour undoRedoBehaviour)
+        {
+            if (m_IsModifyGraphAsset)
+            {
+                UndoRedoBehaviourManager.PushUndoRedoBehaviour(m_UndoGroupIndex, undoRedoBehaviour);
+            }
+        }
+
         private void OnEdgeConnect(Edge edge)
         {
+            PortView inputPortView = (PortView)edge.input;
+            PortView outputPortView = (PortView)edge.output;
+            BasePortData inputPortData = inputPortView.GetPortDrawer().GetPortData();
+            BasePortData outputPortData = outputPortView.GetPortDrawer().GetPortData();
+            bool isInputCanConnectOutput = inputPortData.CanConnect(outputPortData);
+            bool isOutputCanConnectInput = outputPortData.CanConnect(inputPortData);
+            if (!(isInputCanConnectOutput ^ isOutputCanConnectInput))
+            {
+                if (isInputCanConnectOutput)
+                {
+                    Debug.LogError("This can not know witch one to connect because of both port can connect to other port");
+                }
+                return;
+            }
+            ModifyGraphAsset("Connect port");
+            if (inputPortView.capacity == Port.Capacity.Single)
+            {
+                foreach (Edge connection in inputPortView.connections)
+                {
+                    if (connection != edge)
+                    {
+                        DisconnectEdge(edge);
+                        break;
+                    }
+                }
+            }
+            if (outputPortView.capacity == Port.Capacity.Single)
+            {
+                foreach (Edge connection in outputPortView.connections)
+                {
+                    if (connection != edge)
+                    {
+                        DisconnectEdge(edge);
+                        break;
+                    }
+                }
+            }
+            EdgeView edgeView = (EdgeView)edge;
+            PortView fromPortView;
+            PortView toPortView;
+            if (isInputCanConnectOutput)
+            {
+                fromPortView = inputPortView;
+                toPortView = outputPortView;
+            }
+            else
+            {
+                fromPortView = outputPortView;
+                toPortView = inputPortView;
+            }
+            ConnectEdge(fromPortView, toPortView, edgeView);
+            //保存本次Undo数据
+            ApplyModifyGraphAsset();
         }
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange changeData)
         {
-            //这里需要删除changeData里面的数据
+            ModifyGraphAsset("Remove data or move node view");
+            for (int i = changeData.elementsToRemove.Count - 1; i >= 0; i--)
+            {
+                switch (changeData.elementsToRemove[i])
+                {
+                    case NodeView nodeView:
+                        BaseNodeData nodeData = nodeView.GetNodeDrawer().GetNodeData();
+                        m_GraphAsset.RemoveNodeData(nodeData);
+                        m_GraphView.RemoveNodeView(nodeView);
+                        //记录Undo行为
+                        NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
+                        nodeViewUndoRedo.Initialize(this, nodeData.GetNodeID(), false);
+                        PushUndoRedoBehaviour(nodeViewUndoRedo);
+                        changeData.elementsToRemove.RemoveAt(i);
+                        break;
+                    case EdgeView edgeView:
+                        DisconnectEdge(edgeView);
+                        changeData.elementsToRemove.RemoveAt(i);
+                        break;
+                }
+            }
+            for (int i = 0; i < changeData.movedElements.Count; i++)
+            {
+                if (changeData.movedElements[i] is NodeView nodeView)
+                {
+                    NodeViewPositionUndoRedoBehaviour positionUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewPositionUndoRedoBehaviour>();
+                    positionUndoRedo.Initialize(this, nodeView.GetNodeID(), changeData.moveDelta);
+                    PushUndoRedoBehaviour(positionUndoRedo);
+                    nodeView.GetNodeDrawer().GetNodeData().Position += changeData.moveDelta;
+                }
+            }
+            ApplyModifyGraphAsset();
             return changeData;
+        }
+
+        private void ConnectEdge(PortView fromPortView, PortView toPortView, EdgeView edgeView)
+        {
+            BasePortData fromPortData = fromPortView.GetPortDrawer().GetPortData();
+            BasePortData toPortData = toPortView.GetPortDrawer().GetPortData();
+            //添加UndoRedo行为
+            ConnectionUndoRedoBehaviour connectUndo = IUndoRedoBehaviour.Allocate<ConnectionUndoRedoBehaviour>();
+            connectUndo.Initialize(this, fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), true);
+            PushUndoRedoBehaviour(connectUndo);
+            //添加连接数据
+            fromPortData.Connect(toPortData);
+            //添加View连线
+            CustomGraphView.Connect(fromPortView, toPortView, edgeView, m_GraphView);
+        }
+
+        private void DisconnectEdge(Edge edge)
+        {
+            EdgeView otherEdgeView = (EdgeView)edge;
+            PortView fromPortView = otherEdgeView.GetFromPortView();
+            PortView toPortView = otherEdgeView.GetToPortView();
+            BasePortData fromPortData = fromPortView.GetPortDrawer().GetPortData();
+            BasePortData toPortData = toPortView.GetPortDrawer().GetPortData();
+            //添加UndoRedo行为
+            ConnectionUndoRedoBehaviour disconnectUndo = IUndoRedoBehaviour.Allocate<ConnectionUndoRedoBehaviour>();
+            disconnectUndo.Initialize(this, fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), false);
+            PushUndoRedoBehaviour(disconnectUndo);
+            //删除连线数据
+            fromPortData.Disconnect(toPortData);
+            //删除View连线
+            CustomGraphView.Disconnect(otherEdgeView, m_GraphView);
         }
 
         #region Edge connector class
@@ -174,7 +345,7 @@ namespace YBFramework.Editor.NewGraph
             return s_Pool.Count > 0 ? s_Pool.Pop() : new GraphAssetDrawer();
         }
 
-        //TODO:调用Release的地方需要同时调用ClearNodeDrawers
+        //TODO:调用Release的地方需要同时调用ClearNodeDrawers，还有移除GraphView的graphchange事件
         public static void Release(GraphAssetDrawer graphAssetPresenter)
         {
             s_Pool.Push(graphAssetPresenter);

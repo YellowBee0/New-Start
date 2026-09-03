@@ -26,7 +26,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < portConnectionsDataCount; i++)
             {
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
-                if (portConnectionData != null && portConnectionData.NodeID > 0 && portConnectionData.PortID > 0)
+                if (portConnectionData.IsValid())
                 {
                     BaseNodeData nodeData = dfsGraphAsset.GetGraphAsset().FindNodeData(portConnectionData.NodeID);
                     if (nodeData != null)
@@ -137,7 +137,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < portConnectionDataCount; i++)
             {
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
-                if (portConnectionData != null && portConnectionData.NodeID == nodeID && portConnectionData.PortID == portID)
+                if (portConnectionData.NodeID == nodeID && portConnectionData.PortID == portID)
                 {
                     return portConnectionData;
                 }
@@ -151,7 +151,7 @@ namespace YBFramework.Bridge.Data
             for (int i = 0; i < otherPortConnectDataCount; i++)
             {
                 PortConnectionData portConnectionData = OtherPortConnectDataOfIndex(i);
-                if (portConnectionData != null && portConnectionData.NodeID == nodeID && portConnectionData.PortID == portID)
+                if (portConnectionData.NodeID == nodeID && portConnectionData.PortID == portID)
                 {
                     return portConnectionData;
                 }
@@ -165,13 +165,12 @@ namespace YBFramework.Bridge.Data
             for (int i = count - 1; i >= 0; i--)
             {
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
-                if (portConnectionData == null || portConnectionData.NodeID == 0 || portConnectionData.PortID == 0)
+                if (portConnectionData.IsValid())
                 {
-                    continue;
+                    BaseNodeData nodeData = GetNodeData().GetGraphAsset().FindNodeData(portConnectionData.NodeID);
+                    BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
+                    Disconnect(portData);
                 }
-                BaseNodeData nodeData = GetNodeData().GetGraphAsset().FindNodeData(portConnectionData.NodeID);
-                BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
-                Disconnect(portData);
             }
             count = GetOtherPortConnectionsDataCount();
             for (int i = count - 1; i >= 0; i--)

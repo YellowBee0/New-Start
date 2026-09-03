@@ -8,5 +8,10 @@ namespace YBFramework.Bridge.Data
         public int NodeID;
 
         public int PortID;
+
+        public bool IsValid()
+        {
+            return NodeID > 0 && PortID > 0;
+        }
     }
 }

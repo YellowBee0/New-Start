@@ -54,6 +54,19 @@ namespace YBFramework.Editor.NewGraph
             m_PortDrawers.Clear();
         }
 
+        public BasePortDrawer FindPortDrawer(int portID)
+        {
+            for (int i = 0; i < m_PortDrawers.Count; i++)
+            {
+                BasePortDrawer portDrawer = m_PortDrawers[i];
+                if (portDrawer.GetPortData().GetPortID() == portID)
+                {
+                    return portDrawer;
+                }
+            }
+            return null;
+        }
+
         public NodeView DrawNodeView(GraphAssetDrawer graphAssetDrawer, BaseNodeData nodeData)
         {
             m_GraphAssetDrawer = graphAssetDrawer;
@@ -66,7 +79,7 @@ namespace YBFramework.Editor.NewGraph
 
         protected virtual NodeView OnDrawNodeView(BaseNodeData nodeData)
         {
-            NodeView nodeView = NodeView.Allocate(this, nodeData.NodeName, nodeData.Position);
+            NodeView nodeView = NodeView.Allocate(nodeData.GetNodeID(), this, nodeData.NodeName, nodeData.Position);
             int portDataCount = nodeData.GetPortsDataCount();
             for (int i = 0; i < portDataCount; i++)
             {
