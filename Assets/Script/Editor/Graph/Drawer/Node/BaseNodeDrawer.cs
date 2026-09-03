@@ -66,14 +66,14 @@ namespace YBFramework.Editor.Graph
             m_GraphAssetDrawer = graphAssetDrawer;
             nodeData.InitializePortData();
             m_NodeData = nodeData;
-            m_NodeView = OnDrawNodeView(nodeData);
+            OnDrawNodeView(nodeData);
             m_NodeView.RefreshPortContainerDisplay();
             return m_NodeView;
         }
 
         protected virtual NodeView OnDrawNodeView(BaseNodeData nodeData)
         {
-            NodeView nodeView = NodeView.Allocate(nodeData.GetNodeID(), this, nodeData.NodeName, nodeData.Position);
+            m_NodeView = NodeView.Allocate(nodeData.GetNodeID(), this, nodeData.NodeName, nodeData.Position);
             int portDataCount = nodeData.GetPortsDataCount();
             for (int i = 0; i < portDataCount; i++)
             {
@@ -81,11 +81,11 @@ namespace YBFramework.Editor.Graph
                 BasePortDrawer portDrawer = BasePortDrawer.Allocate(portData.GetType());
                 if (portDrawer != null)
                 {
-                    nodeView.AddPortView(portDrawer.DrawPortView(this, portData));
+                    m_NodeView.AddPortView(portDrawer.DrawPortView(this, portData));
                     AddPortDrawer(portDrawer);
                 }
             }
-            return nodeView;
+            return m_NodeView;
         }
 
         protected virtual void OnRelease()

@@ -13,7 +13,7 @@ namespace YBFramework.Editor.Graph
 
         private CustomGraphView m_GraphView;
 
-        private EdgeConnector<EdgeView> m_EdgeConnector;
+        private EdgeConnectorListener m_EdgeConnectorListener;
 
         private SerializedObject m_SO;
 
@@ -35,9 +35,9 @@ namespace YBFramework.Editor.Graph
             return m_GraphView;
         }
 
-        public EdgeConnector<EdgeView> GetEdgeConnector()
+        public void SetPortViewEdgeConnector(PortView portView)
         {
-            return m_EdgeConnector;
+            portView.SetEdgeConnector(new EdgeConnector<EdgeView>(m_EdgeConnectorListener));
         }
 
         public SerializedObject GetSO()
@@ -83,7 +83,7 @@ namespace YBFramework.Editor.Graph
             {
                 nodeCreationRequest = ShowNodeSearchView
             };
-            m_EdgeConnector = new EdgeConnector<EdgeView>(new EdgeConnectorListener(this));
+            m_EdgeConnectorListener = new EdgeConnectorListener(this);
             m_GraphView.graphViewChanged += OnGraphViewChanged;
             IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
             for (int i = 0; i < nodesData.Count; i++)
@@ -252,24 +252,27 @@ namespace YBFramework.Editor.Graph
         private GraphViewChange OnGraphViewChanged(GraphViewChange changeData)
         {
             ModifyGraphAsset("Remove data or move node view");
-            for (int i = changeData.elementsToRemove.Count - 1; i >= 0; i--)
+            if (changeData.elementsToRemove != null)
             {
-                switch (changeData.elementsToRemove[i])
+                for (int i = changeData.elementsToRemove.Count - 1; i >= 0; i--)
                 {
-                    case NodeView nodeView:
-                        BaseNodeData nodeData = nodeView.GetNodeDrawer().GetNodeData();
-                        m_GraphAsset.RemoveNodeData(nodeData);
-                        m_GraphView.RemoveNodeView(nodeView);
-                        //记录Undo行为
-                        NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
-                        nodeViewUndoRedo.Initialize(this, nodeData.GetNodeID(), false);
-                        PushUndoRedoBehaviour(nodeViewUndoRedo);
-                        changeData.elementsToRemove.RemoveAt(i);
-                        break;
-                    case EdgeView edgeView:
-                        DisconnectEdge(edgeView);
-                        changeData.elementsToRemove.RemoveAt(i);
-                        break;
+                    switch (changeData.elementsToRemove[i])
+                    {
+                        case NodeView nodeView:
+                            BaseNodeData nodeData = nodeView.GetNodeDrawer().GetNodeData();
+                            m_GraphAsset.RemoveNodeData(nodeData);
+                            m_GraphView.RemoveNodeView(nodeView);
+                            //记录Undo行为
+                            NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
+                            nodeViewUndoRedo.Initialize(this, nodeData.GetNodeID(), false);
+                            PushUndoRedoBehaviour(nodeViewUndoRedo);
+                            changeData.elementsToRemove.RemoveAt(i);
+                            break;
+                        case EdgeView edgeView:
+                            DisconnectEdge(edgeView);
+                            changeData.elementsToRemove.RemoveAt(i);
+                            break;
+                    }
                 }
             }
             for (int i = 0; i < changeData.movedElements.Count; i++)
