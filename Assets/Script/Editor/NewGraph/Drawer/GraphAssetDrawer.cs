@@ -69,6 +69,18 @@ namespace YBFramework.Editor.NewGraph
             }
         }
 
+        public void RemoveNodeDrawer(int nodeID)
+        {
+            for (int i = 0; i < m_NodeDrawers.Count; i++)
+            {
+                if (m_NodeDrawers[i].GetNodeData().GetNodeID() == nodeID)
+                {
+                    m_NodeDrawers.RemoveAt(i);
+                    return;
+                }
+            }
+        }
+
         public void ClearNodeDrawers()
         {
             for (int i = 0; i < m_NodeDrawers.Count; i++)
@@ -346,9 +358,11 @@ namespace YBFramework.Editor.NewGraph
         }
 
         //TODO:调用Release的地方需要同时调用ClearNodeDrawers，还有移除GraphView的graphchange事件
-        public static void Release(GraphAssetDrawer graphAssetPresenter)
+        public static void Release(GraphAssetDrawer graphAssetDrawer)
         {
-            s_Pool.Push(graphAssetPresenter);
+            graphAssetDrawer.m_GraphView.graphViewChanged -= graphAssetDrawer.OnGraphViewChanged;
+            graphAssetDrawer.ClearNodeDrawers();
+            s_Pool.Push(graphAssetDrawer);
         }
 
         #endregion

@@ -56,6 +56,18 @@ namespace YBFramework.Editor.NewGraph
             }
         }
 
+        public void ClearNodeViews()
+        {
+            for (int i = 0; i < m_NodeViews.Count; i++)
+            {
+                NodeView nodeView = m_NodeViews[i];
+                nodeView.ClearPortViews();
+                RemoveElement(nodeView);
+                NodeView.Release(nodeView);
+            }
+            m_NodeViews.Clear();
+        }
+
         public NodeView FindNodeView(int nodeID)
         {
             for (int i = 0; i < m_NodeViews.Count; i++)

@@ -36,11 +36,7 @@ namespace YBFramework.Editor.NewGraph
 
         private void RemoveNodeView()
         {
-            NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
-            if (nodeView != null)
-            {
-                m_GraphAssetDrawer.GetGraphView().RemoveNodeView(nodeView);
-            }
+            m_GraphAssetDrawer.RemoveNodeDrawer(m_NodeID);
         }
 
         public void Undo()
