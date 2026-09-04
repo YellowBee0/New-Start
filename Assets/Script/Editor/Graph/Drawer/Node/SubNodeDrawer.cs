@@ -8,7 +8,7 @@ namespace YBFramework.Editor.Graph
     [RuntimeToEditor(typeof(SubNodeData))]
     public sealed class SubNodeDrawer : BaseNodeDrawer
     {
-        private ObjectField m_SubGraphAssetField;
+        private readonly ObjectField m_SubGraphAssetField;
 
         public SubNodeDrawer()
         {
@@ -20,13 +20,12 @@ namespace YBFramework.Editor.Graph
             m_SubGraphAssetField.RegisterValueChangedCallback(OnSubGraphAssetChanged);
         }
 
-        protected override NodeView OnDrawNodeView(BaseNodeData nodeData)
+        protected override void OnDrawNodeView()
         {
-            base.OnDrawNodeView(nodeData);
-            SubNodeData subNodeData = (SubNodeData)nodeData;
+            base.OnDrawNodeView();
+            SubNodeData subNodeData = (SubNodeData)m_NodeData;
             m_SubGraphAssetField.SetValueWithoutNotify(subNodeData.GetSubGraphAsset());
-            m_NodeView.contentContainer.Add(m_SubGraphAssetField);
-            return m_NodeView;
+            m_NodeView.extensionContainer.Add(m_SubGraphAssetField);
         }
 
         private void OnSubGraphAssetChanged(ChangeEvent<Object> evt)
@@ -45,25 +44,13 @@ namespace YBFramework.Editor.Graph
             {
                 //初始化视图数据
                 subNodeData.InitializeSubPortsData();
-                //清空所有port data presenter
-                //TODO:暂时处理
-                OnRelease();
-                //
+                //清空所有Port Drawer和View
+                ClearPortDrawers();
                 //创建端口时先更新数据
                 m_GraphAssetDrawer.GetSO().Update();
                 //TODO:实现节点下所有端口的删除和重建，可应用在这里和ExposePortsNodeDrawer的切换端口方向事件中，同时Undo也需要这个功能
                 //重新调用一次创建内部端口
-                int portDataCount = m_NodeData.GetPortsDataCount();
-                for (int i = 0; i < portDataCount; i++)
-                {
-                    BasePortData portData = m_NodeData.PortDataOfIndex(i);
-                    BasePortDrawer portDrawer = BasePortDrawer.Allocate(portData.GetType());
-                    if (portDrawer != null)
-                    {
-                        m_NodeView.AddPortView(portDrawer.DrawPortView(this, portData));
-                        AddPortDrawer(portDrawer);
-                    }
-                }
+                DrawPortViews();
                 m_NodeView.RefreshPortContainerDisplay();
                 return;
             }

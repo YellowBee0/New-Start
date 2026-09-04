@@ -38,6 +38,7 @@ namespace YBFramework.Editor.Graph
         public void AddPortDrawer(BasePortDrawer portDrawer)
         {
             m_PortDrawers.Add(portDrawer);
+            m_NodeView.AddPortView(portDrawer.GetPortView());
         }
 
         public void RemovePortDrawer(BasePortDrawer portDrawer)
@@ -45,6 +46,39 @@ namespace YBFramework.Editor.Graph
             if (m_PortDrawers.Remove(portDrawer))
             {
                 BasePortDrawer.Release(portDrawer);
+            }
+            m_NodeView.RemovePortView(portDrawer.GetPortView());
+        }
+
+        public void ClearPortDrawers()
+        {
+            for (int i = 0; i < m_PortDrawers.Count; i++)
+            {
+                BasePortDrawer.Release(m_PortDrawers[i]);
+            }
+            m_NodeView.ClearPortViews();
+        }
+
+        /// <summary>
+        /// 绘制节点全部端口，仅在初始绘制节点视图或者需要重新绘制节点端口视图时调用
+        /// </summary>
+        public void DrawPortViews()
+        {
+            int portDataCount = m_NodeData.GetPortsDataCount();
+            for (int i = 0; i < portDataCount; i++)
+            {
+                BasePortData portData = m_NodeData.PortDataOfIndex(i);
+                DrawPortView(portData);
+            }
+        }
+
+        public void DrawPortView(BasePortData portData)
+        {
+            BasePortDrawer portDrawer = BasePortDrawer.Allocate(portData.GetType());
+            if (portDrawer != null)
+            {
+                portDrawer.DrawPortView(this, portData);
+                AddPortDrawer(portDrawer);
             }
         }
 
@@ -66,30 +100,21 @@ namespace YBFramework.Editor.Graph
             m_GraphAssetDrawer = graphAssetDrawer;
             nodeData.InitializePortData();
             m_NodeData = nodeData;
-            OnDrawNodeView(nodeData);
+            m_NodeView = NodeView.Allocate(m_NodeData.GetNodeID(), this, m_NodeData.NodeName, m_NodeData.Position);
+            OnDrawNodeView();
             m_NodeView.RefreshPortContainerDisplay();
             return m_NodeView;
         }
 
-        protected virtual NodeView OnDrawNodeView(BaseNodeData nodeData)
+        protected virtual void OnDrawNodeView()
         {
-            m_NodeView = NodeView.Allocate(nodeData.GetNodeID(), this, nodeData.NodeName, nodeData.Position);
-            int portDataCount = nodeData.GetPortsDataCount();
-            for (int i = 0; i < portDataCount; i++)
-            {
-                BasePortData portData = nodeData.PortDataOfIndex(i);
-                BasePortDrawer portDrawer = BasePortDrawer.Allocate(portData.GetType());
-                if (portDrawer != null)
-                {
-                    m_NodeView.AddPortView(portDrawer.DrawPortView(this, portData));
-                    AddPortDrawer(portDrawer);
-                }
-            }
-            return m_NodeView;
+            DrawPortViews();
         }
 
         protected virtual void OnRelease()
         {
+            //这里不能调用ClearPortDrawers，因为ClearPortDrawers会调用NodeView的ClearPortViews，ClearPortViews又会调用PortView.Release
+            //这个释放函数本身就和NodeView的Release一起调用，调用ClearPortViews就会导致重复
             for (int i = 0; i < m_PortDrawers.Count; i++)
             {
                 BasePortDrawer.Release(m_PortDrawers[i]);

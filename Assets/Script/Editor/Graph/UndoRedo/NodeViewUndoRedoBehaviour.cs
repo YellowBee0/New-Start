@@ -22,14 +22,14 @@ namespace YBFramework.Editor.Graph
             BaseNodeData nodeData = m_GraphAssetDrawer.GetGraphAsset().FindNodeData(m_NodeID);
             if (nodeData != null)
             {
+                //TODO:这里需要重建一次引用，考虑是否把重建引用关系放到每次创建
                 BaseNodeDrawer nodeDrawer = BaseNodeDrawer.Allocate(nodeData.GetType());
                 if (nodeDrawer != null)
                 {
                     NodeView nodeView = nodeDrawer.DrawNodeView(m_GraphAssetDrawer, nodeData);
-                    m_GraphAssetDrawer.GetGraphView().AddNodeView(nodeView);
                     m_GraphAssetDrawer.AddNodeDrawer(nodeDrawer);
                     //这里会连接所有的连线
-                    m_GraphAssetDrawer.RevertNodeViewConnections(nodeView);
+                    nodeView.RevertPortViewsConnection();
                 }
             }
         }
@@ -39,7 +39,6 @@ namespace YBFramework.Editor.Graph
             NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
             if (nodeView != null)
             {
-                m_GraphAssetDrawer.GetGraphView().RemoveNodeView(nodeView);
                 m_GraphAssetDrawer.RemoveNodeDrawer(nodeView.GetNodeDrawer());
             }
         }

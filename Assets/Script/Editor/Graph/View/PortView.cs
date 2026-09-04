@@ -2,6 +2,7 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
@@ -58,6 +59,29 @@ namespace YBFramework.Editor.Graph
                 }
             }
             return connection;
+        }
+
+        public void RevertPortViewConnections()
+        {
+            BasePortData portData = m_PortDrawer.GetPortData();
+            CustomGraphView graphView = m_PortDrawer.GetNodeDrawer().GetGraphAssetDrawer().GetGraphView();
+            int portConnectionsDataCount = portData.GetPortConnectionsDataCount();
+            for (int i = 0; i < portConnectionsDataCount; i++)
+            {
+                PortConnectionData portConnectionData = portData.PortConnectionDataOfIndex(i);
+                if (portConnectionData.IsValid())
+                {
+                    NodeView toNodeView = graphView.FindNodeView(portConnectionData.NodeID);
+                    if (toNodeView != null)
+                    {
+                        PortView toPortView = toNodeView.FindPortView(portConnectionData.PortID);
+                        if (toPortView != null)
+                        {
+                            CustomGraphView.Connect(this, toPortView, graphView);
+                        }
+                    }
+                }
+            }
         }
 
         private void OnRelease()

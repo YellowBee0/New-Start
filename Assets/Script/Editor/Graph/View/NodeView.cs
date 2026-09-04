@@ -64,6 +64,20 @@ namespace YBFramework.Editor.Graph
             }
         }
 
+        /// <summary>
+        /// 仅清空所有端口，如果NodeView的contentContainer中存在其他内容是不会清除的
+        /// </summary>
+        public void ClearPortViews()
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
+            {
+                PortView.Release(m_PortViews[i]);
+            }
+            inputContainer.Clear();
+            outputContainer.Clear();
+            m_PortViews.Clear();
+        }
+
         public PortView FindPortView(int portID)
         {
             for (int i = 0; i < m_PortViews.Count; i++)
@@ -77,6 +91,14 @@ namespace YBFramework.Editor.Graph
             return null;
         }
 
+        public void RevertPortViewsConnection()
+        {
+            for (int i = 0; i < m_PortViews.Count; i++)
+            {
+                m_PortViews[i].RevertPortViewConnections();
+            }
+        }
+        
         public void RefreshPortContainerDisplay()
         {
             inputContainer.style.display = inputContainer.childCount == 0 ? DisplayStyle.None : DisplayStyle.Flex;
@@ -85,14 +107,8 @@ namespace YBFramework.Editor.Graph
 
         private void OnRelease()
         {
-            for (int i = 0; i < m_PortViews.Count; i++)
-            {
-                PortView.Release(m_PortViews[i]);
-            }
-            inputContainer.Clear();
-            outputContainer.Clear();
-            contentContainer.Clear();
-            m_PortViews.Clear();
+            ClearPortViews();
+            extensionContainer.Clear();
         }
 
         #region Pool
@@ -106,7 +122,6 @@ namespace YBFramework.Editor.Graph
             nodeView.m_NodeDrawer = nodeDrawer;
             nodeView.title = nodeName;
             nodeView.SetPosition(new Rect(position, Vector2.zero));
-            nodeView.m_PortViews.Clear();
             return nodeView;
         }
 

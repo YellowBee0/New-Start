@@ -173,6 +173,7 @@ namespace YBFramework.Editor.Graph
             if (m_GraphAssetDrawers.Remove(graphAssetPath, out GraphAssetDrawer destroyTarget))
             {
                 GraphAssetDrawer.Release(destroyTarget);
+                CustomGraphView.Release(destroyTarget.GetGraphView());
             }
         }
 

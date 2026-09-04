@@ -10,7 +10,9 @@ namespace YBFramework.Editor.Graph
     [RuntimeToEditor(typeof(ValueInputPortData<>))]
     public sealed class ValueInputPortDrawer : BasePortDrawer
     {
-        private PropertyField m_ValueField;
+        private readonly PropertyField m_ValueField;
+
+        private bool m_HasAddValueField;
 
         private BasePortData m_ValueInputPortData;
 
@@ -74,6 +76,7 @@ namespace YBFramework.Editor.Graph
                                 portContentView.Add(m_PortContentView);
                                 portContentView.Add(m_ValueField);
                                 m_PortContentView = portContentView;
+                                m_HasAddValueField = true;
                             }
                         }
                     }
@@ -84,7 +87,11 @@ namespace YBFramework.Editor.Graph
 
         public override void OnRelease()
         {
-            m_PortContentView.Remove(m_ValueField);
+            if (m_HasAddValueField)
+            {
+                m_PortContentView.Remove(m_ValueField);
+                m_HasAddValueField = false;
+            }
         }
     }
 }

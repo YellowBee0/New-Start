@@ -11,7 +11,7 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     [NodeMenu("暴露端口给子图节点", GraphType.Everything)]
     [NodeExistCountLimit(2)]
-    public sealed class ExposePortsNodeData : BaseNodeData
+    public sealed class ExposeNodeData : BaseNodeData
     {
         private const string PORT_NAME = "暴露端口{0}";
 
@@ -96,12 +96,12 @@ namespace YBFramework.Bridge.Data
 
         public override BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData)
         {
-            throw new InvalidOperationException($"{nameof(ExposePortsNodeData)} will never call {nameof(CreateRuntimeInstance)} method");
+            throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CreateRuntimeInstance)} method");
         }
 
         public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
         {
-            throw new InvalidOperationException($"{nameof(ExposePortsNodeData)} will never call {nameof(DFSExecutionFlow)} method");
+            throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(DFSExecutionFlow)} method");
         }
 
         public override void InitializeSerializedData()

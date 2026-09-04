@@ -59,6 +59,7 @@ namespace YBFramework.Editor.Graph
         public void AddNodeDrawer(BaseNodeDrawer nodeDrawer)
         {
             m_NodeDrawers.Add(nodeDrawer);
+            m_GraphView.AddNodeView(nodeDrawer.GetNodeView());
         }
 
         /// <summary>
@@ -72,17 +73,28 @@ namespace YBFramework.Editor.Graph
             {
                 BaseNodeDrawer.Release(nodeDrawer);
             }
+            m_GraphView.RemoveNodeView(nodeDrawer.GetNodeView());
         }
 
+        public BaseNodeDrawer FindNodeDrawer(int nodeID)
+        {
+            for (int i = 0; i < m_NodeDrawers.Count; i++)
+            {
+                BaseNodeDrawer nodeDrawer = m_NodeDrawers[i];
+                if (nodeDrawer.GetNodeData().GetNodeID() == nodeID)
+                {
+                    return nodeDrawer;
+                }
+            }
+            return null;
+        }
+        
         public void DrawGraphView(GraphAsset graphAsset)
         {
             m_GraphAsset = graphAsset;
             m_SO = new SerializedObject(graphAsset);
             m_NodeDataListProperty = m_SO.FindProperty("m_NodesData");
-            m_GraphView = new CustomGraphView
-            {
-                nodeCreationRequest = ShowNodeSearchView
-            };
+            m_GraphView = CustomGraphView.Allocate(this);
             m_EdgeConnectorListener = new EdgeConnectorListener(this);
             m_GraphView.graphViewChanged += OnGraphViewChanged;
             IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
@@ -92,7 +104,7 @@ namespace YBFramework.Editor.Graph
                 BaseNodeDrawer nodeDrawer = BaseNodeDrawer.Allocate(nodeData.GetType());
                 if (nodeDrawer != null)
                 {
-                    m_GraphView.AddNodeView(nodeDrawer.DrawNodeView(this, nodeData));
+                    nodeDrawer.DrawNodeView(this, nodeData);
                     AddNodeDrawer(nodeDrawer);
                 }
             }
@@ -100,38 +112,7 @@ namespace YBFramework.Editor.Graph
             IReadOnlyList<NodeView> nodeViews = m_GraphView.GetNodeViews();
             for (int i = 0; i < nodeViews.Count; i++)
             {
-                RevertNodeViewConnections(nodeViews[i]);
-            }
-        }
-
-        public void RevertNodeViewConnections(NodeView nodeView)
-        {
-            IReadOnlyList<PortView> portViews = nodeView.GetPortViews();
-            for (int i = 0; i < portViews.Count; i++)
-            {
-                RevertPortViewConnections(portViews[i]);
-            }
-        }
-
-        public void RevertPortViewConnections(PortView portView)
-        {
-            BasePortData portData = portView.GetPortDrawer().GetPortData();
-            int portConnectionsDataCount = portData.GetPortConnectionsDataCount();
-            for (int i = 0; i < portConnectionsDataCount; i++)
-            {
-                PortConnectionData portConnectionData = portData.PortConnectionDataOfIndex(i);
-                if (portConnectionData.IsValid())
-                {
-                    NodeView toNodeView = m_GraphView.FindNodeView(portConnectionData.NodeID);
-                    if (toNodeView != null)
-                    {
-                        PortView toPortView = toNodeView.FindPortView(portConnectionData.PortID);
-                        if (toPortView != null)
-                        {
-                            CustomGraphView.Connect(portView, toPortView, m_GraphView);
-                        }
-                    }
-                }
+                nodeViews[i].RevertPortViewsConnection();
             }
         }
 
@@ -275,14 +256,17 @@ namespace YBFramework.Editor.Graph
                     }
                 }
             }
-            for (int i = 0; i < changeData.movedElements.Count; i++)
+            if (changeData.movedElements != null)
             {
-                if (changeData.movedElements[i] is NodeView nodeView)
+                for (int i = 0; i < changeData.movedElements.Count; i++)
                 {
-                    NodeViewPositionUndoRedoBehaviour positionUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewPositionUndoRedoBehaviour>();
-                    positionUndoRedo.Initialize(this, nodeView.GetNodeID(), changeData.moveDelta);
-                    PushUndoRedoBehaviour(positionUndoRedo);
-                    nodeView.GetNodeDrawer().GetNodeData().Position += changeData.moveDelta;
+                    if (changeData.movedElements[i] is NodeView nodeView)
+                    {
+                        NodeViewPositionUndoRedoBehaviour positionUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewPositionUndoRedoBehaviour>();
+                        positionUndoRedo.Initialize(this, nodeView.GetNodeID(), changeData.moveDelta);
+                        PushUndoRedoBehaviour(positionUndoRedo);
+                        nodeView.GetNodeDrawer().GetNodeData().Position += changeData.moveDelta;
+                    }
                 }
             }
             ApplyModifyGraphAsset();
@@ -361,8 +345,7 @@ namespace YBFramework.Editor.Graph
         {
             return s_Pool.Count > 0 ? s_Pool.Pop() : new GraphAssetDrawer();
         }
-
-        //TODO:调用Release的地方需要同时调用ClearNodeDrawers，还有移除GraphView的graphchange事件
+        
         public static void Release(GraphAssetDrawer graphAssetDrawer)
         {
             graphAssetDrawer.OnRelease();

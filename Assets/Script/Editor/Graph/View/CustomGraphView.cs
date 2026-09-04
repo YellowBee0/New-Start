@@ -15,7 +15,7 @@ namespace YBFramework.Editor.Graph
 
         private readonly List<Port> m_CompatiblePorts = new();
 
-        public CustomGraphView()
+        private CustomGraphView()
         {
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
@@ -25,6 +25,7 @@ namespace YBFramework.Editor.Graph
             grid.StretchToParentSize();
             Insert(0, grid);
             this.StretchToParentSize();
+            nodeCreationRequest = ShowNodeSearchView;
         }
 
         public GraphAssetDrawer GetGraphAssetDrawer()
@@ -66,6 +67,11 @@ namespace YBFramework.Editor.Graph
                 }
             }
             return null;
+        }
+
+        private void ShowNodeSearchView(NodeCreationContext context)
+        {
+            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), NodeSearchEntry.GetSearchEntry(m_GraphAssetDrawer.GetGraphAsset().GraphType));
         }
 
         private void OnRelease()

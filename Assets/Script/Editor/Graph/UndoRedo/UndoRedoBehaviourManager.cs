@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace YBFramework.Editor.Graph
 {
@@ -8,6 +9,8 @@ namespace YBFramework.Editor.Graph
         private static readonly Dictionary<int, Stack<IUndoRedoBehaviour>> s_UndoBehaviours = new();
 
         private static readonly Dictionary<int, Stack<IUndoRedoBehaviour>> s_RedoBehaviours = new();
+
+        private static Stack<IUndoRedoBehaviour> s_UndoRedoInvokeStack = new();
 
         static UndoRedoBehaviourManager()
         {
@@ -51,6 +54,7 @@ namespace YBFramework.Editor.Graph
 
         private static void InvokeUndoRedo(in UndoRedoInfo undoRedoInfo)
         {
+            Debug.LogError($"{undoRedoInfo.undoGroup}: is redo: {undoRedoInfo.isRedo}");
             if (undoRedoInfo.isRedo)
             {
                 //可以统一函数

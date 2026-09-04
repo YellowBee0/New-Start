@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
-using System.Buffers;
 using YBFramework.Bridge.Editor;
 #endif
 
@@ -121,20 +120,25 @@ namespace YBFramework.Bridge.Data
 #if UNITY_EDITOR
         [SerializeField] private int m_SourcePortID;
 
-        private static ExposePortsNodeData[] InitializeExposePortsData(GraphAsset subGraphAsset)
+        private static ExposeNodeData[] s_ExposeNodesData = new ExposeNodeData[2];
+
+        private static ExposeNodeData[] InitializeExposePortsData(GraphAsset subGraphAsset)
         {
-            ExposePortsNodeData[] exposePortsNodesData = ArrayPool<ExposePortsNodeData>.Shared.Rent(2);
+            for (int i = 0; i < s_ExposeNodesData.Length; i++)
+            {
+                s_ExposeNodesData[i] = null;
+            }
             if (subGraphAsset != null)
             {
                 int count = 0;
                 IReadOnlyList<BaseNodeData> nodesData = subGraphAsset.GetNodesData();
                 for (int i = 0; i < nodesData.Count; i++)
                 {
-                    if (nodesData[i] is ExposePortsNodeData exposePortsNodeData)
+                    if (nodesData[i] is ExposeNodeData exposeNodeData)
                     {
                         //确保初始化非序列化数据
-                        exposePortsNodeData.InitializePortData();
-                        exposePortsNodesData[count++] = exposePortsNodeData;
+                        exposeNodeData.InitializePortData();
+                        s_ExposeNodesData[count++] = exposeNodeData;
                         if (count > 1)
                         {
                             break;
@@ -142,17 +146,17 @@ namespace YBFramework.Bridge.Data
                     }
                 }
             }
-            return exposePortsNodesData;
+            return s_ExposeNodesData;
         }
 
-        private static ExposePortData FindExposePortData(ExposePortsNodeData[] exposePortsNodesData, int asSubNodeID, int asSubPortID)
+        private static ExposePortData FindExposePortData(ExposeNodeData[] exposeNodesData, int asSubNodeID, int asSubPortID)
         {
-            for (int i = 0; i < exposePortsNodesData.Length; i++)
+            for (int i = 0; i < exposeNodesData.Length; i++)
             {
-                ExposePortsNodeData exposePortsNodeData = exposePortsNodesData[i];
-                if (exposePortsNodeData != null)
+                ExposeNodeData exposeNodeData = exposeNodesData[i];
+                if (exposeNodeData != null)
                 {
-                    IReadOnlyList<ExposePortData> exposePortsData = exposePortsNodeData.GetExposePortsData();
+                    IReadOnlyList<ExposePortData> exposePortsData = exposeNodeData.GetExposePortsData();
                     for (int j = 0; j < exposePortsData.Count; j++)
                     {
                         ExposePortData exposePortData = exposePortsData[j];
@@ -206,13 +210,13 @@ namespace YBFramework.Bridge.Data
                     //确保蓝图引用初始化
                     if (subGraphAsset != null)
                     {
-                        ExposePortsNodeData[] exposePortsNodesData = InitializeExposePortsData(subGraphAsset);
-                        for (int i = 0; i < exposePortsNodesData.Length; i++)
+                        ExposeNodeData[] exposeNodesData = InitializeExposePortsData(subGraphAsset);
+                        for (int i = 0; i < exposeNodesData.Length; i++)
                         {
-                            ExposePortsNodeData exposePortsNodeData = exposePortsNodesData[i];
-                            if (exposePortsNodeData != null)
+                            ExposeNodeData exposeNodeData = exposeNodesData[i];
+                            if (exposeNodeData != null)
                             {
-                                IReadOnlyList<ExposePortData> exposePortsData = exposePortsNodeData.GetExposePortsData();
+                                IReadOnlyList<ExposePortData> exposePortsData = exposeNodeData.GetExposePortsData();
                                 for (int j = 0; j < exposePortsData.Count; j++)
                                 {
                                     ExposePortData exposePortData = exposePortsData[j];
@@ -228,7 +232,6 @@ namespace YBFramework.Bridge.Data
                                 }
                             }
                         }
-                        ArrayPool<ExposePortsNodeData>.Shared.Return(exposePortsNodesData);
                     }
                     m_SubGraphAsset = subGraphAsset;
                     return true;
@@ -260,14 +263,13 @@ namespace YBFramework.Bridge.Data
 
         public void InitializeSubPortsData()
         {
-            ExposePortsNodeData[] exposePortsData = InitializeExposePortsData(m_SubGraphAsset);
+            ExposeNodeData[] exposePortsData = InitializeExposePortsData(m_SubGraphAsset);
             for (int i = 0; i < m_SubPortsData.Count; i++)
             {
                 SubPortData subPortData = m_SubPortsData[i];
                 ExposePortData exposePortData = FindExposePortData(exposePortsData, subPortData.GetAsSubNodeID(), subPortData.GetAsSubPortID());
                 InitializeSubPortsData(subPortData, exposePortData, i);
             }
-            ArrayPool<ExposePortsNodeData>.Shared.Return(exposePortsData);
         }
 
         private void InitializeSubPortsData(SubPortData subPortData, ExposePortData exposePortData, int index)

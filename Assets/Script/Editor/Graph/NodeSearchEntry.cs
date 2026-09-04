@@ -241,7 +241,7 @@ namespace YBFramework.Editor.Graph
                             //更新SO，保证能够拿到SerializedProperty
                             graphAssetDrawer.GetSO().Update();
                             //创建节点视图
-                            graphAssetDrawer.GetGraphView().AddNodeView(nodeDrawer.DrawNodeView(graphAssetDrawer, nodeData));
+                            nodeDrawer.DrawNodeView(graphAssetDrawer, nodeData);
                             graphAssetDrawer.AddNodeDrawer(nodeDrawer);
                             //记录Undo行为
                             NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
