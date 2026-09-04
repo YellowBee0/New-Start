@@ -41,7 +41,26 @@ namespace YBFramework.Editor.Graph
             m_DirectionToggle.SetValueWithoutNotify(((ExposeNodeData)m_NodeData).GetIsInput());
             DrawPortViews();
         }
-
+        
+        private void OnAddClicked()
+        {
+            ExposeNodeData exposeNodeData = (ExposeNodeData)m_NodeData;
+            m_GraphAssetDrawer.ModifyGraphAsset("Expose node data add expose port data");
+            //TODO:封装一个函数，创建节点或者端口并且自动调用他们的InitializeSerializedData
+            ExposePortData exposePortData = new();
+            exposePortData.InitializeSerializedData();
+            exposeNodeData.AddExposePortData(exposePortData);
+            exposeNodeData.InitializeExposePortDataView(exposePortData);
+            //记录Undo行为
+            PortViewUndoRedoBehaviour portViewUndoRedo = IUndoRedoBehaviour.Allocate<PortViewUndoRedoBehaviour>();
+            portViewUndoRedo.Initialize(m_GraphAssetDrawer, m_NodeData.GetNodeID(), exposePortData.GetPortID(), true);
+            m_GraphAssetDrawer.PushUndoRedoBehaviour(portViewUndoRedo);
+            //创建端口视图
+            DrawPortView(exposePortData);
+            m_NodeView.RefreshPortContainerDisplay();
+            m_GraphAssetDrawer.ApplyModifyGraphAsset();
+        }
+        
         private void OnRemoveClicked()
         {
             Debug.Log("开发中");
@@ -86,27 +105,15 @@ namespace YBFramework.Editor.Graph
             base.OnDrawNodeView();
             ExposeNodeData exposeNodeData = (ExposeNodeData)m_NodeData;
             m_DirectionToggle.SetValueWithoutNotify(exposeNodeData.GetIsInput());
-            m_NodeView.extensionContainer.Add(m_DirectionToggle);
-            m_NodeView.extensionContainer.Add(m_ButtonContainer);
+            m_NodeView.contentContainer.Add(m_DirectionToggle);
+            m_NodeView.contentContainer.Add(m_ButtonContainer);
         }
 
-        private void OnAddClicked()
+        protected override void OnRelease()
         {
-            ExposeNodeData exposeNodeData = (ExposeNodeData)m_NodeData;
-            m_GraphAssetDrawer.ModifyGraphAsset("Expose node data add expose port data");
-            //TODO:封装一个函数，创建节点或者端口并且自动调用他们的InitializeSerializedData
-            ExposePortData exposePortData = new();
-            exposePortData.InitializeSerializedData();
-            exposeNodeData.AddExposePortData(exposePortData);
-            exposeNodeData.InitializeExposePortDataView(exposePortData);
-            //记录Undo行为
-            PortViewUndoRedoBehaviour portViewUndoRedo = IUndoRedoBehaviour.Allocate<PortViewUndoRedoBehaviour>();
-            portViewUndoRedo.Initialize(m_GraphAssetDrawer, m_NodeData.GetNodeID(), exposePortData.GetPortID(), true);
-            m_GraphAssetDrawer.PushUndoRedoBehaviour(portViewUndoRedo);
-            //创建端口视图
-            DrawPortView(exposePortData);
-            m_NodeView.RefreshPortContainerDisplay();
-            m_GraphAssetDrawer.ApplyModifyGraphAsset();
+            base.OnRelease();
+            m_NodeView.contentContainer.Remove(m_DirectionToggle);
+            m_NodeView.contentContainer.Remove(m_ButtonContainer);
         }
     }
 }

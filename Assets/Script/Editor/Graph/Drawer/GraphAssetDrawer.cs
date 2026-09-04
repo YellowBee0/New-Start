@@ -45,17 +45,24 @@ namespace YBFramework.Editor.Graph
             return m_SO;
         }
 
-        public SerializedProperty GetNodeDataListProperty()
+        public SerializedProperty GetNodeDataProperty(BaseNodeData nodeData)
         {
-            return m_NodeDataListProperty;
+            IReadOnlyList<BaseNodeData> nodesData = m_GraphAsset.GetNodesData();
+            for (int i = 0; i < nodesData.Count; i++)
+            {
+                if (nodesData[i] == nodeData)
+                {
+                    return m_NodeDataListProperty.GetArrayElementAtIndex(i);
+                }
+            }
+            return null;
         }
 
         public IReadOnlyList<BaseNodeDrawer> GetNodeDrawers()
         {
             return m_NodeDrawers;
         }
-
-        //TODO:Drawer里面的Add和Remove都需要直接操作View，不再分开执行
+        
         public void AddNodeDrawer(BaseNodeDrawer nodeDrawer)
         {
             m_NodeDrawers.Add(nodeDrawer);
@@ -168,11 +175,6 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        private void ShowNodeSearchView(NodeCreationContext context)
-        {
-            SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), NodeSearchEntry.GetSearchEntry(m_GraphAsset.GraphType));
-        }
-
         private void OnEdgeConnect(Edge edge)
         {
             PortView inputPortView = (PortView)edge.input;
@@ -242,7 +244,7 @@ namespace YBFramework.Editor.Graph
                         case NodeView nodeView:
                             BaseNodeData nodeData = nodeView.GetNodeDrawer().GetNodeData();
                             m_GraphAsset.RemoveNodeData(nodeData);
-                            m_GraphView.RemoveNodeView(nodeView);
+                            RemoveNodeDrawer(nodeView.GetNodeDrawer());
                             //记录Undo行为
                             NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
                             nodeViewUndoRedo.Initialize(this, nodeData.GetNodeID(), false);

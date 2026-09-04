@@ -10,6 +10,8 @@ namespace YBFramework.Bridge.Data
     [Serializable]
     public sealed class SubPortData : BasePortData
     {
+        internal const string AS_SUB_PORT_FIELD_NAME = nameof(m_AsSubPortData);
+        
         [SerializeReference] private BasePortData m_AsSubPortData;
 
         [SerializeField] private int m_AsSubNodeID;
@@ -101,12 +103,6 @@ namespace YBFramework.Bridge.Data
         public override Color GetPortColor()
         {
             return m_AsSubPortData.GetPortColor();
-        }
-
-        public override void SetFieldName(string fieldName)
-        {
-            base.SetFieldName(fieldName);
-            m_AsSubPortData.SetFieldName(nameof(m_AsSubPortData));
         }
 
         public override void SetPortName(string portName)

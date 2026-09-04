@@ -226,7 +226,6 @@ namespace YBFramework.Editor.Graph
                     {
                         if (Activator.CreateInstance(nodeMetaData.nodeType) is BaseNodeData nodeData)
                         {
-                            //TODO:需要支持Undo
                             CustomGraphView graphView = graphAssetDrawer.GetGraphView();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);

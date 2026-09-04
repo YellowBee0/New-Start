@@ -12,7 +12,7 @@ namespace YBFramework.Editor.Graph
 
         private VisualElement m_PortContentView;
 
-        private TextField m_DisplayNameTextField;
+        private readonly TextField m_DisplayNameTextField;
 
         public ExposePortDrawer()
         {

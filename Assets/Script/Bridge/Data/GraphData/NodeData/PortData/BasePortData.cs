@@ -57,23 +57,11 @@ namespace YBFramework.Bridge.Data
 
         #region Base data
 
-        private string m_FieldName;
-
-        public string GetFieldName()
-        {
-            return m_FieldName;
-        }
-
         public abstract BaseNodeData GetNodeData();
 
         public abstract void SetPortID(int portID);
 
         public abstract void SetHasSubPortData(bool hasSubPortData);
-
-        public virtual void SetFieldName(string fieldName)
-        {
-            m_FieldName = fieldName;
-        }
 
         public abstract void SetNodeData(BaseNodeData nodeData);
 

@@ -10,7 +10,7 @@ using UnityEditor.Experimental.GraphView;
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
-    public sealed class ValueInputPortData<TValue> : BasePortData
+    public sealed class ValueInputPortData<TValue> : BasePortData, IFieldPath
     {
         [SerializeField] private TValue m_Value;
 
@@ -51,6 +51,8 @@ namespace YBFramework.Bridge.Data
 
         private string m_PortName;
 
+        private string m_FieldPath;
+
         private Color m_PortColor;
 
         public void SetValue(TValue value)
@@ -61,6 +63,16 @@ namespace YBFramework.Bridge.Data
         public TValue GetValue()
         {
             return m_Value;
+        }
+
+        public string GetFieldPath()
+        {
+            return m_FieldPath;
+        }
+
+        public void SetFieldPath(string fieldPath)
+        {
+            m_FieldPath = fieldPath;
         }
 
         public override BaseNodeData GetNodeData()

@@ -16,8 +16,9 @@ MonoBehaviour:
   - rid: 8128529031699365936
   - rid: 8128529031699365942
   - rid: 8128529031699365946
+  - rid: 8128529035180113971
   GraphType: -1
-  SourceNodeID: 4
+  SourceNodeID: 6
   references:
     version: 2
     RefIds:
@@ -59,8 +60,10 @@ MonoBehaviour:
             PortID: 0
             IsExplicitCast: 0
           m_PortID: 2
-          m_HasSubPortData: 0
-          m_OtherPortConnectionsData: []
+          m_HasSubPortData: 1
+          m_OtherPortConnectionsData:
+          - NodeID: 6
+            PortID: 1
     - rid: 8128529031699365946
       type: {class: TestNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
       data:
@@ -81,3 +84,22 @@ MonoBehaviour:
           m_PortID: 2
           m_HasSubPortData: 0
           m_OtherPortConnectionsData: []
+    - rid: 8128529035180113971
+      type: {class: ExposeNodeData, ns: YBFramework.Bridge.Data, asm: Assembly-CSharp}
+      data:
+        m_NodeID: 6
+        NodeName: "\u66B4\u9732\u7AEF\u53E3\u7ED9\u5B50\u56FE\u8282\u70B9(Everything)"
+        Position: {x: -299.7736, y: 205.5849}
+        m_ExposePortsData:
+        - ExposePortDisplayName: 
+          m_PortID: 1
+          m_PortConnectionData:
+            NodeID: 3
+            PortID: 2
+        - ExposePortDisplayName: 
+          m_PortID: 2
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        m_SourcePortID: 2
+        m_IsInput: 1

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
@@ -56,28 +55,23 @@ namespace YBFramework.Editor.Graph
             m_ValueInputPortData = portData;
             m_PortView = PortView.Allocate(portData.GetDirection(), portData.GetCapacity(), portData.GetPortID(), this, portData.GetPortName(), portData.GetPortColor());
             m_PortContentView = m_PortView;
-            SerializedProperty nodeDataListSP = GetNodeDrawer().GetGraphAssetDrawer().GetNodeDataListProperty();
-            IReadOnlyList<BaseNodeData> nodesData = GetNodeDrawer().GetGraphAssetDrawer().GetGraphAsset().GetNodesData();
-            for (int i = 0; i < nodesData.Count; i++)
+            if (portData is IFieldPath fieldPath)
             {
-                if (nodesData[i] == portData.GetNodeData())
+                SerializedProperty nodeDataSP = GetNodeDrawer().GetGraphAssetDrawer().GetNodeDataProperty(portData.GetNodeData());
+                if (nodeDataSP != null)
                 {
-                    SerializedProperty nodeDataSP = nodeDataListSP.GetArrayElementAtIndex(i);
-                    if (nodeDataSP != null)
+                    SerializedProperty portDataSP = nodeDataSP.FindPropertyRelative(fieldPath.GetFieldPath());
+                    if (portDataSP != null)
                     {
-                        SerializedProperty portDataSP = nodeDataSP.FindPropertyRelative(portData.GetFieldName());
-                        if (portDataSP != null)
+                        SerializedProperty valueProperty = portDataSP.FindPropertyRelative("m_Value");
+                        if (valueProperty != null)
                         {
-                            SerializedProperty valueProperty = portDataSP.FindPropertyRelative("m_Value");
-                            if (valueProperty != null)
-                            {
-                                VisualElement portContentView = new();
-                                m_ValueField.BindProperty(valueProperty);
-                                portContentView.Add(m_PortContentView);
-                                portContentView.Add(m_ValueField);
-                                m_PortContentView = portContentView;
-                                m_HasAddValueField = true;
-                            }
+                            VisualElement portContentView = new();
+                            m_ValueField.BindProperty(valueProperty);
+                            portContentView.Add(m_PortContentView);
+                            portContentView.Add(m_ValueField);
+                            m_PortContentView = portContentView;
+                            m_HasAddValueField = true;
                         }
                     }
                 }

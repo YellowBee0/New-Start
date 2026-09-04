@@ -274,7 +274,10 @@ namespace YBFramework.Bridge.Data
 
         private void InitializeSubPortsData(SubPortData subPortData, ExposePortData exposePortData, int index)
         {
-            subPortData.SetFieldName($"{nameof(m_SubPortsData)}.Array.data[{index}]");
+            if (subPortData.GetAsSubPortData() is IFieldPath fieldPath)
+            {
+                fieldPath.SetFieldPath($"{nameof(m_SubPortsData)}.Array.data[{index}].{SubPortData.AS_SUB_PORT_FIELD_NAME}");
+            }
             if (exposePortData != null)
             {
                 BasePortData toExposePortData = exposePortData.GetToExposePortData();

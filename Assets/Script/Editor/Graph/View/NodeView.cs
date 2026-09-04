@@ -108,7 +108,6 @@ namespace YBFramework.Editor.Graph
         private void OnRelease()
         {
             ClearPortViews();
-            extensionContainer.Clear();
         }
 
         #region Pool

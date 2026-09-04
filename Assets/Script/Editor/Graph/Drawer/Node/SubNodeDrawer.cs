@@ -25,7 +25,7 @@ namespace YBFramework.Editor.Graph
             base.OnDrawNodeView();
             SubNodeData subNodeData = (SubNodeData)m_NodeData;
             m_SubGraphAssetField.SetValueWithoutNotify(subNodeData.GetSubGraphAsset());
-            m_NodeView.extensionContainer.Add(m_SubGraphAssetField);
+            m_NodeView.contentContainer.Add(m_SubGraphAssetField);
         }
 
         private void OnSubGraphAssetChanged(ChangeEvent<Object> evt)
@@ -55,6 +55,12 @@ namespace YBFramework.Editor.Graph
                 return;
             }
             m_SubGraphAssetField.SetValueWithoutNotify(subNodeData.GetSubGraphAsset());
+        }
+
+        protected override void OnRelease()
+        {
+            base.OnRelease();
+            m_NodeView.contentContainer.Remove(m_SubGraphAssetField);
         }
     }
 }

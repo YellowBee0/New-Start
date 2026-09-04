@@ -55,13 +55,12 @@ namespace YBFramework.Bridge.Data
 
         protected override void OnInitializePortData()
         {
-            m_InvokePortData.SetFieldName(nameof(m_InvokePortData));
             m_InvokePortData.SetPortName("调用输出");
             m_InvokePortData.SetDirection(Direction.Output);
             m_InvokePortData.SetPortColor(Color.cyan);
-            m_IntInputPort.SetFieldName(nameof(m_IntInputPort));
             m_IntInputPort.SetPortName("int输入");
             m_IntInputPort.SetPortColor(Color.yellow);
+            m_IntInputPort.SetFieldPath(nameof(m_IntInputPort));
         }
     }
 }

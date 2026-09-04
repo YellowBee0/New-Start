@@ -78,7 +78,6 @@ namespace YBFramework.Bridge.Data
 
         private void Initialize(ExposePortData exposePortData, int index)
         {
-            exposePortData.SetFieldName($"{nameof(m_ExposePortsData)}.Array.data[{index}]");
             exposePortData.SetPortName(string.Format(PORT_NAME, index));
             exposePortData.SetDirection(m_IsInput ? Direction.Output : Direction.Input);
             exposePortData.SetPortColor(Color.green);

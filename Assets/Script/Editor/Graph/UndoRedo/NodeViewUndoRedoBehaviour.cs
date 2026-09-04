@@ -23,6 +23,17 @@ namespace YBFramework.Editor.Graph
             if (nodeData != null)
             {
                 //TODO:这里需要重建一次引用，考虑是否把重建引用关系放到每次创建
+                m_GraphAssetDrawer.GetSO().Update();
+                //临时处理
+                nodeData.SetGraphAsset(m_GraphAssetDrawer.GetGraphAsset());
+                nodeData.SetDirtyToReinitialize();
+                int portDataCount = nodeData.GetPortsDataCount();
+                for (int j = 0; j < portDataCount; j++)
+                {
+                    BasePortData portData = nodeData.PortDataOfIndex(j);
+                    portData.SetNodeData(nodeData);
+                }
+                //临时处理
                 BaseNodeDrawer nodeDrawer = BaseNodeDrawer.Allocate(nodeData.GetType());
                 if (nodeDrawer != null)
                 {

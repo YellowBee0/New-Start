@@ -25,6 +25,8 @@ namespace YBFramework.Editor.Graph
             BaseNodeDrawer nodeDrawer = m_GraphAssetDrawer.FindNodeDrawer(m_NodeID);
             if (nodeDrawer != null)
             {
+                m_GraphAssetDrawer.GetSO().Update();
+                //TODO:这里还得恢复PortData的非序列化数据
                 BasePortDrawer portDrawer = nodeDrawer.FindPortDrawer(m_PortID);
                 if (portDrawer == null)
                 {
@@ -32,6 +34,8 @@ namespace YBFramework.Editor.Graph
                     if (portData != null)
                     {
                         nodeDrawer.DrawPortView(portData);
+                        //TODO:这里还需要恢复PortView的连线
+                        nodeDrawer.GetNodeView().RefreshPortContainerDisplay();
                     }
                 }
             }
