@@ -19,7 +19,7 @@ namespace YBFramework.Editor.Graph
         {
             m_NodeDrawer = nodeDrawer;
             PortView portView = OnDrawPortView(portData);
-            nodeDrawer.GetGraphAssetDrawer().SetPortViewEdgeConnector(portView);
+            m_NodeDrawer.GetGraphAssetDrawer().SetPortViewEdgeConnector(portView);
             return portView;
         }
 

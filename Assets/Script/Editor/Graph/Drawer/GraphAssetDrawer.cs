@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.Bridge.Data;
+using Object = UnityEngine.Object;
 
 namespace YBFramework.Editor.Graph
 {
-    public sealed class GraphAssetDrawer
+    public sealed class GraphAssetDrawer : IUndoRedoRecorder
     {
         private GraphAsset m_GraphAsset;
 
@@ -20,10 +20,6 @@ namespace YBFramework.Editor.Graph
         private SerializedProperty m_NodeDataListProperty;
 
         private readonly List<BaseNodeDrawer> m_NodeDrawers = new();
-
-        private int m_UndoGroupIndex;
-
-        private bool m_IsModifyGraphAsset;
 
         public GraphAsset GetGraphAsset()
         {
@@ -62,7 +58,7 @@ namespace YBFramework.Editor.Graph
         {
             return m_NodeDrawers;
         }
-        
+
         public void AddNodeDrawer(BaseNodeDrawer nodeDrawer)
         {
             m_NodeDrawers.Add(nodeDrawer);
@@ -95,7 +91,7 @@ namespace YBFramework.Editor.Graph
             }
             return null;
         }
-        
+
         public void DrawGraphView(GraphAsset graphAsset)
         {
             m_GraphAsset = graphAsset;
@@ -123,56 +119,9 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        /// <summary>
-        /// 在修改GraphAsset数据之前调用此方法，以便支持Undo，并且在修改完成后调用ApplyModifyGraphAsset方法。
-        /// </summary>
-        /// <param name="undoName">本次Undo名</param>
-        /// <exception cref="InvalidOperationException">如果调用了一次这个方法，没调用应用修改将会抛出异常</exception>
-        public void ModifyGraphAsset(string undoName)
+        public void SetDirty()
         {
-            if (m_IsModifyGraphAsset)
-            {
-                throw new InvalidOperationException("You have already called ModifyGraphAsset, please call ApplyModifyGraphAsset before calling ModifyGraphAsset again.");
-            }
-            m_IsModifyGraphAsset = true;
-            Undo.IncrementCurrentGroup();
-            m_UndoGroupIndex = Undo.GetCurrentGroup();
-            Undo.SetCurrentGroupName(undoName);
-            Undo.RegisterCompleteObjectUndo(m_GraphAsset, undoName);
-        }
-
-        /// <summary>
-        /// 应用修改GraphAsset数据，并且支持Undo。
-        /// </summary>
-        public void ApplyModifyGraphAsset()
-        {
-            if (m_IsModifyGraphAsset)
-            {
-                //TODO:是否要区分通过SerializedObject修改还是直接内存修改？
-                // 通过SerializedObject修改会自己记录Undo，我需要通过UndoGroup区分
-                EditorUtility.SetDirty(m_GraphAsset);
-                Undo.CollapseUndoOperations(m_UndoGroupIndex);
-                m_IsModifyGraphAsset = false;
-            }
-        }
-
-        //这个函数上升到全局
-        public void ClearModifyGraphAsset()
-        {
-            if (m_IsModifyGraphAsset)
-            {
-                throw new InvalidOperationException("Cannot clear modify graph asset while modifying, please call ApplyModifyGraphAsset before calling ClearModifyGraphAsset.");
-            }
-            Undo.ClearAll();
-            UndoRedoBehaviourManager.Clear();
-        }
-
-        public void PushUndoRedoBehaviour(IUndoRedoBehaviour undoRedoBehaviour)
-        {
-            if (m_IsModifyGraphAsset)
-            {
-                UndoRedoBehaviourManager.PushUndoRedoBehaviour(m_UndoGroupIndex, undoRedoBehaviour);
-            }
+            EditorUtility.SetDirty(m_GraphAsset);
         }
 
         private void OnEdgeConnect(Edge edge)
@@ -191,7 +140,7 @@ namespace YBFramework.Editor.Graph
                 }
                 return;
             }
-            ModifyGraphAsset("Connect port");
+            UndoRedoBehaviourManager.BeginRecord("Connect port");
             if (inputPortView.capacity == Port.Capacity.Single)
             {
                 foreach (Edge connection in inputPortView.connections)
@@ -228,13 +177,13 @@ namespace YBFramework.Editor.Graph
                 toPortView = inputPortView;
             }
             ConnectEdge(fromPortView, toPortView, edgeView);
-            //保存本次Undo数据
-            ApplyModifyGraphAsset();
+            UndoRedoBehaviourManager.EndRecord();
+            SetDirty();
         }
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange changeData)
         {
-            ModifyGraphAsset("Remove data or move node view");
+            UndoRedoBehaviourManager.BeginRecord("Remove data or move node view");
             if (changeData.elementsToRemove != null)
             {
                 for (int i = changeData.elementsToRemove.Count - 1; i >= 0; i--)
@@ -247,8 +196,8 @@ namespace YBFramework.Editor.Graph
                             RemoveNodeDrawer(nodeView.GetNodeDrawer());
                             //记录Undo行为
                             NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
-                            nodeViewUndoRedo.Initialize(this, nodeData.GetNodeID(), false);
-                            PushUndoRedoBehaviour(nodeViewUndoRedo);
+                            nodeViewUndoRedo.Initialize(nodeData.GetNodeID(), false);
+                            UndoRedoBehaviourManager.PushUndoRedoBehaviour(nodeViewUndoRedo);
                             changeData.elementsToRemove.RemoveAt(i);
                             break;
                         case EdgeView edgeView:
@@ -265,13 +214,14 @@ namespace YBFramework.Editor.Graph
                     if (changeData.movedElements[i] is NodeView nodeView)
                     {
                         NodeViewPositionUndoRedoBehaviour positionUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewPositionUndoRedoBehaviour>();
-                        positionUndoRedo.Initialize(this, nodeView.GetNodeID(), changeData.moveDelta);
-                        PushUndoRedoBehaviour(positionUndoRedo);
+                        positionUndoRedo.Initialize(nodeView.GetNodeID(), changeData.moveDelta);
+                        UndoRedoBehaviourManager.PushUndoRedoBehaviour(positionUndoRedo);
                         nodeView.GetNodeDrawer().GetNodeData().Position += changeData.moveDelta;
                     }
                 }
             }
-            ApplyModifyGraphAsset();
+            UndoRedoBehaviourManager.EndRecord();
+            SetDirty();
             return changeData;
         }
 
@@ -281,8 +231,8 @@ namespace YBFramework.Editor.Graph
             BasePortData toPortData = toPortView.GetPortDrawer().GetPortData();
             //添加UndoRedo行为
             ConnectionUndoRedoBehaviour connectUndo = IUndoRedoBehaviour.Allocate<ConnectionUndoRedoBehaviour>();
-            connectUndo.Initialize(this, fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), true);
-            PushUndoRedoBehaviour(connectUndo);
+            connectUndo.Initialize(fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), true);
+            UndoRedoBehaviourManager.PushUndoRedoBehaviour(connectUndo);
             //添加连接数据
             fromPortData.Connect(toPortData);
             //添加View连线
@@ -298,8 +248,8 @@ namespace YBFramework.Editor.Graph
             BasePortData toPortData = toPortView.GetPortDrawer().GetPortData();
             //添加UndoRedo行为
             ConnectionUndoRedoBehaviour disconnectUndo = IUndoRedoBehaviour.Allocate<ConnectionUndoRedoBehaviour>();
-            disconnectUndo.Initialize(this, fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), false);
-            PushUndoRedoBehaviour(disconnectUndo);
+            disconnectUndo.Initialize(fromPortData.GetNodeData().GetNodeID(), fromPortData.GetPortID(), toPortData.GetNodeData().GetNodeID(), toPortData.GetPortID(), false);
+            UndoRedoBehaviourManager.PushUndoRedoBehaviour(disconnectUndo);
             //删除连线数据
             fromPortData.Disconnect(toPortData);
             //删除View连线
@@ -314,6 +264,24 @@ namespace YBFramework.Editor.Graph
                 BaseNodeDrawer.Release(m_NodeDrawers[i]);
             }
             m_NodeDrawers.Clear();
+        }
+
+        public Object GetRecordObject()
+        {
+            return m_GraphAsset;
+        }
+
+        public void OnBeginRecord()
+        {
+        }
+
+        public void OnEndRecord()
+        {
+        }
+
+        public void OnUndoRedo()
+        {
+            m_SO.Update();
         }
 
         #region Edge connector class
@@ -347,7 +315,7 @@ namespace YBFramework.Editor.Graph
         {
             return s_Pool.Count > 0 ? s_Pool.Pop() : new GraphAssetDrawer();
         }
-        
+
         public static void Release(GraphAssetDrawer graphAssetDrawer)
         {
             graphAssetDrawer.OnRelease();

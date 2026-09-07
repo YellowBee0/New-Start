@@ -72,14 +72,16 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        public void DrawPortView(BasePortData portData)
+        public PortView DrawPortView(BasePortData portData)
         {
             BasePortDrawer portDrawer = BasePortDrawer.Allocate(portData.GetType());
             if (portDrawer != null)
             {
-                portDrawer.DrawPortView(this, portData);
+                PortView portView = portDrawer.DrawPortView(this, portData);
                 AddPortDrawer(portDrawer);
+                return portView;
             }
+            return null;
         }
 
         public BasePortDrawer FindPortDrawer(int portID)
@@ -121,7 +123,7 @@ namespace YBFramework.Editor.Graph
             }
             m_PortDrawers.Clear();
         }
-
+        
         #region Pool
 
         private static readonly Dictionary<Type, Stack<BaseNodeDrawer>> s_Pools = new();

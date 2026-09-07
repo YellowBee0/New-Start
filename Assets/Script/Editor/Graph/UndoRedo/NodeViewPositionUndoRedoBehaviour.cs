@@ -4,22 +4,20 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class NodeViewPositionUndoRedoBehaviour : IUndoRedoBehaviour
     {
-        private GraphAssetDrawer m_GraphAssetDrawer;
-
         private int m_NodeID;
 
         private Vector2 m_MoveDelta;
 
-        public void Initialize(GraphAssetDrawer graphAssetDrawer, int nodeID, Vector2 moveDelta)
+        public void Initialize(int nodeID, Vector2 moveDelta)
         {
-            m_GraphAssetDrawer = graphAssetDrawer;
             m_NodeID = nodeID;
             m_MoveDelta = moveDelta;
         }
 
-        public void Undo()
+        public void Undo(IUndoRedoRecorder undoRedoRecorder)
         {
-            NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            NodeView nodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
             if (nodeView != null)
             {
                 Rect oldPosition = nodeView.GetPosition();
@@ -28,9 +26,10 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        public void Redo()
+        public void Redo(IUndoRedoRecorder undoRedoRecorder)
         {
-            NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            NodeView nodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
             if (nodeView != null)
             {
                 Rect oldPosition = nodeView.GetPosition();

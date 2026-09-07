@@ -153,6 +153,7 @@ namespace YBFramework.Editor.Graph
                 }
                 if (graphAssetDrawer != null)
                 {
+                    UndoRedoBehaviourManager.ChangeUndoRedoRecorder(graphAssetDrawer);
                     CustomGraphView graphView = graphAssetDrawer.GetGraphView();
                     m_GraphContainer.Add(graphView);
                 }

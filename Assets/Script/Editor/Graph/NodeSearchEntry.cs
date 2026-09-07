@@ -229,7 +229,7 @@ namespace YBFramework.Editor.Graph
                             CustomGraphView graphView = graphAssetDrawer.GetGraphView();
                             VisualElement rootVisualElement = GraphWindow.GetInstance().rootVisualElement;
                             Vector2 worldPos = rootVisualElement.ChangeCoordinatesTo(rootVisualElement.parent, context.screenMousePosition - GraphWindow.GetInstance().position.position);
-                            graphAssetDrawer.ModifyGraphAsset("Create node data");
+                            UndoRedoBehaviourManager.BeginRecord("Create node data");
                             //添加数据
                             //存在持久化数据
                             graphAssetDrawer.GetGraphAsset().AddNodeData(nodeData);
@@ -244,9 +244,10 @@ namespace YBFramework.Editor.Graph
                             graphAssetDrawer.AddNodeDrawer(nodeDrawer);
                             //记录Undo行为
                             NodeViewUndoRedoBehaviour nodeViewUndoRedo = IUndoRedoBehaviour.Allocate<NodeViewUndoRedoBehaviour>();
-                            nodeViewUndoRedo.Initialize(graphAssetDrawer, nodeData.GetNodeID(), true);
-                            graphAssetDrawer.PushUndoRedoBehaviour(nodeViewUndoRedo);
-                            graphAssetDrawer.ApplyModifyGraphAsset();
+                            nodeViewUndoRedo.Initialize(nodeData.GetNodeID(), true);
+                            UndoRedoBehaviourManager.PushUndoRedoBehaviour(nodeViewUndoRedo);
+                            UndoRedoBehaviourManager.EndRecord();
+                            graphAssetDrawer.SetDirty();
                             return true;
                         }
                     }

@@ -26,8 +26,8 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        void Undo();
+        void Undo(IUndoRedoRecorder undoRedoRecorder);
 
-        void Redo();
+        void Redo(IUndoRedoRecorder undoRedoRecorder);
     }
 }

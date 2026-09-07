@@ -2,8 +2,6 @@
 {
     public sealed class ConnectionUndoRedoBehaviour : IUndoRedoBehaviour
     {
-        private GraphAssetDrawer m_GraphAssetDrawer;
-
         private int m_FromNodeID;
 
         private int m_FromPortID;
@@ -14,9 +12,8 @@
 
         private bool m_IsConnect;
 
-        public void Initialize(GraphAssetDrawer graphAssetDrawer, int fromNodeID, int fromPortID, int toNodeID, int toPortID, bool isConnect)
+        public void Initialize(int fromNodeID, int fromPortID, int toNodeID, int toPortID, bool isConnect)
         {
-            m_GraphAssetDrawer = graphAssetDrawer;
             m_FromNodeID = fromNodeID;
             m_FromPortID = fromPortID;
             m_ToNodeID = toNodeID;
@@ -24,10 +21,11 @@
             m_IsConnect = isConnect;
         }
 
-        private void Connect()
+        private void Connect(IUndoRedoRecorder undoRedoRecorder)
         {
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
             PortView fromPortView = null;
-            NodeView fromNodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_FromNodeID);
+            NodeView fromNodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_FromNodeID);
             if (fromNodeView != null)
             {
                 fromPortView = fromNodeView.FindPortView(m_FromPortID);
@@ -35,7 +33,7 @@
             if (fromPortView != null)
             {
                 PortView toPortView = null;
-                NodeView toNodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_ToNodeID);
+                NodeView toNodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_ToNodeID);
                 if (toNodeView != null)
                 {
                     toPortView = toNodeView.FindPortView(m_ToPortID);
@@ -52,15 +50,16 @@
                     }
                     EdgeView edgeView = fromPortView.ConnectTo<EdgeView>(toPortView);
                     edgeView.SetConnectDirection(fromPortView, toPortView);
-                    m_GraphAssetDrawer.GetGraphView().AddElement(edgeView);
+                    graphAssetDrawer.GetGraphView().AddElement(edgeView);
                 }
             }
         }
 
-        private void Disconnect()
+        private void Disconnect(IUndoRedoRecorder undoRedoRecorder)
         {
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
             PortView fromPortView = null;
-            NodeView fromNodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_FromNodeID);
+            NodeView fromNodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_FromNodeID);
             if (fromNodeView != null)
             {
                 fromPortView = fromNodeView.FindPortView(m_FromPortID);
@@ -68,40 +67,40 @@
             if (fromPortView != null)
             {
                 PortView toPortView = null;
-                NodeView toNodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_ToNodeID);
+                NodeView toNodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_ToNodeID);
                 if (toNodeView != null)
                 {
                     toPortView = toNodeView.FindPortView(m_ToPortID);
                 }
                 if (toPortView != null)
                 {
-                    CustomGraphView.Disconnect(fromPortView, toPortView, m_GraphAssetDrawer.GetGraphView());
+                    CustomGraphView.Disconnect(fromPortView, toPortView, graphAssetDrawer.GetGraphView());
                 }
             }
         }
 
 
-        public void Undo()
+        public void Undo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsConnect)
             {
-                Disconnect();
+                Disconnect(undoRedoRecorder);
             }
             else
             {
-                Connect();
+                Connect(undoRedoRecorder);
             }
         }
 
-        public void Redo()
+        public void Redo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsConnect)
             {
-                Connect();
+                Connect(undoRedoRecorder);
             }
             else
             {
-                Disconnect();
+                Disconnect(undoRedoRecorder);
             }
         }
     }

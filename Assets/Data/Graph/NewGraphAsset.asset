@@ -101,5 +101,20 @@ MonoBehaviour:
           m_PortConnectionData:
             NodeID: 0
             PortID: 0
-        m_SourcePortID: 2
+        - ExposePortDisplayName: 
+          m_PortID: 3
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        - ExposePortDisplayName: 
+          m_PortID: 4
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        - ExposePortDisplayName: 
+          m_PortID: 5
+          m_PortConnectionData:
+            NodeID: 0
+            PortID: 0
+        m_SourcePortID: 5
         m_IsInput: 1

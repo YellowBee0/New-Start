@@ -30,12 +30,7 @@ namespace YBFramework.Editor.Graph
             SubPortData subPortData = (SubPortData)portData;
             BasePortData asSubPortData = subPortData.GetAsSubPortData();
             m_SubPortDrawer = Allocate(asSubPortData.GetType());
-            if (m_SubPortDrawer != null)
-            {
-                m_SubPortDrawer.DrawPortView(GetNodeDrawer(), asSubPortData);
-                return m_SubPortDrawer.GetPortView();
-            }
-            return null;
+            return m_SubPortDrawer?.DrawPortView(GetNodeDrawer(), asSubPortData);
         }
 
         public override void OnRelease()

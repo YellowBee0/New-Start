@@ -2,33 +2,31 @@
 {
     public sealed class ExposeNodeDirectionUndoRedoBehaviour : IUndoRedoBehaviour
     {
-        private GraphAssetDrawer m_GraphAssetDrawer;
-
         private int m_NodeID;
 
-        public void Initialize(GraphAssetDrawer graphAssetDrawer, int nodeID)
+        public void Initialize(int nodeID)
         {
-            m_GraphAssetDrawer = graphAssetDrawer;
             m_NodeID = nodeID;
         }
-        
-        private void RefreshExposeNodeView()
+
+        private void RefreshExposeNodeView(IUndoRedoRecorder undoRedoRecorder)
         {
-            BaseNodeDrawer nodeDrawer = m_GraphAssetDrawer.FindNodeDrawer(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            BaseNodeDrawer nodeDrawer = graphAssetDrawer.FindNodeDrawer(m_NodeID);
             if (nodeDrawer is ExposeNodeDrawer exposePortsNodeDrawer)
             {
                 exposePortsNodeDrawer.RefreshNodeView();
             }
         }
 
-        public void Undo()
+        public void Undo(IUndoRedoRecorder undoRedoRecorder)
         {
-            RefreshExposeNodeView();
+            RefreshExposeNodeView(undoRedoRecorder);
         }
 
-        public void Redo()
+        public void Redo(IUndoRedoRecorder undoRedoRecorder)
         {
-            RefreshExposeNodeView();
+            RefreshExposeNodeView(undoRedoRecorder);
         }
     }
 }

@@ -4,28 +4,24 @@ namespace YBFramework.Editor.Graph
 {
     public sealed class NodeViewUndoRedoBehaviour : IUndoRedoBehaviour
     {
-        private GraphAssetDrawer m_GraphAssetDrawer;
-
         private int m_NodeID;
 
         private bool m_IsAdd;
 
-        public void Initialize(GraphAssetDrawer graphAssetDrawer, int nodeID, bool isAdd)
+        public void Initialize(int nodeID, bool isAdd)
         {
-            m_GraphAssetDrawer = graphAssetDrawer;
             m_NodeID = nodeID;
             m_IsAdd = isAdd;
         }
 
-        private void AddNodeView()
+        private void AddNodeView(IUndoRedoRecorder undoRedoRecorder)
         {
-            BaseNodeData nodeData = m_GraphAssetDrawer.GetGraphAsset().FindNodeData(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            BaseNodeData nodeData = graphAssetDrawer.GetGraphAsset().FindNodeData(m_NodeID);
             if (nodeData != null)
             {
-                //TODO:这里需要重建一次引用，考虑是否把重建引用关系放到每次创建
-                m_GraphAssetDrawer.GetSO().Update();
                 //临时处理
-                nodeData.SetGraphAsset(m_GraphAssetDrawer.GetGraphAsset());
+                nodeData.SetGraphAsset(graphAssetDrawer.GetGraphAsset());
                 nodeData.SetDirtyToReinitialize();
                 int portDataCount = nodeData.GetPortsDataCount();
                 for (int j = 0; j < portDataCount; j++)
@@ -37,44 +33,45 @@ namespace YBFramework.Editor.Graph
                 BaseNodeDrawer nodeDrawer = BaseNodeDrawer.Allocate(nodeData.GetType());
                 if (nodeDrawer != null)
                 {
-                    NodeView nodeView = nodeDrawer.DrawNodeView(m_GraphAssetDrawer, nodeData);
-                    m_GraphAssetDrawer.AddNodeDrawer(nodeDrawer);
+                    NodeView nodeView = nodeDrawer.DrawNodeView(graphAssetDrawer, nodeData);
+                    graphAssetDrawer.AddNodeDrawer(nodeDrawer);
                     //这里会连接所有的连线
                     nodeView.RevertPortViewsConnection();
                 }
             }
         }
 
-        private void RemoveNodeView()
+        private void RemoveNodeView(IUndoRedoRecorder undoRedoRecorder)
         {
-            NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            NodeView nodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
             if (nodeView != null)
             {
-                m_GraphAssetDrawer.RemoveNodeDrawer(nodeView.GetNodeDrawer());
+                graphAssetDrawer.RemoveNodeDrawer(nodeView.GetNodeDrawer());
             }
         }
 
-        public void Undo()
+        public void Undo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsAdd)
             {
-                RemoveNodeView();
+                RemoveNodeView(undoRedoRecorder);
             }
             else
             {
-                AddNodeView();
+                AddNodeView(undoRedoRecorder);
             }
         }
 
-        public void Redo()
+        public void Redo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsAdd)
             {
-                AddNodeView();
+                AddNodeView(undoRedoRecorder);
             }
             else
             {
-                RemoveNodeView();
+                RemoveNodeView(undoRedoRecorder);
             }
         }
     }

@@ -1,10 +1,11 @@
-﻿using YBFramework.Bridge.Data;
+﻿using System;
+using YBFramework.Bridge.Data;
 
 namespace YBFramework.Editor.Graph
 {
     public sealed class PortViewUndoRedoBehaviour : IUndoRedoBehaviour
     {
-        private GraphAssetDrawer m_GraphAssetDrawer;
+        private Action<BaseNodeData, BasePortData> m_InitializePortViewData;
 
         private int m_NodeID;
 
@@ -12,38 +13,41 @@ namespace YBFramework.Editor.Graph
 
         private bool m_IsAdd;
 
-        public void Initialize(GraphAssetDrawer graphAssetDrawer, int nodeID, int portID, bool isAdd)
+        public void Initialize(Action<BaseNodeData, BasePortData> initializePortViewData, int nodeID, int portID, bool isAdd)
         {
-            m_GraphAssetDrawer = graphAssetDrawer;
+            m_InitializePortViewData = initializePortViewData;
             m_NodeID = nodeID;
             m_PortID = portID;
             m_IsAdd = isAdd;
         }
 
-        private void AddPortView()
+        private void AddPortView(IUndoRedoRecorder undoRedoRecorder)
         {
-            BaseNodeDrawer nodeDrawer = m_GraphAssetDrawer.FindNodeDrawer(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            BaseNodeDrawer nodeDrawer = graphAssetDrawer.FindNodeDrawer(m_NodeID);
             if (nodeDrawer != null)
             {
-                m_GraphAssetDrawer.GetSO().Update();
-                //TODO:这里还得恢复PortData的非序列化数据
                 BasePortDrawer portDrawer = nodeDrawer.FindPortDrawer(m_PortID);
                 if (portDrawer == null)
                 {
                     BasePortData portData = nodeDrawer.GetNodeData().FindPortData(m_PortID);
                     if (portData != null)
                     {
-                        nodeDrawer.DrawPortView(portData);
-                        //TODO:这里还需要恢复PortView的连线
+                        BaseNodeData nodeData = nodeDrawer.GetNodeData();
+                        portData.SetNodeData(nodeData);
+                        m_InitializePortViewData?.Invoke(nodeDrawer.GetNodeData(), portData);
+                        PortView portView = nodeDrawer.DrawPortView(portData);
                         nodeDrawer.GetNodeView().RefreshPortContainerDisplay();
+                        portView.RevertPortViewConnections();
                     }
                 }
             }
         }
 
-        private void RemovePortView()
+        private void RemovePortView(IUndoRedoRecorder undoRedoRecorder)
         {
-            NodeView nodeView = m_GraphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
+            GraphAssetDrawer graphAssetDrawer = (GraphAssetDrawer)undoRedoRecorder;
+            NodeView nodeView = graphAssetDrawer.GetGraphView().FindNodeView(m_NodeID);
             if (nodeView != null)
             {
                 PortView portView = nodeView.FindPortView(m_PortID);
@@ -54,27 +58,27 @@ namespace YBFramework.Editor.Graph
             }
         }
 
-        public void Undo()
+        public void Undo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsAdd)
             {
-                RemovePortView();
+                RemovePortView(undoRedoRecorder);
             }
             else
             {
-                AddPortView();
+                AddPortView(undoRedoRecorder);
             }
         }
 
-        public void Redo()
+        public void Redo(IUndoRedoRecorder undoRedoRecorder)
         {
             if (m_IsAdd)
             {
-                AddPortView();
+                AddPortView(undoRedoRecorder);
             }
             else
             {
-                RemovePortView();
+                RemovePortView(undoRedoRecorder);
             }
         }
     }

@@ -5,12 +5,16 @@ using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
+using YBFramework.Bridge.Editor;
 #endif
 
 namespace YBFramework.Bridge.Data
 {
     [Serializable]
-    public sealed class ValueInputPortData<TValue> : BasePortData, IFieldPath
+    public sealed class ValueInputPortData<TValue> : BasePortData
+#if UNITY_EDITOR
+        , IFieldPath
+#endif
     {
         [SerializeField] private TValue m_Value;
 

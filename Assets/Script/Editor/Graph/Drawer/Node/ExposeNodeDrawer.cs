@@ -41,11 +41,11 @@ namespace YBFramework.Editor.Graph
             m_DirectionToggle.SetValueWithoutNotify(((ExposeNodeData)m_NodeData).GetIsInput());
             DrawPortViews();
         }
-        
+
         private void OnAddClicked()
         {
             ExposeNodeData exposeNodeData = (ExposeNodeData)m_NodeData;
-            m_GraphAssetDrawer.ModifyGraphAsset("Expose node data add expose port data");
+            UndoRedoBehaviourManager.BeginRecord("Expose node data add expose port data");
             //TODO:封装一个函数，创建节点或者端口并且自动调用他们的InitializeSerializedData
             ExposePortData exposePortData = new();
             exposePortData.InitializeSerializedData();
@@ -53,14 +53,15 @@ namespace YBFramework.Editor.Graph
             exposeNodeData.InitializeExposePortDataView(exposePortData);
             //记录Undo行为
             PortViewUndoRedoBehaviour portViewUndoRedo = IUndoRedoBehaviour.Allocate<PortViewUndoRedoBehaviour>();
-            portViewUndoRedo.Initialize(m_GraphAssetDrawer, m_NodeData.GetNodeID(), exposePortData.GetPortID(), true);
-            m_GraphAssetDrawer.PushUndoRedoBehaviour(portViewUndoRedo);
+            portViewUndoRedo.Initialize(InitializeExposePortViewData, m_NodeData.GetNodeID(), exposePortData.GetPortID(), true);
+            UndoRedoBehaviourManager.PushUndoRedoBehaviour(portViewUndoRedo);
             //创建端口视图
             DrawPortView(exposePortData);
             m_NodeView.RefreshPortContainerDisplay();
-            m_GraphAssetDrawer.ApplyModifyGraphAsset();
+            UndoRedoBehaviourManager.EndRecord();
+            m_GraphAssetDrawer.SetDirty();
         }
-        
+
         private void OnRemoveClicked()
         {
             Debug.Log("开发中");
@@ -90,14 +91,15 @@ namespace YBFramework.Editor.Graph
                     }
                 }
             }
-            m_GraphAssetDrawer.ModifyGraphAsset("Change expose port data direction");
+            UndoRedoBehaviourManager.BeginRecord("Change expose port data direction");
             exposeNodeData.ChangeDirection(evt.newValue);
             ClearPortDrawers();
             //记录Undo
             ExposeNodeDirectionUndoRedoBehaviour exposeNodeDirectionUndoRedo = IUndoRedoBehaviour.Allocate<ExposeNodeDirectionUndoRedoBehaviour>();
-            exposeNodeDirectionUndoRedo.Initialize(m_GraphAssetDrawer, m_NodeData.GetNodeID());
-            m_GraphAssetDrawer.PushUndoRedoBehaviour(exposeNodeDirectionUndoRedo);
-            m_GraphAssetDrawer.ApplyModifyGraphAsset();
+            exposeNodeDirectionUndoRedo.Initialize(m_NodeData.GetNodeID());
+            UndoRedoBehaviourManager.PushUndoRedoBehaviour(exposeNodeDirectionUndoRedo);
+            UndoRedoBehaviourManager.EndRecord();
+            m_GraphAssetDrawer.SetDirty();
         }
 
         protected override void OnDrawNodeView()
@@ -114,6 +116,14 @@ namespace YBFramework.Editor.Graph
             base.OnRelease();
             m_NodeView.contentContainer.Remove(m_DirectionToggle);
             m_NodeView.contentContainer.Remove(m_ButtonContainer);
+        }
+
+        private static void InitializeExposePortViewData(BaseNodeData nodeData, BasePortData portData)
+        {
+            if (nodeData is ExposeNodeData exposeNodeData && portData is ExposePortData exposePortData)
+            {
+                exposeNodeData.InitializeExposePortDataView(exposePortData);
+            }
         }
     }
 }
