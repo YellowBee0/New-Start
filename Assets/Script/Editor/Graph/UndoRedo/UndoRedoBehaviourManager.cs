@@ -139,7 +139,6 @@ namespace YBFramework.Editor.Graph
 
         private static void InvokeUndoRedo(in UndoRedoInfo undoRedoInfo)
         {
-            Debug.LogError($"{undoRedoInfo.undoGroup}: is redo: {undoRedoInfo.isRedo}");
             Stack<(int, Stack<IUndoRedoBehaviour>)> invokeBehaviourRecords;
             Stack<(int, Stack<IUndoRedoBehaviour>)> backInvokeBehaviourRecords;
             bool isRedo = undoRedoInfo.isRedo;

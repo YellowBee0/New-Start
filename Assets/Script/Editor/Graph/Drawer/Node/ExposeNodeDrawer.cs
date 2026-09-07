@@ -37,9 +37,12 @@ namespace YBFramework.Editor.Graph
 
         public void RefreshNodeView()
         {
+            //TODO:这个适用于修改某一个NodeData中的参数时，导致所有端口都需要重建的逻辑，目前类似的还有SubNodeDrawer中设置子图时
             ClearPortDrawers();
             m_DirectionToggle.SetValueWithoutNotify(((ExposeNodeData)m_NodeData).GetIsInput());
             DrawPortViews();
+            m_NodeView.RevertPortViewsConnection();
+            //TODO:恢复连线不止当前节点下的所有端口连接别的端口，还有别的端口连接当且节点的端口
         }
 
         private void OnAddClicked()
