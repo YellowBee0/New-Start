@@ -7,6 +7,8 @@ namespace YBFramework.GameLogic.Graph
     {
         public abstract Type GetDelegateType();
 
+        public abstract void SetDelegate(Delegate @delegate);
+
         public abstract object DynamicInvoke(params object[] args);
     }
 
@@ -17,6 +19,11 @@ namespace YBFramework.GameLogic.Graph
         public override Type GetDelegateType()
         {
             return typeof(TDelegate);
+        }
+
+        public override void SetDelegate(Delegate @delegate)
+        {
+            m_Delegate = (TDelegate)Delegate.Combine(m_Delegate, @delegate);
         }
 
         public override void ConnectPort(PortConnectionData portConnectionData, BasePort portToConnect)
