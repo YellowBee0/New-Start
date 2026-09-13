@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using YBFramework.GameLogic.Graph;
+#if UNITY_EDITOR
+using UnityEditor.Experimental.GraphView;
+#endif
 
 namespace YBFramework.Bridge.Data
 {

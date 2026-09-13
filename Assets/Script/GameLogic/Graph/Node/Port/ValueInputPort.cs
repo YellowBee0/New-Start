@@ -10,6 +10,7 @@ namespace YBFramework.GameLogic.Graph
         public void InitializeFromData(ValueInputPortData<TValue> data)
         {
             m_PortID = data.GetPortID();
+            //TODO:这个是编辑器接口
             m_Value = data.GetValue();
         }
 
