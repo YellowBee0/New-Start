@@ -8,7 +8,11 @@ namespace YBFramework.GameLogic.Graph
     {
         private readonly List<BaseNode> m_Nodes = new();
 
-        private Entity m_Owner;
+        //TODO:owner目前想到的办法就是使用object表示，因为蓝图存在的所有者可能不止Entity，现在已经有在Buff中的设定了，以后可能会存在于UI。
+        // 需要一个类GetGraphOwner<T>，T为所有者类型Entity、Buff。。。这个节点为泛型节点需要手动添加搜索列表，区分Entity、Buff。。。
+        // 创建的类型分别为GetGraphOwner<Entity>、GetGraphOwner<Buff>。。。名称可以不用区分
+        //这个值先于节点和端口的创建，否则子图获取不到owner的值
+        private object m_Owner;
 
         public void InitializeFromGraphAsset(GraphAsset graphAsset)
         {
@@ -59,12 +63,12 @@ namespace YBFramework.GameLogic.Graph
             return null;
         }
 
-        public void SetOwner(Entity entity)
+        public void SetOwner(object owner)
         {
-            m_Owner = entity;
+            m_Owner = owner;
         }
 
-        public Entity GetOwner()
+        public object GetOwner()
         {
             return m_Owner;
         }

@@ -206,6 +206,10 @@ namespace YBFramework.Editor.Graph
             return m_SearchTreeEntries;
         }
 
+        //TODO:选择了选项后现在不止直接创建节点，还可能执行其他任务，比如：以后会实现一个节点ValueNode<T>，T为可序列化的类型，这个节点可以写入和读取值。
+        // 如果只是单个创建节点选项并不知道泛型T是什么，所以需要在点击创建ValueNode<T>时，呼出另外一个面板：选择泛型T类型。选择后再创建准确的节点
+        // 目前类似的有GetGraphOwner<T>节点，但是这个节点是通过添加不同选项实现的，也不需要这个功能，因为本身GraphType就会筛选不同的节点，
+        // GetGraphOwner<T>节点又和GraphType挂钩，所以就不用这个功能
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
             GraphAssetDrawer graphAssetDrawer = GraphWindow.GetInstance().GetCurrentGraphAssetDrawer();
