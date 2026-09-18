@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿/*using System.Collections.Generic;
 
 namespace YBFramework.Bridge.Data
 {
@@ -11,16 +11,16 @@ namespace YBFramework.Bridge.Data
             if (!m_GraphSliceData.TryGetValue(graphAsset, out GraphSliceData graphSliceData))
             {
                 graphSliceData = new GraphSliceData();
-                DFSGraphAsset dfsGraphAsset = DFSGraphAsset.Allocate(graphAsset, graphSliceData);
+                CheckGraphExecutionContext checkGraphExecutionContext = CheckGraphExecutionContext.Allocate(graphAsset, graphSliceData);
                 IReadOnlyList<BaseNodeData> nodesData = graphAsset.GetNodesData();
                 for (int i = 0; i < nodesData.Count; i++)
                 {
-                    nodesData[i].CheckExecutionSliceEntry(dfsGraphAsset);
+                    nodesData[i].CheckExecutionEntry(checkGraphExecutionContext);
                 }
-                DFSGraphAsset.Release(dfsGraphAsset);
+                CheckGraphExecutionContext.Release(checkGraphExecutionContext);
                 m_GraphSliceData.Add(graphAsset, graphSliceData);
             }
             return graphSliceData;
         }
     }
-}
+}*/

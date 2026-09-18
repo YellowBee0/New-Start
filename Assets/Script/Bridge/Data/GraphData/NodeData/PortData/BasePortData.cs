@@ -14,13 +14,19 @@ namespace YBFramework.Bridge.Data
 
         public abstract bool HasSubPortData();
 
+        /*/// <summary>
+        /// 是否被作为子图的端口，用于在节点的可执行检查进入子图，子图端口每检查到自己可执行就需要判断自己是否被作为了子图的端口，是就需要返回父图执行父图的检查
+        /// </summary>
+        /// <returns>true是，false反之</returns>
+        public abstract bool IsSubPort();*/
+
         public abstract int GetPortConnectionsDataCount();
 
         public abstract PortConnectionData PortConnectionDataOfIndex(int index);
 
         public abstract BasePort CreateRuntimeInstance();
 
-        public void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset)
+        public void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext)
         {
             int portConnectionsDataCount = GetPortConnectionsDataCount();
             for (int i = 0; i < portConnectionsDataCount; i++)
@@ -28,27 +34,27 @@ namespace YBFramework.Bridge.Data
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
                 if (portConnectionData.IsValid())
                 {
-                    BaseNodeData nodeData = dfsGraphAsset.GetGraphAsset().FindNodeData(portConnectionData.NodeID);
+                    BaseNodeData nodeData = checkGraphExecutionContext.GraphAsset.FindNodeData(portConnectionData.NodeID);
                     if (nodeData != null)
                     {
                         BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
                         if (portData != null)
                         {
-                            nodeData.DFSExecutionFlow(dfsGraphAsset, portData);
+                            nodeData.CheckExecutionFlow(checkGraphExecutionContext, portData);
                         }
                     }
                 }
             }
             if (HasSubPortData())
             {
-                DFSGraphAsset parent = dfsGraphAsset.GetParent();
+                CheckGraphExecutionContext parent = checkGraphExecutionContext.Parent;
                 if (parent != null)
                 {
-                    SubNodeData subNodeData = (SubNodeData)parent.DFSNodeData.NodeData;
-                    BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(dfsGraphAsset.DFSNodeData.NodeData.GetNodeID(), GetPortID());
+                    SubNodeData subNodeData = (SubNodeData)parent.CurrentCheckNodeExecutionContext.NodeData;
+                    BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(checkGraphExecutionContext.CurrentCheckNodeExecutionContext.NodeData.GetNodeID(), GetPortID());
                     if (portData != null)
                     {
-                        subNodeData.DFSExecutionFlow(parent, portData);
+                        subNodeData.CheckExecutionFlow(parent, portData);
                     }
                 }
             }

@@ -32,13 +32,13 @@ namespace YBFramework.Bridge.Data
 
         public abstract BasePortData PortDataOfIndex(int index);
 
-        public abstract BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData);
+        public abstract BaseNode CreateRuntimeInstance(ExecutableNodeData executableNodeData);
 
-        public virtual void CheckExecutionSliceEntry(DFSGraphAsset dfsGraphAsset)
+        public virtual void CheckExecutionEntry(CheckGraphExecutionContext checkGraphExecutionContext)
         {
         }
 
-        public abstract void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData);
+        public abstract void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck);
 #if UNITY_EDITOR
         public string NodeName;
 

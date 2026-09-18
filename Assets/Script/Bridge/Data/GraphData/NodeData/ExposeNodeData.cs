@@ -93,14 +93,14 @@ namespace YBFramework.Bridge.Data
             return m_ExposePortsData[index];
         }
 
-        public override BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData)
+        public override BaseNode CreateRuntimeInstance(ExecutableNodeData executableNodeData)
         {
             throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CreateRuntimeInstance)} method");
         }
 
-        public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
+        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck)
         {
-            throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(DFSExecutionFlow)} method");
+            throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CheckExecutionFlow)} method");
         }
 
         public override void InitializeSerializedData()

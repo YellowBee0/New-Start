@@ -52,7 +52,7 @@ namespace YBFramework.Bridge.Data
             return m_SubPortsData[index];
         }
 
-        public override BaseNode CreateRuntimeInstance(NodeSliceData nodeSliceData)
+        public override BaseNode CreateRuntimeInstance(ExecutableNodeData executableNodeData)
         {
             /*ProxyNode proxyNode = new ProxyNode();
             proxyNode.InitializeFromProxyNodeData(this, (SubNodeSliceData)nodeSliceData);
@@ -60,60 +60,68 @@ namespace YBFramework.Bridge.Data
             throw new NotImplementedException();
         }
 
-        public override void CheckExecutionSliceEntry(DFSGraphAsset dfsGraphAsset)
+        public override void CheckExecutionEntry(CheckGraphExecutionContext checkGraphExecutionContext)
         {
-            GraphSliceData graphSliceData = dfsGraphAsset.GetGraphSliceData();
-            if (!graphSliceData.TryGetNodeSliceData(this, out NodeSliceData nodeSliceData))
+            //检查可执行列表中是否有当前节点，没有就添加一个可执行子节点ExecutableSubNodeData
+            //TODO:这样做存在一个问题：子图如果没有可执行的内容，这个数据就白创建了。需要在创建完毕后检查是否有东西，没有就删除
+            if (!checkGraphExecutionContext.ExecutableNodesData.TryGetValue(this, out ExecutableNodeData executableNodeData))
             {
-                nodeSliceData = new SubNodeSliceData(m_SubGraphAsset, new GraphSliceData());
-                graphSliceData.AddNodeSliceData(this, nodeSliceData);
+                executableNodeData = new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>());
+                checkGraphExecutionContext.ExecutableNodesData.Add(this, executableNodeData);
             }
-            dfsGraphAsset.DFSNodeData = new DFSNodeData(this, nodeSliceData);
-            DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, new GraphSliceData());
-            subDFSGraphAsset.SetParent(dfsGraphAsset);
+            //设置检查上下文执行的当前节点为this
+            checkGraphExecutionContext.CurrentCheckNodeExecutionContext = new CheckNodeExecutionContext(this, executableNodeData);
+            //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
+            CheckGraphExecutionContext checkSubGraphExecutionContext = CheckGraphExecutionContext.Allocate(m_SubGraphAsset, ((ExecutableSubNodeData)executableNodeData).ExecutableNodesData);
+            checkSubGraphExecutionContext.Parent = checkGraphExecutionContext;
+            //执行子图的CheckExecutionEntry
+            //TODO:后续这个可以提到管理类的函数中
             IReadOnlyList<BaseNodeData> subNodesData = m_SubGraphAsset.GetNodesData();
             for (int i = 0; i < subNodesData.Count; i++)
             {
-                subNodesData[i].CheckExecutionSliceEntry(subDFSGraphAsset);
+                subNodesData[i].CheckExecutionEntry(checkSubGraphExecutionContext);
             }
-            DFSGraphAsset.Release(subDFSGraphAsset);
+            CheckGraphExecutionContext.Release(checkSubGraphExecutionContext);
         }
 
-        public override void DFSExecutionFlow(DFSGraphAsset dfsGraphAsset, BasePortData portData)
+        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck)
         {
-            NodeSliceData nodeSliceData;
-            if (dfsGraphAsset.DFSNodeData.NodeData == this)
+            //先找到可执行节点数据
+            ExecutableNodeData executableNodeData;
+            if (checkGraphExecutionContext.CurrentCheckNodeExecutionContext.NodeData == this)
             {
-                nodeSliceData = dfsGraphAsset.DFSNodeData.NodeSliceData;
+                executableNodeData = checkGraphExecutionContext.CurrentCheckNodeExecutionContext.ExecutableNodeData;
             }
             else
             {
-                GraphSliceData graphSliceData = dfsGraphAsset.GetGraphSliceData();
-                if (!graphSliceData.TryGetNodeSliceData(this, out nodeSliceData))
+                if (!checkGraphExecutionContext.ExecutableNodesData.TryGetValue(this, out executableNodeData))
                 {
-                    nodeSliceData = new SubNodeSliceData(m_SubGraphAsset, new GraphSliceData());
-                    graphSliceData.AddNodeSliceData(this, nodeSliceData);
+                    executableNodeData = new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>());
+                    checkGraphExecutionContext.ExecutableNodesData.Add(this, executableNodeData);
                 }
             }
-            if (nodeSliceData.AddPortSliceData(portData))
+            //如果可执行节点数据没有添加过端口，就对端口执行检查
+            if (executableNodeData.ExecutablePortsData.Add(portDataToCheck))
             {
-                dfsGraphAsset.DFSNodeData = new DFSNodeData(this, nodeSliceData);
-                //执行子端口在当前蓝图调用链的检查
-                portData.DFSExecutionFlow(dfsGraphAsset);
-                //执行子蓝图中实际的端口调用链检查
-                SubPortData subPortData = (SubPortData)portData;
+                checkGraphExecutionContext.CurrentCheckNodeExecutionContext = new CheckNodeExecutionContext(this, executableNodeData);
+                //1、执行端口在当前蓝图的检查
+                portDataToCheck.CheckExecutionFlow(checkGraphExecutionContext);
+                //2、执行子蓝图中实际的端口在子蓝图的检查
+                //因为同时执行了1、2两个步骤，就会导致子图检查流程执行回父图的端口时，父图的端口会执行一次在父图的检查，然后又执行到子图的端口，第二步就是多余的。
+                //所以每一个端口需要先判断是否添加到可执行列表，再执行检查后面的内容，不然会在这里形成无限递归。
+                SubPortData subPortData = (SubPortData)portDataToCheck;
                 BaseNodeData asSubNodeData = m_SubGraphAsset.FindNodeData(subPortData.GetAsSubNodeID());
                 if (asSubNodeData != null)
                 {
+                    //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
+                    CheckGraphExecutionContext checkSubGraphExecutionContext = CheckGraphExecutionContext.Allocate(m_SubGraphAsset, ((ExecutableSubNodeData)executableNodeData).ExecutableNodesData);
+                    checkSubGraphExecutionContext.Parent = checkGraphExecutionContext;
                     BasePortData asSubPortData = asSubNodeData.FindPortData(subPortData.GetAsSubPortID());
                     if (asSubPortData != null)
                     {
-                        DFSGraphAsset subDFSGraphAsset = DFSGraphAsset.Allocate(m_SubGraphAsset, ((SubNodeSliceData)nodeSliceData).SubGraphSliceData);
-                        subDFSGraphAsset.SetParent(dfsGraphAsset);
-                        //检查子蓝图中实际端口调用链，这一步会出现检查调用链需要返回到父蓝图，父蓝图又会
-                        asSubNodeData.DFSExecutionFlow(subDFSGraphAsset, asSubPortData);
-                        DFSGraphAsset.Release(subDFSGraphAsset);
+                        asSubNodeData.CheckExecutionFlow(checkSubGraphExecutionContext, asSubPortData);
                     }
+                    CheckGraphExecutionContext.Release(checkSubGraphExecutionContext);
                 }
             }
         }
