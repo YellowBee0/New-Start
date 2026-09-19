@@ -7,11 +7,12 @@ using YBFramework.Bridge.Editor;
 namespace YBFramework.Bridge.Data
 {
     //TODO:这个CreateAssetMenu需要删除，创建GraphAsset都是在编辑器中选择，而不是通过这个创建，然后给出一个初始化函数，需要new m_NodesData这个集合
-    
+
     //TODO:GraphAsset需要实现一个Initialize，初始化蓝图内容和所有节点；
     // BaseNodeData需要实现一个Initialize，初始化节点内容和全部端口；
     // BasePortData需要实现一个Initialize，初始化端口内容；
-    // 他们的Initialize虽然是树形的调用过程GraphAsset->BaseNodeData->BasePortData，但是都可以单独提出来进行调用：比如直接调用BaseNodeData的Initialize
+    // 他们的Initialize虽然是树形的调用过程GraphAsset->BaseNodeData->BasePortData，GraphAsset和BaseNodeData可以单独列出来调用：
+    // 比如直接调用BaseNodeData的Initialize
     [CreateAssetMenu(menuName = "Data/GraphAsset", fileName = "NewGraphAsset")]
     public sealed class GraphAsset : ScriptableObject
     {

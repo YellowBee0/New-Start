@@ -64,16 +64,17 @@ namespace YBFramework.Bridge.Data
         {
             //检查可执行列表中是否有当前节点，没有就添加一个可执行子节点ExecutableSubNodeData
             //TODO:这样做存在一个问题：子图如果没有可执行的内容，这个数据就白创建了。需要在创建完毕后检查是否有东西，没有就删除
-            if (!checkGraphExecutionContext.ExecutableNodesData.TryGetValue(this, out ExecutableNodeData executableNodeData))
+            if (!checkGraphExecutionContext.CheckNodeExecutionContexts.TryGetValue(this, out CheckNodeExecutionContext checkNodeExecutionContext))
             {
-                executableNodeData = new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>());
-                checkGraphExecutionContext.ExecutableNodesData.Add(this, executableNodeData);
+                checkNodeExecutionContext =
+                    CheckNodeExecutionContext.Allocate<CheckSubNodeExecutionContext>(this, new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>()));
+                checkGraphExecutionContext.CheckNodeExecutionContexts.Add(this, checkNodeExecutionContext);
             }
             //设置检查上下文执行的当前节点为this
-            checkGraphExecutionContext.CurrentCheckNodeExecutionContext = new CheckNodeExecutionContext(this, executableNodeData);
+            checkGraphExecutionContext.CurrentCheckNodeExecutionContext = checkNodeExecutionContext;
             //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
-            CheckGraphExecutionContext checkSubGraphExecutionContext = CheckGraphExecutionContext.Allocate(m_SubGraphAsset, ((ExecutableSubNodeData)executableNodeData).ExecutableNodesData);
-            checkSubGraphExecutionContext.Parent = checkGraphExecutionContext;
+            CheckGraphExecutionContext checkSubGraphExecutionContext =
+                CheckGraphExecutionContext.Allocate(checkGraphExecutionContext, m_SubGraphAsset, ((CheckSubNodeExecutionContext)checkNodeExecutionContext).CheckNodeExecutionContexts);
             //执行子图的CheckExecutionEntry
             //TODO:后续这个可以提到管理类的函数中
             IReadOnlyList<BaseNodeData> subNodesData = m_SubGraphAsset.GetNodesData();
@@ -84,45 +85,59 @@ namespace YBFramework.Bridge.Data
             CheckGraphExecutionContext.Release(checkSubGraphExecutionContext);
         }
 
-        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck)
+        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck)
         {
             //先找到可执行节点数据
-            ExecutableNodeData executableNodeData;
+            CheckNodeExecutionContext checkNodeExecutionContext;
             if (checkGraphExecutionContext.CurrentCheckNodeExecutionContext.NodeData == this)
             {
-                executableNodeData = checkGraphExecutionContext.CurrentCheckNodeExecutionContext.ExecutableNodeData;
+                checkNodeExecutionContext = checkGraphExecutionContext.CurrentCheckNodeExecutionContext;
             }
             else
             {
-                if (!checkGraphExecutionContext.ExecutableNodesData.TryGetValue(this, out executableNodeData))
+                if (!checkGraphExecutionContext.CheckNodeExecutionContexts.TryGetValue(this, out checkNodeExecutionContext))
                 {
-                    executableNodeData = new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>());
-                    checkGraphExecutionContext.ExecutableNodesData.Add(this, executableNodeData);
+                    checkNodeExecutionContext =
+                        CheckNodeExecutionContext.Allocate<CheckSubNodeExecutionContext>(this, new ExecutableSubNodeData(m_SubGraphAsset, new Dictionary<BaseNodeData, ExecutableNodeData>()));
+                    checkGraphExecutionContext.CheckNodeExecutionContexts.Add(this, checkNodeExecutionContext);
                 }
             }
-            //如果可执行节点数据没有添加过端口，就对端口执行检查
-            if (executableNodeData.ExecutablePortsData.Add(portDataToCheck))
+            SubPortData subPortData = null;
+            for (int i = 0; i < m_SubPortsData.Count; i++)
             {
-                checkGraphExecutionContext.CurrentCheckNodeExecutionContext = new CheckNodeExecutionContext(this, executableNodeData);
-                //1、执行端口在当前蓝图的检查
-                portDataToCheck.CheckExecutionFlow(checkGraphExecutionContext);
-                //2、执行子蓝图中实际的端口在子蓝图的检查
-                //因为同时执行了1、2两个步骤，就会导致子图检查流程执行回父图的端口时，父图的端口会执行一次在父图的检查，然后又执行到子图的端口，第二步就是多余的。
-                //所以每一个端口需要先判断是否添加到可执行列表，再执行检查后面的内容，不然会在这里形成无限递归。
-                SubPortData subPortData = (SubPortData)portDataToCheck;
-                BaseNodeData asSubNodeData = m_SubGraphAsset.FindNodeData(subPortData.GetAsSubNodeID());
-                if (asSubNodeData != null)
+                SubPortData portData = m_SubPortsData[i];
+                if (portData.GetPortID() == portIDToCheck)
                 {
-                    //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
-                    CheckGraphExecutionContext checkSubGraphExecutionContext = CheckGraphExecutionContext.Allocate(m_SubGraphAsset, ((ExecutableSubNodeData)executableNodeData).ExecutableNodesData);
-                    checkSubGraphExecutionContext.Parent = checkGraphExecutionContext;
-                    BasePortData asSubPortData = asSubNodeData.FindPortData(subPortData.GetAsSubPortID());
-                    if (asSubPortData != null)
-                    {
-                        asSubNodeData.CheckExecutionFlow(checkSubGraphExecutionContext, asSubPortData);
-                    }
-                    CheckGraphExecutionContext.Release(checkSubGraphExecutionContext);
+                    subPortData = portData;
+                    break;
                 }
+            }
+            if (subPortData != null)
+            {
+                //如果可执行节点数据不存在集合中，就对端口执行检查
+                if (checkNodeExecutionContext.CheckedPortsData.Add(subPortData))
+                {
+                    checkGraphExecutionContext.CurrentCheckNodeExecutionContext = checkNodeExecutionContext;
+                    //1、执行端口在当前蓝图的检查
+                    subPortData.CheckExecutionFlow(checkGraphExecutionContext);
+                    //2、执行子蓝图中实际的端口在子蓝图的检查
+                    //因为同时执行了1、2两个步骤，就会导致子图检查流程执行回父图的端口时，父图的端口会执行一次在父图的检查，然后又执行到子图的端口，第二步就是多余的。
+                    //所以每一个端口需要先判断是否添加到可执行列表，再执行检查后面的内容，不然会在这里形成无限递归。
+                    BaseNodeData asSubNodeData = m_SubGraphAsset.FindNodeData(subPortData.GetAsSubNodeID());
+                    if (asSubNodeData != null)
+                    {
+                        //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
+                        CheckGraphExecutionContext checkSubGraphExecutionContext =
+                            CheckGraphExecutionContext.Allocate(checkGraphExecutionContext, m_SubGraphAsset, ((CheckSubNodeExecutionContext)checkNodeExecutionContext).CheckNodeExecutionContexts);
+                        asSubNodeData.CheckExecutionFlow(checkSubGraphExecutionContext, subPortData.GetAsSubPortID());
+                        CheckGraphExecutionContext.Release(checkSubGraphExecutionContext);
+                    }
+                    checkNodeExecutionContext.ExecutableNodeData.ExecutablePortsData.Add(subPortData);
+                }
+            }
+            else
+            {
+                Debug.LogError("不可能为null，除非数据丢失");
             }
         }
 #if UNITY_EDITOR

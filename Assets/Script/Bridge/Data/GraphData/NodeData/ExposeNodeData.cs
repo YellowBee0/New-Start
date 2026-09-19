@@ -98,7 +98,7 @@ namespace YBFramework.Bridge.Data
             throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CreateRuntimeInstance)} method");
         }
 
-        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck)
+        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck)
         {
             throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CheckExecutionFlow)} method");
         }

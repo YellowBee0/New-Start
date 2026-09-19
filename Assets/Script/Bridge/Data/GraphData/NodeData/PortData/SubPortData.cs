@@ -11,7 +11,7 @@ namespace YBFramework.Bridge.Data
     public sealed class SubPortData : BasePortData
     {
         internal const string AS_SUB_PORT_FIELD_NAME = nameof(m_AsSubPortData);
-        
+
         [SerializeReference] private BasePortData m_AsSubPortData;
 
         [SerializeField] private int m_AsSubNodeID;

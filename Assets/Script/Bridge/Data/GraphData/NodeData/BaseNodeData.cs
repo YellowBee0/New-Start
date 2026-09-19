@@ -38,7 +38,7 @@ namespace YBFramework.Bridge.Data
         {
         }
 
-        public abstract void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck);
+        public abstract void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck);
 #if UNITY_EDITOR
         public string NodeName;
 

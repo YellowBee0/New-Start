@@ -38,7 +38,7 @@ namespace YBFramework.Bridge.Data
             throw new NotImplementedException();
         }
 
-        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, BasePortData portDataToCheck)
+        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck)
         {
             throw new NotImplementedException();
         }

@@ -37,11 +37,11 @@ namespace YBFramework.Bridge.Data
                     BaseNodeData nodeData = checkGraphExecutionContext.GraphAsset.FindNodeData(portConnectionData.NodeID);
                     if (nodeData != null)
                     {
-                        BasePortData portData = nodeData.FindPortData(portConnectionData.PortID);
-                        if (portData != null)
-                        {
-                            nodeData.CheckExecutionFlow(checkGraphExecutionContext, portData);
-                        }
+                        nodeData.CheckExecutionFlow(checkGraphExecutionContext, portConnectionData.PortID);
+                    }
+                    else
+                    {
+                        Debug.LogError("不可能为null，除非数据丢失");
                     }
                 }
             }
@@ -54,7 +54,11 @@ namespace YBFramework.Bridge.Data
                     BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(checkGraphExecutionContext.CurrentCheckNodeExecutionContext.NodeData.GetNodeID(), GetPortID());
                     if (portData != null)
                     {
-                        subNodeData.CheckExecutionFlow(parent, portData);
+                        subNodeData.CheckExecutionFlow(parent, portData.GetPortID());
+                    }
+                    else
+                    {
+                        Debug.LogError("不可能为null，除非数据丢失");
                     }
                 }
             }
