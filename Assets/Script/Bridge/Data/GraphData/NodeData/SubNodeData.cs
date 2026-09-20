@@ -79,13 +79,7 @@ namespace YBFramework.Bridge.Data
                 GraphAsset = m_SubGraphAsset,
                 NodeCheckResults = ((SubNodeCheckResult)nodeCheckResult).SubNodeCheckResults
             };
-            //执行子图的CheckExecutionEntry
-            //TODO:后续这个可以提到管理类的函数中
-            IReadOnlyList<BaseNodeData> subNodesData = m_SubGraphAsset.GetNodesData();
-            for (int i = 0; i < subNodesData.Count; i++)
-            {
-                subNodesData[i].CheckExecutionEntry(subGraphCheckContext);
-            }
+            subGraphCheckContext.StartCheck();
         }
 
         public override void CheckExecutionFlow(GraphCheckContext graphCheckContext, int portID)

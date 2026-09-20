@@ -13,5 +13,14 @@ namespace YBFramework.Bridge.Data
         public BaseNodeData NodeData;
 
         public NodeCheckResult NodeCheckResult;
+
+        public void StartCheck()
+        {
+            IReadOnlyList<BaseNodeData> nodesData = GraphAsset.GetNodesData();
+            for (int i = 0; i < nodesData.Count; i++)
+            {
+                nodesData[i].CheckExecutionEntry(this);
+            }
+        }
     }
 }
