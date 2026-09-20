@@ -33,12 +33,12 @@ namespace YBFramework.Bridge.Data
             }
         }
 
-        public override BaseNode CreateRuntimeInstance(ExecutableNodeData executableNodeData)
+        public override BaseNode CreateRuntimeInstance(NodeCheckResult nodeCheckResult)
         {
             throw new NotImplementedException();
         }
 
-        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck)
+        public override void CheckExecutionFlow(GraphCheckContext graphCheckContext, int portID)
         {
             throw new NotImplementedException();
         }

@@ -26,7 +26,7 @@ namespace YBFramework.Bridge.Data
 
         public abstract BasePort CreateRuntimeInstance();
 
-        public void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext)
+        public void CheckExecutionFlow(GraphCheckContext graphCheckContext)
         {
             int portConnectionsDataCount = GetPortConnectionsDataCount();
             for (int i = 0; i < portConnectionsDataCount; i++)
@@ -34,10 +34,10 @@ namespace YBFramework.Bridge.Data
                 PortConnectionData portConnectionData = PortConnectionDataOfIndex(i);
                 if (portConnectionData.IsValid())
                 {
-                    BaseNodeData nodeData = checkGraphExecutionContext.GraphAsset.FindNodeData(portConnectionData.NodeID);
+                    BaseNodeData nodeData = graphCheckContext.GraphAsset.FindNodeData(portConnectionData.NodeID);
                     if (nodeData != null)
                     {
-                        nodeData.CheckExecutionFlow(checkGraphExecutionContext, portConnectionData.PortID);
+                        nodeData.CheckExecutionFlow(graphCheckContext, portConnectionData.PortID);
                     }
                     else
                     {
@@ -47,11 +47,11 @@ namespace YBFramework.Bridge.Data
             }
             if (HasSubPortData())
             {
-                CheckGraphExecutionContext parent = checkGraphExecutionContext.Parent;
+                GraphCheckContext parent = graphCheckContext.Parent;
                 if (parent != null)
                 {
-                    SubNodeData subNodeData = (SubNodeData)parent.CurrentCheckNodeExecutionContext.NodeData;
-                    BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(checkGraphExecutionContext.CurrentCheckNodeExecutionContext.NodeData.GetNodeID(), GetPortID());
+                    SubNodeData subNodeData = (SubNodeData)parent.NodeData;
+                    BasePortData portData = subNodeData.FindSubPortDataBySubPortAddress(graphCheckContext.NodeData.GetNodeID(), GetPortID());
                     if (portData != null)
                     {
                         subNodeData.CheckExecutionFlow(parent, portData.GetPortID());

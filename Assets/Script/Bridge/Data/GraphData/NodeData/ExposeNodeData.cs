@@ -93,12 +93,12 @@ namespace YBFramework.Bridge.Data
             return m_ExposePortsData[index];
         }
 
-        public override BaseNode CreateRuntimeInstance(ExecutableNodeData executableNodeData)
+        public override BaseNode CreateRuntimeInstance(NodeCheckResult nodeCheckResult)
         {
             throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CreateRuntimeInstance)} method");
         }
 
-        public override void CheckExecutionFlow(CheckGraphExecutionContext checkGraphExecutionContext, int portIDToCheck)
+        public override void CheckExecutionFlow(GraphCheckContext graphCheckContext, int portID)
         {
             throw new InvalidOperationException($"{nameof(ExposeNodeData)} will never call {nameof(CheckExecutionFlow)} method");
         }
