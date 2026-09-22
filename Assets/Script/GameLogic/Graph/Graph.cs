@@ -55,19 +55,6 @@ namespace YBFramework.GameLogic.Graph
             }*/
         }
 
-        public BaseNode GetNode(int nodeID)
-        {
-            for (int i = 0; i < m_Nodes.Count; i++)
-            {
-                BaseNode node = m_Nodes[i];
-                if (node.GetNodeID() == nodeID)
-                {
-                    return node;
-                }
-            }
-            return null;
-        }
-
         public void SetOwner(object owner)
         {
             m_Owner = owner;

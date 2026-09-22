@@ -15,6 +15,10 @@ namespace YBFramework.Bridge.Data
 
         [SerializeField] private ValueInputPortData<int> m_IntInputPort;
 
+        public ActionPortData InvokePortData => m_InvokePortData;
+        
+        public ValueInputPortData<int> IntInputPort => m_IntInputPort;
+        
         public override int GetPortsDataCount()
         {
             return 2;

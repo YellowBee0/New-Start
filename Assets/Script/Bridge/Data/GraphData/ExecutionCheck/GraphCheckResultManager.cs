@@ -11,7 +11,7 @@ namespace YBFramework.Bridge.Data
             if (!s_GraphCheckResults.TryGetValue(graphAsset, out Dictionary<BaseNodeData, NodeCheckResult> graphCheckResult))
             {
                 graphCheckResult = new Dictionary<BaseNodeData, NodeCheckResult>();
-                GraphCheckContext graphCheckContext = new GraphCheckContext
+                GraphCheckContext graphCheckContext = new()
                 {
                     GraphAsset = graphAsset,
                     NodeCheckResults = graphCheckResult

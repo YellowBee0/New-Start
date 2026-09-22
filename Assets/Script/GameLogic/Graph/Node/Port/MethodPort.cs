@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Reflection;
 using YBFramework.Bridge.Data;
+#if UNITY_EDITOR
+using YBFramework.Bridge.Editor;
+#endif
 
 namespace YBFramework.GameLogic.Graph
 {
@@ -12,7 +15,6 @@ namespace YBFramework.GameLogic.Graph
 
         public void InitializeFromData(MethodPortData data)
         {
-            m_PortID = data.GetPortID();
             m_MethodInfo = data.GetMethodInfo();
         }
 
@@ -24,7 +26,13 @@ namespace YBFramework.GameLogic.Graph
         //TODO:加上是否需要封装参数
         public Delegate CreateDelegate(Type delegateType)
         {
-            return m_MethodInfo == null ? null : m_MethodInfo.CreateDelegate(delegateType, m_Target);
+            Delegate @delegate = m_MethodInfo == null ? null : m_MethodInfo.CreateDelegate(delegateType, m_Target);
+#if UNITY_EDITOR
+            //TODO:InvokeContext需要当前执行的Graph、调用者节点id和端口id、被调用者节点id和端口id。这些参数何时设置？
+            GraphDebugger.InvokeContext incomingContext = new();
+            @delegate = GraphDebugger.Wrap(@delegate, incomingContext.OnInvokeEnter, null);
+#endif
+            return @delegate;
         }
     }
 }
