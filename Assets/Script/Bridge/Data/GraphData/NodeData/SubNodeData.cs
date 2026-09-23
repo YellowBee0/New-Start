@@ -52,16 +52,40 @@ namespace YBFramework.Bridge.Data
             return m_SubPortsData[index];
         }
 
-        public override BaseNode CreateRuntimeInstance(NodeCheckResult nodeCheckResult)
+        public override BaseNode CreateRuntimeNode(NodeCheckResult nodeCheckResult, BuildNodeData buildNodeData)
         {
-            /*ProxyNode proxyNode = new ProxyNode();
-            proxyNode.InitializeFromProxyNodeData(this, (SubNodeSliceData)nodeSliceData);
-            return proxyNode;*/
-            throw new NotImplementedException();
+            SubNode subNode = new();
+            //TODO:对于循环引用，如果一个蓝图已经在创建，子图循环引用再次创建将不能再次创建，只能
+            BuildGraphData buildSubGraphData = GraphBuilder.BuildGraph(m_SubGraphAsset);
+            //以下内容在蓝图运行实例创建完毕后执行
+            subNode.SetSubGraph(buildSubGraphData.Graph);
+            for (int i = 0; i < m_SubPortsData.Count; i++)
+            {
+                SubPortData subPortData = m_SubPortsData[i];
+                if (nodeCheckResult.PortCheckResults.Contains(subPortData))
+                {
+                    SubPort subPort = (SubPort)subPortData.CreateRuntimeInstance();
+                    BasePort actualPort = buildSubGraphData.FindBuildNodeData(subPortData.GetAsSubNodeID()).FindBuildPort(subPortData.GetAsSubPortID());
+                    subPort.SetAsSubPort(actualPort);
+                    subPort.MergeData(subPortData.GetAsSubPortData());
+                    buildNodeData.AddBuildPortData(subPortData, subPort);
+                }
+            }
+            return subNode;
         }
 
         public override void CheckExecutionEntry(GraphCheckContext graphCheckContext)
         {
+            //判断检查链路上是否存在等于子图的蓝图，如果存在就代表这是一个循环引用，就没必要重复检查
+            GraphCheckContext currentGraphCheckContext = graphCheckContext;
+            while (currentGraphCheckContext != null)
+            {
+                if (graphCheckContext.GraphAsset == m_SubGraphAsset)
+                {
+                    return;
+                }
+                currentGraphCheckContext = currentGraphCheckContext.Parent;
+            }
             //检查可执行列表中是否有当前节点，没有就添加一个可执行子节点SubNodeCheckResult
             //TODO:这样做存在一个问题：子图如果没有可执行的内容，这个数据就白创建了。需要在创建完毕后检查是否有东西，没有就删除
             if (!graphCheckContext.NodeCheckResults.TryGetValue(this, out NodeCheckResult nodeCheckResult))
@@ -73,7 +97,7 @@ namespace YBFramework.Bridge.Data
             graphCheckContext.NodeData = this;
             graphCheckContext.NodeCheckResult = nodeCheckResult;
             //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
-            GraphCheckContext subGraphCheckContext = new GraphCheckContext
+            GraphCheckContext subGraphCheckContext = new()
             {
                 Parent = graphCheckContext,
                 GraphAsset = m_SubGraphAsset,
@@ -84,6 +108,16 @@ namespace YBFramework.Bridge.Data
 
         public override void CheckExecutionFlow(GraphCheckContext graphCheckContext, int portID)
         {
+            //判断检查链路上是否存在等于子图的蓝图，如果存在就代表这是一个循环引用，就没必要重复检查
+            GraphCheckContext currentGraphCheckContext = graphCheckContext;
+            while (currentGraphCheckContext != null)
+            {
+                if (graphCheckContext.GraphAsset == m_SubGraphAsset)
+                {
+                    return;
+                }
+                currentGraphCheckContext = currentGraphCheckContext.Parent;
+            }
             //先找到可执行节点数据
             NodeCheckResult nodeCheckResult;
             if (graphCheckContext.NodeData == this)
@@ -127,7 +161,7 @@ namespace YBFramework.Bridge.Data
                     graphCheckContext.NodeData = this;
                     graphCheckContext.NodeCheckResult = nodeCheckResult;
                     //创建子图的检查上下文，并初始化，设置父上下文为参数checkGraphExecutionContext
-                    GraphCheckContext subGraphCheckContext = new GraphCheckContext
+                    GraphCheckContext subGraphCheckContext = new()
                     {
                         Parent = graphCheckContext,
                         GraphAsset = m_SubGraphAsset,

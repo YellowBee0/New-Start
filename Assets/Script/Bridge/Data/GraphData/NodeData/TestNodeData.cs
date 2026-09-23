@@ -37,7 +37,7 @@ namespace YBFramework.Bridge.Data
             }
         }
 
-        public override BaseNode CreateRuntimeInstance(NodeCheckResult nodeCheckResult)
+        public override BaseNode CreateRuntimeNode(NodeCheckResult nodeCheckResult, BuildNodeData buildNodeData)
         {
             throw new NotImplementedException();
         }

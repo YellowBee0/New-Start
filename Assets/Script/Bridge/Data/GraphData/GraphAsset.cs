@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using YBFramework.GameLogic.Graph;
 #if UNITY_EDITOR
 using YBFramework.Bridge.Editor;
 #endif
@@ -34,6 +35,11 @@ namespace YBFramework.Bridge.Data
                 }
             }
             return null;
+        }
+
+        public Graph CreateRuntimeGraph()
+        {
+            return GraphBuilder.BuildGraph(this).Graph;
         }
 #if UNITY_EDITOR
         public GraphType GraphType;

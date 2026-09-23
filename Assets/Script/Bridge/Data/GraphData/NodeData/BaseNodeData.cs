@@ -32,7 +32,7 @@ namespace YBFramework.Bridge.Data
 
         public abstract BasePortData PortDataOfIndex(int index);
 
-        public abstract BaseNode CreateRuntimeInstance(NodeCheckResult nodeCheckResult);
+        public abstract BaseNode CreateRuntimeNode(NodeCheckResult nodeCheckResult, BuildNodeData buildNodeData);
 
         public virtual void CheckExecutionEntry(GraphCheckContext graphCheckContext)
         {

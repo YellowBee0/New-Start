@@ -13,5 +13,11 @@ namespace YBFramework.Bridge.Data
             SubGraphAsset = subGraphAsset;
             SubNodeCheckResults = new Dictionary<BaseNodeData, NodeCheckResult>();
         }
+
+        public SubNodeCheckResult(GraphAsset subGraphAsset, Dictionary<BaseNodeData, NodeCheckResult> subNodeCheckResults)
+        {
+            SubGraphAsset = subGraphAsset;
+            SubNodeCheckResults = subNodeCheckResults;
+        }
     }
 }
