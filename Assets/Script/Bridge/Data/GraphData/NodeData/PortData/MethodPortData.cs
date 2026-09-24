@@ -87,6 +87,14 @@ namespace YBFramework.Bridge.Data
             return m_ParameterInfos;
         }
 
+        public void SetPortViewData(string portName, Direction direction, Port.Capacity capacity, Color portColor)
+        {
+            SetPortName(portName);
+            SetDirection(direction);
+            SetCapacity(capacity);
+            SetPortColor(portColor);
+        }
+
         public override BaseNodeData GetNodeData()
         {
             return m_NodeData;

@@ -23,6 +23,11 @@ namespace YBFramework.GameLogic.Graph
             m_Target = target;
         }
 
+        public MethodInfo GetMethodInfo()
+        {
+            return m_MethodInfo;
+        }
+
         //TODO:加上是否需要封装参数
         public Delegate CreateDelegate(Type delegateType)
         {
