@@ -7,6 +7,9 @@ namespace ScriptRedo
     {
         private readonly Dictionary<Type, IComponent> m_Components = new();
 
+        //如果Entity要复用，那么这个东西也得归还
+        private ReferenceChangeListener<Type, IComponent> m_ComponentReferenceChangeListener;
+
         /// <summary>
         /// 获取指定类型的组件
         /// </summary>
@@ -31,31 +34,21 @@ namespace ScriptRedo
         /// 添加组件到实体
         /// </summary>
         /// <param name="component">添加的组件实例</param>
-        /// <param name="doAddToEntityIfSuccess">
-        /// 如果添加成功是否执行IComponent的OnAddToEntity。
-        /// 一般为true，但是在循环添加组件时，有些组件需要在OnAddToEntity获取其他组件，如果其他组件晚于这个组件添加就获取不到。
-        /// 所以需要设置为false，然后在所有组件添加完毕后，手动调用一次添加成功的组件的OnAddToEntity
-        /// </param>
         /// <typeparam name="T">添加的组件泛型</typeparam>
         /// <returns>是否添加成功</returns>
-        public bool AddComponent<T>(T component, bool doAddToEntityIfSuccess) where T : IComponent
+        public bool AddComponent<T>(T component) where T : IComponent
         {
-            return component != null && AddComponent(typeof(T), component, doAddToEntityIfSuccess);
+            return component != null && AddComponent(typeof(T), component);
         }
 
         /// <summary>
         /// 添加组件到Entity
         /// </summary>
         /// <param name="component">添加的组件实例</param>
-        /// <param name="doAddToEntityIfSuccess">
-        /// 如果添加成功是否执行IComponent的OnAddToEntity。
-        /// 一般为true，但是在循环添加组件时，有些组件需要在OnAddToEntity获取其他组件，如果其他组件晚于这个组件添加就获取不到。
-        /// 所以需要设置为false，然后在所有组件添加完毕后，手动调用一次添加成功的组件的OnAddToEntity
-        /// </param>
         /// <returns>是否添加成功</returns>
-        public bool AddComponent(IComponent component, bool doAddToEntityIfSuccess)
+        public bool AddComponent(IComponent component)
         {
-            return AddComponent(component.GetType(), component, doAddToEntityIfSuccess);
+            return AddComponent(component.GetType(), component);
         }
 
         /// <summary>
@@ -65,7 +58,7 @@ namespace ScriptRedo
         /// <returns>是否移除成功</returns>
         public bool RemoveComponent<T>() where T : IComponent
         {
-            return RemoveComponent(typeof(T), true);
+            return PrivateRemoveComponent(typeof(T));
         }
 
         /// <summary>
@@ -75,39 +68,48 @@ namespace ScriptRedo
         /// <returns>是否移除成功</returns>
         public bool RemoveComponent(Type type)
         {
-            return RemoveComponent(type, true);
+            return PrivateRemoveComponent(type);
         }
 
         /// <summary>
         /// 从Entity移除组件
         /// </summary>
         /// <param name="component">移除的组件实例</param>
-        /// <param name="doRemoveFromEntityIfSuccess">
-        /// 如果添加成功是否执行IComponent的OnRemoveFromEntity。
-        /// 一般为true，仅在需要手动控制IComponent的OnRemoveFromEntity调用时为false
-        /// </param>
         /// <returns>是否移除成功</returns>
-        public bool RemoveComponent(IComponent component, bool doRemoveFromEntityIfSuccess)
+        public bool RemoveComponent(IComponent component)
         {
-            return RemoveComponent(component.GetType(), doRemoveFromEntityIfSuccess);
+            return PrivateRemoveComponent(component.GetType());
+        }
+
+        public void RegisterComponentReferenceChangeListener(Type componentType, Action<IComponent> listener)
+        {
+            m_ComponentReferenceChangeListener ??= new ReferenceChangeListener<Type, IComponent>();
+            m_ComponentReferenceChangeListener.RegisterChangeListener(componentType, listener);
+        }
+
+        public void UnregisterComponentReferenceChangeListener(Type componentType, Action<IComponent> listener)
+        {
+            if (m_ComponentReferenceChangeListener != null)
+            {
+                m_ComponentReferenceChangeListener.UnregisterChangeListener(componentType, listener);
+            }
         }
 
         /// <summary>
         /// 从Entity移除组件的私有调用
         /// </summary>
         /// <param name="type">移除组件的类型</param>
-        /// <param name="doRemoveFromEntityIfSuccess">
-        /// 如果添加成功是否执行IComponent的OnRemoveFromEntity。
-        /// 一般为true，仅在需要手动控制IComponent的OnRemoveFromEntity调用时为false
-        /// </param>
         /// <returns>是否移除成功</returns>
-        private bool RemoveComponent(Type type, bool doRemoveFromEntityIfSuccess)
+        private bool PrivateRemoveComponent(Type type)
         {
             if (m_Components.Remove(type, out IComponent component))
             {
-                if (doRemoveFromEntityIfSuccess)
+                //先调用组件的OnRemoveFromEntity，再调用NotifyChange的原因：组件有可能也管理其他的生命周期（比如PropertyComponent），在组件被移除时，组件管理的生命周期同样也得移除
+                //移除逻辑一般写在OnRemoveFromEntity中，所以先调用OnRemoveFromEntity
+                component.OnRemoveFromEntity(this);
+                if (m_ComponentReferenceChangeListener != null)
                 {
-                    component.OnRemoveFromEntity(this);
+                    m_ComponentReferenceChangeListener.NotifyChange(type, null);
                 }
                 return true;
             }
@@ -119,20 +121,17 @@ namespace ScriptRedo
         /// </summary>
         /// <param name="type">添加的组件类型</param>
         /// <param name="component">添加的组件实例</param>
-        /// <param name="doAddToEntityIfSuccess">
-        /// 如果添加成功是否执行IComponent的OnAddToEntity。
-        /// 一般为true，但是在循环添加组件时，有些组件需要在OnAddToEntity获取其他组件，如果其他组件晚于这个组件添加就获取不到。
-        /// 所以需要设置为false，然后在所有组件添加完毕后，手动调用一次添加成功的组件的OnAddToEntity
-        /// </param>
         /// <returns>是否添加成功</returns>
-        private bool AddComponent(Type type, IComponent component, bool doAddToEntityIfSuccess)
+        private bool AddComponent(Type type, IComponent component)
         {
             if (m_Components.TryAdd(type, component))
             {
-                if (doAddToEntityIfSuccess)
+                //先调用NotifyChange，再调用组件的OnAddToEntity的原因：组件存在管理生命周期（比如Property），想要获取组件管理生命周期的对象需要先保证组件被加载，然后再获取这些内容
+                if (m_ComponentReferenceChangeListener != null)
                 {
-                    component.OnAddToEntity(this);
+                    m_ComponentReferenceChangeListener.NotifyChange(type, component);
                 }
+                component.OnAddToEntity(this);
                 return true;
             }
             return false;
