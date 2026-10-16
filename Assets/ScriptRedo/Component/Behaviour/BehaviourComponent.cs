@@ -1,6 +1,6 @@
 ﻿namespace ScriptRedo
 {
-    public sealed class BehaviourComponent : IComponent
+    public sealed class BehaviourComponent : IBehaviourComponent<IBehaviour>
     {
         private Entity m_Entity;
 
@@ -41,8 +41,8 @@
             }
             m_Entity = null;
         }
-        
-        public void ChangeBehaviour(IBehaviour newBehaviour)
+
+        public void ChangeBehaviour(IBehaviour behaviourToChange)
         {
             bool isRunning = false;
             if (m_Behaviour != null)
@@ -55,7 +55,7 @@
                 m_Behaviour.Reset();
                 m_Behaviour.OnRemoveFromEntity(m_Entity);
             }
-            m_Behaviour = newBehaviour;
+            m_Behaviour = behaviourToChange;
             if (m_Behaviour != null)
             {
                 m_Behaviour.OnAddToEntity(m_Entity);
@@ -66,6 +66,6 @@
             }
         }
 
-        //这里需要在Start和Stop中调用m_Behaviour的Start和Stop
+        //需要注册Entity启用和禁用，分别在这两个里面决定是否Start还是Stop
     }
 }
