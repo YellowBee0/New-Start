@@ -5,5 +5,6 @@
         Health,
         Defence,
         Attack,
+        Layer,
     }
 }

@@ -8,6 +8,40 @@
 
         private IBehaviour m_Behaviour;
 
+        public void InitializeData(BehaviourComponentData data)
+        {
+            m_Data = data;
+        }
+
+        public void OnAddToEntity(Entity entity)
+        {
+            m_Entity = entity;
+            ISerializableData<IBehaviour> behaviourData = m_Data.GetBehaviourData();
+            if (behaviourData != null)
+            {
+                m_Behaviour = behaviourData.CreateRuntimeInstance();
+                m_Behaviour.OnAddToEntity(entity);
+                if (m_Data.StartOnAddToEntityAndStopOnRemoveFromEntity)
+                {
+                    m_Behaviour.Start();
+                }
+            }
+        }
+
+        public void OnRemoveFromEntity(Entity entity)
+        {
+            //需要处理如果是在切换了行为状态下，是否需要回到以前的行为，然后再移除？还是直接移除当前行为，与之切换的行为就不能再恢复了？
+            if (m_Behaviour != null)
+            {
+                if (m_Data.StartOnAddToEntityAndStopOnRemoveFromEntity)
+                {
+                    m_Behaviour.Stop();
+                }
+                m_Behaviour.OnRemoveFromEntity(entity);
+            }
+            m_Entity = null;
+        }
+        
         public void ChangeBehaviour(IBehaviour newBehaviour)
         {
             bool isRunning = false;
@@ -30,32 +64,6 @@
                     m_Behaviour.Start();
                 }
             }
-        }
-
-        public void InitializeData(BehaviourComponentData data)
-        {
-            m_Data = data;
-        }
-
-        public void OnAddToEntity(Entity entity)
-        {
-            m_Entity = entity;
-            IBehaviourData behaviourData = m_Data.GetBehaviourData();
-            if (behaviourData != null)
-            {
-                m_Behaviour = behaviourData.CreateRuntimeBehaviour();
-                m_Behaviour.OnAddToEntity(entity);
-            }
-        }
-
-        public void OnRemoveFromEntity(Entity entity)
-        {
-            //需要处理如果是在切换了行为状态下，是否需要回到以前的行为，然后再移除？还是直接移除当前行为，与之切换的行为就不能再恢复了？
-            if (m_Behaviour != null)
-            {
-                m_Behaviour.OnRemoveFromEntity(entity);
-            }
-            m_Entity = null;
         }
 
         //这里需要在Start和Stop中调用m_Behaviour的Start和Stop

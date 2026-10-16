@@ -9,33 +9,10 @@ namespace ScriptRedo
         private Action m_OnMinValueChanged;
 
         private Action m_OnCurValueChanged;
-        
+
         private PropertyType m_PropertyType;
-
-        protected override void OnInitialize(float maxValue, float minValue, float currentValue)
-        {
-            if (maxValue < minValue)
-            {
-                throw new ArgumentException($"max value: {maxValue} can not less than min value: {minValue}");
-            }
-            m_MaxValue = maxValue;
-            m_MinValue = minValue;
-            float expectedCurrentValue = currentValue;
-            if (currentValue > maxValue)
-            {
-                currentValue = maxValue;
-            }
-            else if (currentValue < minValue)
-            {
-                currentValue = minValue;
-            }
-            m_CurrentValue = currentValue;
-            Record(ValueConstraintType.Max, "Initialize", maxValue, maxValue);
-            Record(ValueConstraintType.Min, "Initialize", minValue, minValue);
-            Record(ValueConstraintType.Current, "Initialize", expectedCurrentValue, currentValue);
-        }
-
-        protected override void OnRelease()
+        
+        protected override void OnReleaseResource()
         {
             m_OnMaxValueChanged = null;
             m_OnMinValueChanged = null;
@@ -89,6 +66,29 @@ namespace ScriptRedo
             m_CurrentValue = newValue;
             m_OnCurValueChanged?.Invoke();
             return oldValue - newValue;
+        }
+
+        public void InitializeData(PropertyData data)
+        {
+            float maxValue = data.MaxValue;
+            float minValue = data.MinValue;
+            float currentValue = data.DefaultValue;
+            if (maxValue < minValue)
+            {
+                throw new ArgumentException($"max value: {maxValue} can not less than min value: {minValue}");
+            }
+            m_MaxValue = maxValue;
+            m_MinValue = minValue;
+            if (currentValue > maxValue)
+            {
+                currentValue = maxValue;
+            }
+            else if (currentValue < minValue)
+            {
+                currentValue = minValue;
+            }
+            m_CurrentValue = currentValue;
+            m_PropertyType = data.PropertyType;
         }
 
         public PropertyType GetPropertyType()

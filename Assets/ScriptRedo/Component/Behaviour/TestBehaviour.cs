@@ -55,6 +55,11 @@ namespace ScriptRedo
             throw new NotImplementedException();
         }
 
+        public void InitializeData(TestBehaviourData data)
+        {
+            
+        }
+
         private void ListenPropertyComponentChange(IComponent component)
         {
             if (component != null)

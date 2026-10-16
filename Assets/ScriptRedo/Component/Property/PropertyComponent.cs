@@ -76,6 +76,7 @@ namespace ScriptRedo
                 if (m_PropertyChangeListener != null)
                 {
                     m_PropertyChangeListener.NotifyChange(property.GetPropertyType(), property);
+                    CommonPool<Property>.Release(property);
                 }
             }
         }

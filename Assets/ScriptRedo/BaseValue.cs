@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ScriptRedo
 {
-    public abstract class BaseValue<T> where T : struct, IEquatable<T>
+    public abstract class BaseValue<T> : IPooled where T : struct, IEquatable<T>
     {
         protected T m_MaxValue;
 
@@ -18,18 +18,16 @@ namespace ScriptRedo
 
         private bool m_IsEnableRecordCurrentValue;
 
-        public void Initialize(T maxValue, T minValue, T currentValue, bool isEnableRecordMaxValue, bool isEnableRecordMinValue, bool isEnableRecordCurrentValue)
+        public void ReleaseResource()
         {
-            m_IsEnableRecordMaxValue = isEnableRecordMaxValue;
-            m_IsEnableRecordMinValue = isEnableRecordMinValue;
-            m_IsEnableRecordCurrentValue = isEnableRecordCurrentValue;
-            OnInitialize(maxValue, minValue, currentValue);
-        }
-
-        public void Release()
-        {
-            ValueRecord.RemoveRecords(this);
-            OnRelease();
+            if (m_IsEnableRecordMaxValue || m_IsEnableRecordMinValue || m_IsEnableRecordCurrentValue)
+            {
+                ValueRecord.RemoveRecords(this);
+                m_IsEnableRecordMaxValue = false;
+                m_IsEnableRecordMinValue = false;
+                m_IsEnableRecordCurrentValue = false;
+            }
+            OnReleaseResource();
         }
 
         public T GetMaxValue()
@@ -105,17 +103,17 @@ namespace ScriptRedo
             }
         }
 
-        protected void Record(ValueConstraintType valueConstraintType, string modifier, T expectedModifiedValue, T actualModifiedValue)
+        private void Record(ValueConstraintType valueConstraintType, string modifier, T expectedModifiedValue, T actualModifiedValue)
         {
             if (GetIsEnableRecordValue(valueConstraintType))
             {
-                ValueRecord.AddRecord(this, ValueRecord.Allocate(modifier, valueConstraintType, expectedModifiedValue, actualModifiedValue));
+                ValueRecord valRecord = CommonPool<ValueRecord>.Allocate();
+                valRecord.InitializeData(modifier, valueConstraintType, expectedModifiedValue, actualModifiedValue);
+                ValueRecord.AddRecord(this, valRecord);
             }
         }
 
-        protected abstract void OnInitialize(T maxValue, T minValue, T currentValue);
-
-        protected abstract void OnRelease();
+        protected abstract void OnReleaseResource();
 
         protected abstract T ProtectedModifyMaxValue(string modifier, T delta);
 
@@ -123,7 +121,7 @@ namespace ScriptRedo
 
         protected abstract T ProtectedModifyCurrentValue(string modifier, T delta);
 
-        private sealed class ValueRecord
+        private sealed class ValueRecord : IPooled
         {
             private T ActualModifiedValue;
 
@@ -133,26 +131,21 @@ namespace ScriptRedo
 
             private ValueConstraintType ValueConstraintType;
 
-            private static readonly Stack<ValueRecord> s_Pool = new();
+            public void ReleaseResource()
+            {
+            }
+
+            public void InitializeData(string modifier, ValueConstraintType valueConstraintType, T expectedModifiedValue, T actualModifiedValue)
+            {
+                Modifier = modifier;
+                ValueConstraintType = valueConstraintType;
+                ExpectedModifiedValue = expectedModifiedValue;
+                ActualModifiedValue = actualModifiedValue;
+            }
 
             private static readonly Dictionary<BaseValue<T>, List<ValueRecord>> s_ValueRecords = new();
 
             private static readonly StringBuilder s_StringBuilder = new();
-
-            public static ValueRecord Allocate(string modifier, ValueConstraintType valueConstraintType, T expectedModifiedValue, T actualModifiedValue)
-            {
-                ValueRecord valueRecord = s_Pool.Count > 0 ? s_Pool.Pop() : new ValueRecord();
-                valueRecord.Modifier = modifier;
-                valueRecord.ValueConstraintType = valueConstraintType;
-                valueRecord.ExpectedModifiedValue = expectedModifiedValue;
-                valueRecord.ActualModifiedValue = actualModifiedValue;
-                return valueRecord;
-            }
-
-            private static void Free(ValueRecord valueRecord)
-            {
-                s_Pool.Push(valueRecord);
-            }
 
             public static void AddRecord(BaseValue<T> valueInstance, ValueRecord record)
             {
@@ -174,7 +167,7 @@ namespace ScriptRedo
                         if (valueRecords[index].ValueConstraintType == valueConstraintType)
                         {
                             int lastIndex = valueRecords.Count - 1;
-                            Free(valueRecords[index]);
+                            CommonPool<ValueRecord>.Release(valueRecords[index]);
                             (valueRecords[index], valueRecords[lastIndex]) = (valueRecords[lastIndex], valueRecords[index]);
                             valueRecords.RemoveAt(lastIndex);
                         }
@@ -192,7 +185,7 @@ namespace ScriptRedo
                 {
                     for (int i = 0; i < valueRecords.Count; i++)
                     {
-                        Free(valueRecords[i]);
+                        CommonPool<ValueRecord>.Release(valueRecords[i]);
                     }
                 }
             }
