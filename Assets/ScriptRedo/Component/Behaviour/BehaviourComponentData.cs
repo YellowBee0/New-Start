@@ -4,13 +4,13 @@ using UnityEngine;
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class BehaviourComponentData : ISerializableData<BehaviourComponent>
+    public sealed class BehaviourComponentData : IRuntimeData<BehaviourComponent>
     {
-        [SerializeReference] private ISerializableData<IBehaviour> m_BehaviourData;
+        [SerializeReference] private IRuntimeData<IBehaviour> m_BehaviourData;
 
         public bool StartOnAddToEntityAndStopOnRemoveFromEntity = true;
 
-        public ISerializableData<IBehaviour> GetBehaviourData()
+        public IRuntimeData<IBehaviour> GetBehaviourData()
         {
             return m_BehaviourData;
         }

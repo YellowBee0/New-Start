@@ -5,9 +5,9 @@ using UnityEngine;
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class PropertyComponentData : ISerializableData<PropertyComponent>
+    public sealed class PropertyComponentData : IRuntimeData<PropertyComponent>
     {
-        [SerializeReference] private List<ISerializableData<Property>> m_PropertiesData;
+        [SerializeReference] private List<IRuntimeData<Property>> m_PropertiesData;
 
         public PropertyComponent CreateRuntimeInstance()
         {

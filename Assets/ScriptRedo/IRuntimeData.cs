@@ -1,6 +1,6 @@
 ﻿namespace ScriptRedo
 {
-    public interface ISerializableData<out TRuntime>
+    public interface IRuntimeData<out TRuntime>
     {
         TRuntime CreateRuntimeInstance();
     }

@@ -4,11 +4,11 @@ using UnityEngine;
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class BuffBehaviourComponentData : ISerializableData<BuffBehaviourComponent>
+    public sealed class BuffBehaviourComponentData : IRuntimeData<BuffBehaviourComponent>
     {
         public BuffType BuffType;
 
-        [SerializeReference] public ISerializableData<IBuffBehaviour> BuffBehaviourData;
+        [SerializeReference] public IRuntimeData<IBuffBehaviour> BuffBehaviourData;
 
         //如何处理重复添加
 

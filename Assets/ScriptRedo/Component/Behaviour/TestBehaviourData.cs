@@ -3,7 +3,7 @@
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class TestBehaviourData : ISerializableData<TestBehaviour>
+    public sealed class TestBehaviourData : IRuntimeData<TestBehaviour>
     {
         public TestBehaviour CreateRuntimeInstance()
         {

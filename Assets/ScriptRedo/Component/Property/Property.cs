@@ -51,6 +51,8 @@ namespace ScriptRedo
             return actualModifiedValue;
         }
 
+        //属性数值的修改在外部更上层的地方，而不是在这个函数的委托里面。比如蛮王的大招，在开启时免疫致命伤害。如果伤害会致命会把当前血量设置到1（最小血量多1）
+        //这个过程就需要在外部处理，计算最终伤害不能大于等于 当前生命-最小生命+1
         protected override float ProtectedModifyCurrentValue(string modifier, float delta)
         {
             float oldValue = m_CurrentValue;

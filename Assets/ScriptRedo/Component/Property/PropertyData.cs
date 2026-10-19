@@ -3,7 +3,7 @@
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class PropertyData : ISerializableData<Property>
+    public sealed class PropertyData : IRuntimeData<Property>
     {
         public float MaxValue;
 

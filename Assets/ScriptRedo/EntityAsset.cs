@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace ScriptRedo
 {
-    public sealed class EntityAsset : ScriptableObject, ISerializableData<Entity>
+    public sealed class EntityAsset : ScriptableObject, IRuntimeData<Entity>
     {
-        [SerializeReference] private List<ISerializableData<IComponent>> m_ComponentsData;
+        [SerializeReference] private List<IRuntimeData<IComponent>> m_ComponentsData;
 
         public Entity CreateRuntimeInstance()
         {
@@ -19,12 +19,12 @@ namespace ScriptRedo
             return entity;
         }
 
-        public T GetComponentData<T>() where T : ISerializableData<IComponent>
+        public T GetComponentData<T>() where T : IRuntimeData<IComponent>
         {
             return (T)GetComponentData(typeof(T));
         }
 
-        public ISerializableData<IComponent> GetComponentData(Type componentDataType)
+        public IRuntimeData<IComponent> GetComponentData(Type componentDataType)
         {
             for (int i = 0; i < m_ComponentsData.Count; i++)
             {

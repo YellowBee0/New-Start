@@ -16,7 +16,7 @@
         public void OnAddToEntity(Entity entity)
         {
             m_Entity = entity;
-            ISerializableData<IBehaviour> behaviourData = m_Data.GetBehaviourData();
+            IRuntimeData<IBehaviour> behaviourData = m_Data.GetBehaviourData();
             if (behaviourData != null)
             {
                 m_Behaviour = behaviourData.CreateRuntimeInstance();

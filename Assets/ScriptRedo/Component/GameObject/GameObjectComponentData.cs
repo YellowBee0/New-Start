@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ScriptRedo
 {
     [Serializable]
-    public sealed class GameObjectComponentData : ISerializableData<GameObjectComponent>
+    public sealed class GameObjectComponentData : IRuntimeData<GameObjectComponent>
     {
         public GameObject Prefab;
 
