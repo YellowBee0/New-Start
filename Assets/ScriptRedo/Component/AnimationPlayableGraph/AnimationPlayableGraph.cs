@@ -1,11 +1,30 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
 
 namespace ScriptRedo
 {
+#if UNITY_EDITOR
+    [AnimationEventProvider(nameof(AnimationPlayableGraph), ProviderAnimationEventInheritance.None)]
+#endif
     public sealed class AnimationPlayableGraph : IComponent, IAnimationEventProvider
     {
+        private readonly unsafe struct CreateInvokerWrapper
+        {
+            private readonly delegate*<string, IAnimationEventInvoker> m_Action;
+
+            public CreateInvokerWrapper(delegate*<string, IAnimationEventInvoker> action)
+            {
+                m_Action = action;
+            }
+
+            public IAnimationEventInvoker Invoke(string eventName)
+            {
+                return m_Action(eventName);
+            }
+        }
+
         private AnimationPlayableGraphData m_Data;
 
         private Animator m_Animator;
@@ -15,6 +34,12 @@ namespace ScriptRedo
         private AnimationPlayableOutput m_Output;
 
         private AnimationLayerMixerPlayable m_LayerMixerPlayable;
+
+        //全局的动画事件提供者
+        private static readonly Dictionary<string, CreateInvokerWrapper> s_StaticProviders = new();
+
+        //只属于当前这个实体的动画事件提供者
+        private readonly List<IAnimationEventProvider> m_LocalProviders = new();
 
         public void OnAddToEntity(Entity entity)
         {
@@ -86,6 +111,21 @@ namespace ScriptRedo
             m_Output.SetSourcePlayable(m_LayerMixerPlayable);
         }
 
+        public void Play()
+        {
+            m_Graph.Play();
+        }
+
+        public void Stop()
+        {
+            m_Graph.Stop();
+        }
+
+        public void Reset()
+        {
+            //重置所有权重不为0的动画Time为0
+        }
+
         //多个动画混合涉及的参数：权重、播放速度和动画长度用这三个参数目的是为了让参与混合的动画在相同的deltaTime中推进相同的动画百分比进度
         //这样会存在speed很快、动画长度很短的动画混合speed很慢、动画长度很长的动画时一个变慢一个变快
         public void Blend()
@@ -94,32 +134,44 @@ namespace ScriptRedo
 
         public string GetName()
         {
-            return "动画管理";
+            return "Test";
         }
 
-        public IAnimationEventInvoker CreateInvoker(string eventName, IRuntimeData<IAnimationEventInvoker> eventArgs)
+        public IAnimationEventInvoker CreateInvoker(string eventName)
         {
             switch (eventName)
             {
-                case "Test1":
-                    NoneArgAnimationEventInvoker invoker1 = (NoneArgAnimationEventInvoker)eventArgs.CreateRuntimeInstance();
-                    invoker1.SetAction(Test1);
-                    return invoker1;
-                case "Test2":
-                    OneArgAnimationEventInvoker<int> invoker2 = (OneArgAnimationEventInvoker<int>)eventArgs.CreateRuntimeInstance();
-                    invoker2.SetAction(Test2);
-                    return invoker2;
+                case nameof(Test1):
+                    NoneArgAnimationEventInvoker noneArgInvoker = new();
+                    noneArgInvoker.SetAction(Test1);
+                    return noneArgInvoker;
+                case nameof(Test2):
+                    OneArgAnimationEventInvoker<int> oneArgInvoker = new();
+                    oneArgInvoker.SetAction(Test2);
+                    return oneArgInvoker;
                 default:
-                    Debug.LogError($"can not found {eventName} function");
                     return null;
             }
         }
 
+#if UNITY_EDITOR
+        [InstanceAnimationEvent(nameof(Test1))]
+#endif
         private void Test1()
         {
         }
 
+#if UNITY_EDITOR
+        [InstanceAnimationEvent(nameof(Test2))]
+#endif
         private void Test2(int value)
+        {
+        }
+
+#if UNITY_EDITOR
+        [InstanceAnimationEvent(nameof(Test3))]
+#endif
+        private static void Test3(int value)
         {
         }
     }

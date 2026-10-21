@@ -4,6 +4,6 @@
     {
         string GetName();
 
-        IAnimationEventInvoker CreateInvoker(string eventName, IRuntimeData<IAnimationEventInvoker> eventArgs);
+        IAnimationEventInvoker CreateInvoker(string eventName);
     }
 }
