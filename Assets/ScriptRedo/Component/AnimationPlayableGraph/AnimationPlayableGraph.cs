@@ -5,10 +5,7 @@ using UnityEngine.Playables;
 
 namespace ScriptRedo
 {
-#if UNITY_EDITOR
-    [AnimationEventProvider(nameof(AnimationPlayableGraph), ProviderAnimationEventInheritance.None)]
-#endif
-    public sealed class AnimationPlayableGraph : IComponent, IAnimationEventProvider
+    public sealed class AnimationPlayableGraph : IComponent
     {
         private readonly unsafe struct CreateInvokerWrapper
         {
@@ -34,6 +31,8 @@ namespace ScriptRedo
         private AnimationPlayableOutput m_Output;
 
         private AnimationLayerMixerPlayable m_LayerMixerPlayable;
+
+        private (AnimationMixerPlayable, List<AnimationClipInstance>)[] m_PlayablesInLayer;
 
         //全局的动画事件提供者
         private static readonly Dictionary<string, CreateInvokerWrapper> s_StaticProviders = new();
@@ -131,48 +130,16 @@ namespace ScriptRedo
         public void Blend()
         {
         }
+    }
 
-        public string GetName()
-        {
-            return "Test";
-        }
+    public sealed class Animation
+    {
+        private AnimationLayerMixerPlayable m_LayerMixerPlayable;
 
-        public IAnimationEventInvoker CreateInvoker(string eventName)
-        {
-            switch (eventName)
-            {
-                case nameof(Test1):
-                    NoneArgAnimationEventInvoker noneArgInvoker = new();
-                    noneArgInvoker.SetAction(Test1);
-                    return noneArgInvoker;
-                case nameof(Test2):
-                    OneArgAnimationEventInvoker<int> oneArgInvoker = new();
-                    oneArgInvoker.SetAction(Test2);
-                    return oneArgInvoker;
-                default:
-                    return null;
-            }
-        }
-
-#if UNITY_EDITOR
-        [InstanceAnimationEvent(nameof(Test1))]
-#endif
-        private void Test1()
-        {
-        }
-
-#if UNITY_EDITOR
-        [InstanceAnimationEvent(nameof(Test2))]
-#endif
-        private void Test2(int value)
-        {
-        }
-
-#if UNITY_EDITOR
-        [InstanceAnimationEvent(nameof(Test3))]
-#endif
-        private static void Test3(int value)
-        {
-        }
+        private AnimationMixerPlayable m_MixerPlayable;
+        
+        private AnimationClipPlayable m_ClipPlayable;
+        
+        private List<AnimationEventData> m_AnimationEvents = new();
     }
 }

@@ -39,4 +39,72 @@
 
         //进入时设置每个动画所在Layer权重以及Mixer权重（这个操作发生在StateMachine中，StateMachine读取动画状态，决定进入这个状态时动画是如何的）
     }
+
+    public abstract class BaseStateTest
+    {
+        public abstract void OnEnter();
+        
+        public abstract void OnExit();
+        
+        public abstract void OnUpdate();
+    }
+
+    public abstract class OverrideStateTest : BaseStateTest
+    {
+        protected BaseStateTest ToOverrideStateTest;
+
+        public sealed override void OnEnter()
+        {
+            ToOverrideStateTest.OnEnter();
+            OverrideOnEnter();
+        }
+
+        public sealed override void OnExit()
+        {
+            ToOverrideStateTest.OnExit();
+            OverrideOnExit();
+        }
+
+        public sealed override void OnUpdate()
+        {
+            ToOverrideStateTest.OnUpdate();
+            OverrideOnUpdate();
+        }
+
+        protected abstract void OverrideOnEnter();
+
+        protected abstract void OverrideOnExit();
+        
+        protected abstract void OverrideOnUpdate();
+    }
+
+    public sealed class IdleOverrideStateTest : OverrideStateTest
+    {
+        protected override void OverrideOnEnter()
+        {
+            //在这里开启定时器
+        }
+
+        protected override void OverrideOnExit()
+        {
+            
+        }
+
+        protected override void OverrideOnUpdate()
+        {
+            //在这里监听攻击输入
+            //idle、move状态下，可以切换到攻击状态
+            //空中攻击状态：air状态下，可以切换到攻击
+            //dash状态下，可以切换到攻击
+        }
+    }
+
+    public interface IState<TContext>
+    {
+        void OnEnter();
+        
+        void OnExit();
+
+        void OnUpdate();
+    }
 }
