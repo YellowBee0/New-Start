@@ -2,10 +2,10 @@
 {
     public interface IState
     {
-        void OnEnter();
+        void Enter();
 
-        void OnExit();
+        void Exit();
 
-        void OnUpdate(float deltaTime);
+        void Update(float deltaTime);
     }
 }

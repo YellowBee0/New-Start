@@ -10,15 +10,15 @@ namespace ScriptRedo
 
         private IState m_NormalTargetState;
 
-        public void OnEnter()
+        public void Enter()
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
-                m_TransitionParticipantStates[i].OnExit();
+                m_TransitionParticipantStates[i].Exit();
             }
         }
 
-        public void OnExit()
+        public void Exit()
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
@@ -31,15 +31,15 @@ namespace ScriptRedo
             m_NormalTargetState = null;
         }
 
-        public void OnUpdate(float deltaTime)
+        public void Update(float deltaTime)
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
-                m_TransitionParticipantStates[i].OnTransitionUpdate(, deltaTime);
+                m_TransitionParticipantStates[i].TransitionUpdate(, deltaTime);
             }
             if (m_TargetState != null)
             {
-                m_TargetState.OnTransitionUpdate(, 1 - deltaTime);
+                m_TargetState.TransitionUpdate(, 1 - deltaTime);
             }
             //过渡时间到了调用StateMachine的ChangeState(targetState)
         }
