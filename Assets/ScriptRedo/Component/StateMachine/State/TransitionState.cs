@@ -10,36 +10,48 @@ namespace ScriptRedo
 
         private IState m_NormalTargetState;
 
-        public void Enter()
+        private StateMachine m_StateMachine;
+
+        private bool m_IsTranslate;
+
+        public void OnEnter()
         {
-            for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
-            {
-                m_TransitionParticipantStates[i].Exit();
-            }
+            m_IsTranslate = true;
         }
 
-        public void Exit()
+        public void OnExit()
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
                 TransitionParticipantState participantState = m_TransitionParticipantStates[i];
-                participantState.TransitionExit();
-                participantState.SetKeepWeightOnExit(false);
+                m_TargetState.AfterStateExit();
+                //填入具体key
+                participantState.ResetWeight(new[] { "" });
+                participantState.IsControlled(false);
+            }
+            if (m_StateMachine.GetCurrentState() != m_TargetState && m_StateMachine.GetCurrentState() != m_NormalTargetState)
+            {
+                //如果状态机最终切换的状态不是过渡目标状态，过渡目标状态的权重直接设置为0。这个会发生在过渡状态过渡时，通过直接切换切换到其他状态（非过渡目标状态）
+                m_TargetState.AfterStateExit();
+                m_TargetState.ResetWeight(null);
             }
             m_TransitionParticipantStates.Clear();
             m_TargetState = null;
             m_NormalTargetState = null;
+            m_IsTranslate = false;
         }
 
-        public void Update(float deltaTime)
+        public void OnUpdate(float deltaTime)
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
-                m_TransitionParticipantStates[i].TransitionUpdate(, deltaTime);
+                //填入具体key
+                m_TransitionParticipantStates[i].OnTransitionUpdate(new[] { "" }, deltaTime);
             }
             if (m_TargetState != null)
             {
-                m_TargetState.TransitionUpdate(, 1 - deltaTime);
+                //填入具体key
+                m_TargetState.OnTransitionUpdate(new[] { "" }, 1 - deltaTime);
             }
             //过渡时间到了调用StateMachine的ChangeState(targetState)
         }
@@ -48,27 +60,18 @@ namespace ScriptRedo
         {
             return m_TargetState ?? m_NormalTargetState;
         }
-        
-        public void AddParticipantState(IState state, bool isTarget)
+
+        //添加参与过渡的状态
+        public void Add(IState state)
         {
-            if (state is TransitionParticipantState participantState)
+        }
+
+        //设置目标状态
+        public void SetTargetState(IState state)
+        {
+            if (m_IsTranslate && state is TransitionParticipantState participantState)
             {
-                if (isTarget)
-                {
-                    m_TargetState = participantState;
-                }
-                else
-                {
-                    participantState.SetKeepWeightOnExit(true);
-                    m_TransitionParticipantStates.Add(participantState);
-                }
-            }
-            else
-            {
-                if (isTarget)
-                {
-                    m_NormalTargetState = state;
-                }
+                participantState.BeforeStateEnter();
             }
         }
     }

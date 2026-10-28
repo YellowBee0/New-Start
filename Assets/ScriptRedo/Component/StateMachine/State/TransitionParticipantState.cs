@@ -6,56 +6,68 @@ namespace ScriptRedo
     {
         private float m_Weight;
 
-        private bool m_KeepWeightOnExit;
+        private bool m_TranslatorControlled;
 
         public float GetWeight()
         {
             return m_Weight;
         }
 
-        public void SetKeepWeightOnExit(bool isKeepWeightOnExit)
+        public void IsControlled(bool isControlled)
         {
-            m_KeepWeightOnExit = isKeepWeightOnExit;
+            m_TranslatorControlled = isControlled;
         }
 
-        public void Enter()
+        public void OnEnter()
         {
             m_Weight = 1;
-            OnEnter();
-        }
-
-        public void Exit()
-        {
-            //先执行不设置权重的Exit
-            OnExit();
-            //是否需要保持现在的权重（在过渡开始时需要状态保持当前的权重）
-            if (!m_KeepWeightOnExit)
+            OnNormalEnter();
+            if (!m_TranslatorControlled)
             {
-                TransitionExit(null);
+                BeforeStateEnter();
+            }
+            else
+            {
+                m_TranslatorControlled = false;
             }
         }
 
-        public void TransitionExit(IReadOnlyList<string> transitionKeys)
+        public void OnExit()
         {
-            m_Weight = 0;
-            OnTransitionExit(transitionKeys);
+            //先执行不设置权重的Exit
+            OnNormalExit();
+            //是否需要保持现在的权重（在过渡开始时需要状态保持当前的权重）
+            if (!m_TranslatorControlled)
+            {
+                AfterStateExit();
+                ResetWeight(null);
+            }
         }
 
-        public abstract void Update(float deltaTime);
+        public abstract void OnUpdate(float deltaTime);
+
+        public void ResetWeight(IReadOnlyList<string> transitionKeys)
+        {
+            m_Weight = 0;
+            OnResetWeight(transitionKeys);
+        }
 
         public abstract IReadOnlyList<string> GetTransitionKeys();
 
-        protected abstract void OnEnter();
+        public abstract void OnTransitionUpdate(IReadOnlyList<string> transitionKeys, float deltaWeight);
 
-        protected abstract void OnExit();
-        
-        protected abstract void OnTransitionExit(IReadOnlyList<string> transitionKeys);
+        protected abstract void OnNormalEnter();
 
-        public abstract void TransitionUpdate(IReadOnlyList<string> transitionKeys, float deltaWeight);
+        protected abstract void OnNormalExit();
+
+        protected abstract void OnResetWeight(IReadOnlyList<string> transitionKeys);
+
+        public virtual void BeforeStateEnter()
+        {
+        }
+
+        public virtual void AfterStateExit()
+        {
+        }
     }
-
-    //有两个Layer，一个上半身Upper，一个下半身Lower
-    //Upper的攻击动画，需要响应动画事件，Lower的跑步动画，需要响应RootMotion和动画事件
-
-    //这个类对应的数据：状态名Idle、Run、Attack或者RunAttack用于索引；需要调用播放的动画（动画数据包括：在哪一个Layer下；在Mixer的哪个端口下（动画索引）；播放权重）；
 }
