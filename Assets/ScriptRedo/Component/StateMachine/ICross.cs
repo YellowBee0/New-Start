@@ -4,12 +4,13 @@ namespace ScriptRedo
 {
     public interface ICross
     {
+        //一个状态除了在Cross的时候权重不为0或者1，其他时候都是0和1
         float GetWeight();
 
         IReadOnlyList<string> GetCrossKeys();
 
         /// <summary>
-        /// 当开始过渡进当前状态时调用
+        /// 当开始过渡进当前状态且当前状态权重为0时调用。
         /// </summary>
         void OnCrossInBegin();
 

@@ -95,14 +95,19 @@ namespace ScriptRedo
                 float percent = 0;
                 if (cross != null)
                 {
-                    float newTotalWeight = cross.GetWeight() + m_TotalWeight;
+                    float weight = cross.GetWeight();
+                    float newTotalWeight = weight + m_TotalWeight;
                     if (newTotalWeight > 1)
                     {
                         Debug.LogError($"can not set cross in target,because it's weight:{cross.GetWeight()} add total weight:{m_TotalWeight} is over than 1");
                         return;
                     }
                     m_TotalWeight = newTotalWeight;
-                    cross.OnCrossInBegin();
+                    //OnCrossInBegin只能在权重为0时执行
+                    if (weight == 0)
+                    {
+                        cross.OnCrossInBegin();
+                    }
                     percent = 1 - cross.GetWeight();
                 }
                 if (m_CrossIn != null)
