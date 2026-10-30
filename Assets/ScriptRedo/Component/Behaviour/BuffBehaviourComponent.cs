@@ -15,13 +15,13 @@
         public void OnAddToEntity(Entity entity)
         {
             m_Entity = entity;
-            m_BuffBehaviour.OnAddToEntity(entity);
+            //m_BuffBehaviour.OnAddToEntity(entity);
         }
 
         public void OnRemoveFromEntity(Entity entity)
         {
             m_Entity = null;
-            m_BuffBehaviour.OnRemoveFromEntity(entity);
+            //m_BuffBehaviour.OnRemoveFromEntity(entity);
         }
 
         public void ChangeBehaviour(IBuffBehaviour behaviourToChange)
@@ -36,12 +36,12 @@
                 }
                 m_BuffBehaviour.Reset();
                 m_BuffBehaviour.OnRemoveFromBuffManager(m_BuffManager);
-                m_BuffBehaviour.OnRemoveFromEntity(m_Entity);
+                //m_BuffBehaviour.OnRemoveFromEntity(m_Entity);
             }
             m_BuffBehaviour = behaviourToChange;
             if (m_BuffBehaviour != null)
             {
-                m_BuffBehaviour.OnAddToEntity(m_Entity);
+                //m_BuffBehaviour.OnAddToEntity(m_Entity);
                 m_BuffBehaviour.OnAddToBuffManager(m_BuffManager);
                 if (isRunning)
                 {

@@ -1,0 +1,33 @@
+﻿using System.Collections.Generic;
+
+namespace ScriptRedo
+{
+    public interface ITransitionableState : IBehaviour
+    {
+        //一个状态除了在Cross的时候权重不为0或者1，其他时候都是0和1
+        float GetWeight();
+        
+        IReadOnlyList<string> GetCrossKeys();
+        
+        void SetIsTransitioning(bool isTransitioning);
+
+        void OnCrossInStart();
+
+        void OnCrossOutEnd(IReadOnlyList<string> keys);
+        
+        /// <summary>
+        /// 过渡到当前状态。
+        /// 不需要过渡的key，因为目标就是当前状态，所以当前状态全部的key都会执行
+        /// </summary>
+        /// <param name="deltaWeight">每帧改变的权重</param>
+        void OnUpdateCrossIn(float deltaWeight);
+
+        /// <summary>
+        /// 过渡出当前状态。
+        /// 需要过渡的key，过渡出时并不知道那些key可以被当前状态控制
+        /// </summary>
+        /// <param name="crossKeys">过渡的key</param>
+        /// <param name="deltaWeight">每帧改变的权重</param>
+        void OnUpdateCrossOut(IReadOnlyList<string> crossKeys, float deltaWeight);
+    }
+}

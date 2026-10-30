@@ -20,6 +20,8 @@ namespace ScriptRedo
         /// <param name="crossKeys">参与过渡的key</param>
         void OnCrossOutEnd(IReadOnlyList<string> crossKeys);
 
+        void Reset(IReadOnlyList<string> crossKeys);
+
         /// <summary>
         /// 过渡到当前状态。
         /// 不需要过渡的key，因为目标就是当前状态，所以当前状态全部的key都会执行

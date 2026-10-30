@@ -23,6 +23,8 @@ namespace ScriptRedo
         {
             for (int i = 0; i < m_TransitionParticipantStates.Count; i++)
             {
+                //CrossInStart 循环动画开始播放->Exit 循环动画结束播放->Enter 非循环动画开始播发->CrossOutEnd 非循环动画开始播发
+                //CrossOutStart 非循环动画停止播放->Exit 非循环动画停止播放->Enter 非循环动画开始播放->CrossInEnd 非循环动画开始播放
                 TransitionParticipantState participantState = m_TransitionParticipantStates[i];
                 m_TargetState.AfterStateExit();
                 //填入具体key
@@ -31,6 +33,7 @@ namespace ScriptRedo
             }
             if (m_StateMachine.GetCurrentState() != m_TargetState && m_StateMachine.GetCurrentState() != m_NormalTargetState)
             {
+                //在StateMachine中去调用
                 //如果状态机最终切换的状态不是过渡目标状态，过渡目标状态的权重直接设置为0。这个会发生在过渡状态过渡时，通过直接切换切换到其他状态（非过渡目标状态）
                 m_TargetState.AfterStateExit();
                 m_TargetState.ResetWeight(null);

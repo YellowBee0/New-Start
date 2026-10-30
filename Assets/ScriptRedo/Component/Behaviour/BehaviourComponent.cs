@@ -1,5 +1,8 @@
 ﻿namespace ScriptRedo
 {
+    //TODO:Behaviour属于一个更广泛的定义，而不是一个准确的组件，现在Buff、State都是一个Behaviour。Buff需要BuffManager管理，State需要StateMachine管理。
+    // 对于替换行为这个做法，现在感觉不应该只做在Behaviour的管理者里面，而应该包含很多组件：输入组件、各种状态组件（比如视野组件，有的怪视野小，看不见的需要模糊）。
+    // 所以判空很有必要
     public sealed class BehaviourComponent : IBehaviourComponent<IBehaviour>
     {
         private Entity m_Entity;
@@ -20,7 +23,7 @@
             if (behaviourData != null)
             {
                 m_Behaviour = behaviourData.CreateRuntimeInstance();
-                m_Behaviour.OnAddToEntity(entity);
+                //m_Behaviour.OnAddToEntity(entity);
                 if (m_Data.StartOnAddToEntityAndStopOnRemoveFromEntity)
                 {
                     m_Behaviour.Start();
@@ -37,7 +40,7 @@
                 {
                     m_Behaviour.Stop();
                 }
-                m_Behaviour.OnRemoveFromEntity(entity);
+                //m_Behaviour.OnRemoveFromEntity(entity);
             }
             m_Entity = null;
         }
@@ -53,12 +56,12 @@
                     m_Behaviour.Stop();
                 }
                 m_Behaviour.Reset();
-                m_Behaviour.OnRemoveFromEntity(m_Entity);
+                //m_Behaviour.OnRemoveFromEntity(m_Entity);
             }
             m_Behaviour = behaviourToChange;
             if (m_Behaviour != null)
             {
-                m_Behaviour.OnAddToEntity(m_Entity);
+                //m_Behaviour.OnAddToEntity(m_Entity);
                 if (isRunning)
                 {
                     m_Behaviour.Start();

@@ -2,10 +2,6 @@
 {
     public interface IBehaviour
     {
-        void OnAddToEntity(Entity entity);
-        
-        void OnRemoveFromEntity(Entity entity);
-
         bool IsRunning();
         
         /// <summary>
@@ -19,8 +15,8 @@
         void Stop();
 
         /// <summary>
-        /// 重置行为的状态。以后想要实现行为切换或者改变，比如A的行为和B的行为进行交换或者A改变另外的行为，但是对于一些运行过的行为多少会保留一些运行状态，
-        /// 这些状态如果直接切换到其他对象上，很可能会导致无法预料的错误，所以目前准备直接重置状态然后再执行切换。
+        /// 重置行为的状态。只能重置状态不能改变行为的运行状态，即Start/Stop行为。
+        /// 重置不代表会Start/Stop行为，如果行为在运行状态，调用Reset只会重置某些缓存数据
         /// </summary>
         void Reset();
     }
